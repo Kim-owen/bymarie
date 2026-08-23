@@ -533,16 +533,18 @@ app.post('/api/sync/seed', async (req, res) => {
   res.json({ success: true, message: 'Cloud database seed executed' });
 });
 
-// Start Server & Run Auto-Seed
-app.listen(PORT, async () => {
-  console.log(`===================================================`);
-  console.log(`BYMARIE REST API SERVER IS RUNNING ON PORT ${PORT}`);
-  console.log(`API Base: http://localhost:${PORT}/api`);
-  console.log(`Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`Paystack Gateway: Active ⚡`);
-  console.log(`===================================================`);
+// Start Server & Run Auto-Seed (Only when executed directly)
+if (require.main === module) {
+  app.listen(PORT, async () => {
+    console.log(`===================================================`);
+    console.log(`BYMARIE REST API SERVER IS RUNNING ON PORT ${PORT}`);
+    console.log(`API Base: http://localhost:${PORT}/api`);
+    console.log(`Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`Paystack Gateway: Active ⚡`);
+    console.log(`===================================================`);
 
-  await autoSeedSupabase();
-});
+    await autoSeedSupabase();
+  });
+}
 
 module.exports = app;
