@@ -2631,6 +2631,13 @@ function checkout() {
   if (!cart.length) return cartPage();
   
   const user = getUser();
+  const userName = user.name || '';
+  const userPhone = user.phone || '';
+  const userEmail = user.email || '';
+  const userAddress = user.address || '';
+  const userCity = (user.city && user.city !== 'undefined') ? user.city : '';
+  const userRegion = (user.region && user.region !== 'undefined') ? user.region : 'Greater Accra';
+
   const st = subtotal();
   const disc = getDiscountAmount();
   const ship = getDeliveryFee(checkoutDeliveryMethod);
@@ -2642,66 +2649,68 @@ function checkout() {
         <a class="brand" href="#home" onclick="go('home')">BYMARIE</a>
         
         <div class="checkout-steps">
-          <b>1. Details</b> /
-          <b>2. Delivery</b> /
-          <b>3. Payment & Confirm</b>
+          <span><b>1. Details</b></span>
+          <span style="opacity:0.4">/</span>
+          <span><b>2. Delivery</b></span>
+          <span style="opacity:0.4">/</span>
+          <span><b>3. Payment & Confirm</b></span>
         </div>
 
         <form onsubmit="handleCheckoutSubmit(event)">
-          <h2 style="font-size:26px;margin-bottom:20px">1. Shipping Information</h2>
+          <h2 style="font-size:24px;margin-bottom:18px">1. Shipping Information</h2>
           <div class="form-grid">
             <div class="form-group">
               <label>Full Name</label>
-              <input required name="name" value="${user.name}" placeholder="Ama Mensah">
+              <input required name="name" value="${userName}" placeholder="Ama Mensah">
             </div>
             <div class="form-group">
               <label>Phone Number (for Delivery & MoMo)</label>
-              <input required name="phone" type="tel" value="${user.phone}" placeholder="024 456 7890">
+              <input required name="phone" type="tel" value="${userPhone}" placeholder="024 456 7890">
             </div>
             <div class="form-group full">
               <label>Email Address</label>
-              <input required name="email" type="email" value="${user.email}" placeholder="ama@example.com">
+              <input required name="email" type="email" value="${userEmail}" placeholder="ama@example.com">
             </div>
             <div class="form-group full">
               <label>Delivery Address</label>
-              <input required name="address" value="${user.address}" placeholder="House / Apt number, Street, Landmark">
+              <input required name="address" value="${userAddress}" placeholder="House / Apt number, Street, Landmark">
             </div>
             <div class="form-group">
               <label>City</label>
-              <input required name="city" value="${user.city}" placeholder="Accra">
+              <input required name="city" value="${userCity}" placeholder="Accra">
             </div>
             <div class="form-group">
               <label>Region</label>
               <select name="region">
                 ${['Greater Accra', 'Ashanti', 'Central', 'Eastern', 'Western', 'Volta', 'Northern'].map(r => `
-                  <option ${user.region === r ? 'selected' : ''}>${r}</option>
+                  <option ${userRegion === r ? 'selected' : ''}>${r}</option>
                 `).join('')}
               </select>
             </div>
           </div>
 
-          <h2 style="font-size:26px;margin:35px 0 16px">2. Delivery Method</h2>
-          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:30px">
-            <label class="chip ${checkoutDeliveryMethod === 'Standard delivery' ? 'active' : ''}" style="display:flex;justify-content:space-between;align-items:center;padding:14px;cursor:pointer">
-              <div style="display:flex;align-items:center;gap:10px">
+          <h2 style="font-size:24px;margin:32px 0 14px">2. Delivery Method</h2>
+          <div class="delivery-options-stack">
+            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Standard delivery' ? 'active' : ''}">
+              <div class="delivery-option-left">
                 <input type="radio" name="deliveryMethod" value="Standard delivery" ${checkoutDeliveryMethod === 'Standard delivery' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
                 <div>
                   <strong>Standard Delivery (2–4 Business Days)</strong>
-                  <small style="display:block;color:var(--muted)">Dispatched via ByMarie courier</small>
+                  <small>Dispatched via ByMarie courier</small>
                 </div>
               </div>
-              <b>${st >= 300 || (appliedCoupon && appliedCoupon.type === 'shipping') ? 'FREE' : 'GH₵ 35.00'}</b>
+              <b class="delivery-price">${st >= 300 || (appliedCoupon && appliedCoupon.type === 'shipping') ? 'FREE' : 'GH₵ 35.00'}</b>
             </label>
 
-            <label class="chip ${checkoutDeliveryMethod === 'Express delivery' ? 'active' : ''}" style="display:flex;justify-content:space-between;align-items:center;padding:14px;cursor:pointer">
-              <div style="display:flex;align-items:center;gap:10px">
+            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Express delivery' ? 'active' : ''}">
+              <div class="delivery-option-left">
                 <input type="radio" name="deliveryMethod" value="Express delivery" ${checkoutDeliveryMethod === 'Express delivery' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
                 <div>
                   <strong>Express Next-Day Delivery</strong>
-                  <small style="display:block;color:var(--muted)">Priority dispatch across Accra & Kumasi</small>
+                  <small>Priority dispatch across Accra & Kumasi</small>
                 </div>
               </div>
-              <b>GH₵ 60.00</b>
+              <b class="delivery-price">GH₵ 60.00</b>
             </label>
           </div>
 
