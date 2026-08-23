@@ -929,7 +929,7 @@ const INITIAL_SITE_SETTINGS = {
   heroTitle: 'ByMarie — Style, Scent, Essentials',
   heroSubtitle: 'Considered luxury style, handcrafted scent extraits, and daily botanical care in Ghana.',
   heroMediaType: 'video',
-  heroMediaUrl: 'assets/hero-fashion.mp4',
+  heroMediaUrl: 'assets/bymarie.mp4',
   announcementText: 'Complimentary delivery across Greater Accra on orders over GH₵ 300',
   promoCodeNotice: 'WELCOME10',
   brandEthosTitle: 'Created for slow living and enduring beauty.',
@@ -1773,7 +1773,7 @@ function home() {
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
           <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);display:block">
-            <source src="${settings.heroMediaUrl || 'assets/hero-fashion.mp4'}" type="video/mp4">
+            <source src="assets/bymarie.mp4" type="video/mp4">
             <source src="assets/hero-fashion.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
