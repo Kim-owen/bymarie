@@ -1443,34 +1443,108 @@ function header() {
 
 function mobileDrawer() {
   const user = getUser();
+  const categories = [
+    { name: 'Shop All Collection', route: 'shop', icon: '✨', badge: `${getProducts().length} Items` },
+    { name: 'Clothing & Apparel', route: 'category/Clothing', icon: '👗', badge: '6 Items' },
+    { name: 'Shoes & Heels', route: 'category/Shoes', icon: '👠', badge: '4 Items' },
+    { name: 'Luxury Bags & Totes', route: 'category/Bags', icon: '👜', badge: '5 Items' },
+    { name: 'Raw Virgin & HD Wigs', route: 'category/Wigs', icon: '💇‍♀️', badge: '4 Items' },
+    { name: 'Skin Care & Glow', route: 'category/Skin Care', icon: '✨', badge: '4 Items' },
+    { name: 'Perfumes & Extraits', route: 'category/Perfumes', icon: '🌸', badge: '5 Items' },
+    { name: 'Lifestyle & Home', route: 'category/Lifestyle', icon: '🕯️', badge: '3 Items' },
+    { name: 'Nails & Lacquers', route: 'category/Nails', icon: '💅', badge: '3 Items' },
+    { name: 'Panties & Intimates', route: 'category/Panties', icon: '👙', badge: '3 Items' },
+    { name: 'Bath & Body', route: 'category/Toiletries', icon: '🛁', badge: '2 Items' }
+  ];
+
   return `
     <div class="mobile-drawer ${mobileMenuOpen ? 'open' : ''}" onclick="if(event.target===this){mobileMenuOpen=false;render()}">
       <div class="drawer-content">
+        <!-- Sticky Drawer Header -->
         <div class="drawer-header">
-          <a class="brand" href="#home" onclick="go('home')"><span>B</span>ByMarie</a>
-          <button class="icon-btn" onclick="mobileMenuOpen=false;render()">${icon('close')}</button>
+          <a class="brand" href="#home" onclick="mobileMenuOpen=false;go('home')">
+            <span>B</span>BYMARIE LUXURY
+          </a>
+          <button class="icon-btn" onclick="mobileMenuOpen=false;render()" aria-label="Close menu">
+            ${icon('close')}
+          </button>
         </div>
-        <div class="drawer-links">
-          <a href="#home" onclick="go('home')">Home <span>→</span></a>
-          <a href="#wholesale" style="color:var(--emerald);font-weight:800;background:var(--sage);padding:10px 14px;border-radius:var(--radius-sm)" onclick="go('wholesale')">⚡ Wholesale / Bulk Purchasing (Up to 40% Off) <span>→</span></a>
-          <a href="#shop" onclick="filters.cat='All';go('shop')">Shop All Collection <span>→</span></a>
-          <a href="#category/Clothing" onclick="go('category/Clothing')">Clothing <span>→</span></a>
-          <a href="#category/Shoes" onclick="go('category/Shoes')">Shoes & Heels <span>→</span></a>
-          <a href="#category/Bags" onclick="go('category/Bags')">Luxury Bags & Totes <span>→</span></a>
-          <a href="#category/Wigs" onclick="go('category/Wigs')">Raw Virgin & HD Wigs <span>→</span></a>
-          <a href="#category/Skin Care" onclick="go('category/Skin Care')">Skin Care <span>→</span></a>
-          <a href="#category/Perfumes" onclick="go('category/Perfumes')">Perfumes & Extraits <span>→</span></a>
-          <a href="#category/Lifestyle" onclick="go('category/Lifestyle')">Lifestyle & Home <span>→</span></a>
-          <a href="#category/Nails" onclick="go('category/Nails')">Nails & Lacquers <span>→</span></a>
-          <a href="#category/Panties" onclick="go('category/Panties')">Panties & Intimates <span>→</span></a>
-          <a href="#category/Toiletries" onclick="go('category/Toiletries')">Bath & Body <span>→</span></a>
-          <a href="#wishlist" onclick="go('wishlist')">Wishlist (${wishlist.length}) <span>♡</span></a>
-          <a href="#account" onclick="go('account')">My Account <span>👤</span></a>
-          <a href="#admin" onclick="go('admin')">Admin Console <span>↗</span></a>
+
+        <!-- Scrollable Drawer Body -->
+        <div class="drawer-scroll-body">
+          <!-- Member Quick Profile Banner -->
+          <div class="drawer-user-banner">
+            ${user.loggedIn ? `
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span class="account-user-avatar" style="width:40px;height:40px;font-size:16px">${(user.name || 'M').charAt(0)}</span>
+                  <div>
+                    <strong style="font-size:14px;color:var(--ink);display:block">${user.name || 'Member'}</strong>
+                    <small style="color:var(--muted);font-size:11px">${user.email}</small>
+                  </div>
+                </div>
+                <button type="button" class="account-wallet-chip" onclick="mobileMenuOpen=false;activeModal='topup_wallet';render()" style="padding:4px 8px;font-size:11px">
+                  💳 ${money(user.walletBalance || 0)}
+                </button>
+              </div>
+            ` : `
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div>
+                  <strong style="font-size:13.5px;display:block;color:var(--ink)">Welcome to ByMarie</strong>
+                  <small style="color:var(--muted);font-size:11px">Sign in for 1-Click Checkout &amp; Wallet</small>
+                </div>
+                <button class="primary" style="padding:6px 12px;font-size:11px" onclick="mobileMenuOpen=false;authMode='signin';go('auth')">Sign In</button>
+              </div>
+            `}
+          </div>
+
+          <!-- Navigation Category Cards -->
+          <div class="drawer-category-list">
+            <span class="drawer-section-title">EXPLORE COLLECTIONS</span>
+            ${categories.map(cat => `
+              <button type="button" class="drawer-cat-btn" onclick="mobileMenuOpen=false;go('${cat.route}')">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span class="drawer-cat-icon">${cat.icon}</span>
+                  <span class="drawer-cat-name">${cat.name}</span>
+                </div>
+                <span class="drawer-cat-badge">${cat.badge}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Quick Shortcuts -->
+          <div class="drawer-quick-links">
+            <span class="drawer-section-title">MY PORTAL</span>
+            <a href="#account" onclick="mobileMenuOpen=false;accountTab='wholesale';go('account')" class="drawer-link-item wholesale-link">
+              <span>⚡ VIP Wholesale &amp; Bulk Purchasing</span>
+              <small style="background:var(--emerald);color:#fff;padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">40% OFF</small>
+            </a>
+            <a href="#wishlist" onclick="mobileMenuOpen=false;go('wishlist')" class="drawer-link-item">
+              <span>♡ Favourites &amp; Wishlist</span>
+              <small style="color:var(--muted)">${wishlist.length} saved</small>
+            </a>
+            <a href="#account" onclick="mobileMenuOpen=false;go('account')" class="drawer-link-item">
+              <span>📦 Orders &amp; Delivery Tracking</span>
+              <small style="color:var(--muted)">Account</small>
+            </a>
+            ${isAdminUser() ? `
+              <a href="#admin" onclick="mobileMenuOpen=false;go('admin')" class="drawer-link-item admin-link">
+                <span>⚙️ Executive Admin Console</span>
+                <small style="color:var(--emerald)">Authorized</small>
+              </a>
+            ` : ''}
+          </div>
         </div>
+
+        <!-- Sticky Drawer Footer -->
         <div class="drawer-footer">
-          <button class="primary" style="width:100%" onclick="go('cart')">View Bag (${cartCount()} items)</button>
-          <small style="color:var(--muted);text-align:center">Ghana Cedis (GH₵) • Delivered with Care</small>
+          <button class="primary" style="width:100%;height:46px;font-size:13.5px" onclick="mobileMenuOpen=false;go('cart')">
+            View Bag (${cartCount()} items) ${icon('arrow')}
+          </button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11px;color:var(--muted)">
+            <span>🇬🇭 Ghana Cedis (GH₵)</span>
+            <a href="https://wa.me/233241002000" target="_blank" style="color:var(--emerald);text-decoration:none;font-weight:700">💬 VIP Concierge</a>
+          </div>
         </div>
       </div>
     </div>
@@ -2826,6 +2900,7 @@ function account() {
         </div>
         <button class="${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
         <button class="${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
+        <button class="${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ Wholesale &amp; Bulk</button>
         <button class="${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address</button>
         ${isAdminUser() ? `<button class="${accountTab === 'admin' ? 'active' : ''}" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
         <button class="secondary-btn" onclick="clearUser()">Sign Out</button>
@@ -2940,6 +3015,39 @@ function account() {
               }).join('')}
             </div>
           ` : '<p style="color:var(--muted)">Your wishlist is currently empty.</p>'}
+        ${accountTab === 'wholesale' ? `
+          <div style="background:linear-gradient(135deg, var(--sage-light) 0%, #fff 100%);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:24px;margin-bottom:24px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="badge" style="background:var(--emerald);color:#fff;font-weight:800;padding:4px 10px;font-size:11px">⚡ VIP WHOLESALE PORTAL</span>
+              <small style="color:var(--muted);font-weight:700">Direct Factory Tier Discounts</small>
+            </div>
+            <h3 style="font-size:24px;margin:4px 0 10px;color:var(--ink)">Wholesale &amp; Bulk Purchasing (Up to 40% Off)</h3>
+            <p style="color:var(--ink);font-size:14px;line-height:1.6;margin-bottom:20px;max-width:640px">
+              Registered ByMarie VIP Members get access to exclusive bulk tier pricing across raw virgin wigs, luxury designer handbags, perfumes, and apparel. Minimum order quantity starts at 5 items.
+            </p>
+
+            <div class="stats-row" style="margin-bottom:24px">
+              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+                <span>Tier 1 (5–10 items)</span>
+                <strong style="color:var(--emerald)">15% OFF</strong>
+              </div>
+              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+                <span>Tier 2 (11–25 items)</span>
+                <strong style="color:var(--emerald)">25% OFF</strong>
+              </div>
+              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+                <span>VIP Master (25+ items)</span>
+                <strong style="color:var(--emerald)">40% OFF</strong>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <a href="https://wa.me/233241002000?text=Hello%20ByMarie,%20I%20am%20interested%20in%20a%20Wholesale/Bulk%20Order" target="_blank" class="primary" style="padding:12px 22px;text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+                💬 Contact Wholesale Concierge
+              </a>
+              <button type="button" class="secondary-btn" onclick="filters.cat='All';go('shop')">Explore Catalog for Bulk</button>
+            </div>
+          </div>
         ` : ''}
 
         ${accountTab === 'address' ? `
