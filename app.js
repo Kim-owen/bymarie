@@ -5524,8 +5524,6 @@ function render() {
   }
 }
 
-const API_BASE = 'http://localhost:5000/api';
-
 async function syncWithBackendAPI() {
   try {
     const res = await fetch(`${API_BASE}/products`);
