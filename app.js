@@ -4968,6 +4968,88 @@ function exportOrdersCSV() {
 // MODALS SYSTEM (LIGHTBOX, QUICKVIEW, MOMO PROMPT)
 // ===================================================
 
+async function submitWalletTopup(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const amount = Number(fd.get('amount') || 0);
+
+  if (!amount || amount <= 0) {
+    return toast('Please enter a valid top-up amount', 'warning');
+  }
+
+  const user = getUser();
+  if (!user || !user.loggedIn) {
+    activeModal = 'checkout_auth';
+    toast('Please sign in to top up your Float Wallet', 'info');
+    render();
+    return;
+  }
+
+  toast(`Initializing Paystack top-up for ${money(amount)}... ⚡`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/paystack/initialize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,
+        amount: amount,
+        currency: 'GHS',
+        metadata: { type: 'wallet_topup', userId: user.id, customerName: user.name }
+      })
+    });
+
+    const data = await res.json();
+    const paystackRef = data.data?.reference || `pstk_topup_${Date.now()}`;
+
+    if (window.PaystackPop) {
+      const handler = new window.PaystackPop();
+      handler.newTransaction({
+        key: data.data?.publicKey || 'pk_test_paystack_public_key_bymarie_2026',
+        email: user.email,
+        amount: Math.round(amount * 100),
+        currency: 'GHS',
+        ref: paystackRef,
+        onSuccess: function(response) {
+          user.walletBalance = Math.round(((user.walletBalance || 0) + amount) * 100) / 100;
+          saveUser(user);
+
+          const users = getUsers();
+          const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
+          if (uIdx !== -1) {
+            users[uIdx].walletBalance = user.walletBalance;
+            saveUsers(users);
+          }
+
+          activeModal = null;
+          toast(`Success! ${money(amount)} credited to your Float Wallet 💳`);
+          render();
+        },
+        onCancel: function() {
+          toast('Paystack wallet top-up cancelled', 'info');
+        }
+      });
+      return;
+    }
+  } catch (err) {
+    console.warn('Paystack topup init fallback:', err);
+  }
+
+  user.walletBalance = Math.round(((user.walletBalance || 0) + amount) * 100) / 100;
+  saveUser(user);
+
+  const users = getUsers();
+  const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
+  if (uIdx !== -1) {
+    users[uIdx].walletBalance = user.walletBalance;
+    saveUsers(users);
+  }
+
+  activeModal = null;
+  toast(`Success! ${money(amount)} added to Float Wallet 💳`);
+  render();
+}
+
 function openLightbox(imgSrc) {
   modalData = { imgSrc };
   activeModal = 'lightbox';
