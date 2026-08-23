@@ -4714,6 +4714,193 @@ footer small {
   }
 }
 
+/* ===================================================
+   MASTER MOBILE RESPONSIVE ENGINE (320px - 768px)
+   =================================================== */
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#app, main {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  /* Header Mobile Optimization */
+  header {
+    padding: 10px 14px;
+  }
+
+  .brand {
+    font-size: 20px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .wallet-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .account-btn {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+
+  /* Hero & Banner Mobile Scaling */
+  .hero-section, .hero-content {
+    padding: 30px 16px 40px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(26px, 7vw, 38px);
+    line-height: 1.25;
+  }
+
+  .hero-video-wrapper, .hero-video-card {
+    border-radius: var(--radius-md);
+    margin-top: 16px;
+  }
+
+  .hero-video {
+    height: 220px;
+  }
+
+  /* Product Grid Mobile Scaling (2 Columns) */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 0 4px;
+  }
+
+  .product-card {
+    border-radius: var(--radius-md);
+  }
+
+  .product-card .card-media {
+    height: 190px;
+  }
+
+  .product-card h3 {
+    font-size: 13.5px;
+  }
+
+  .product-card .price-row {
+    font-size: 13px;
+  }
+
+  /* Cart & Checkout Mobile Optimization */
+  .cart-layout, .checkout-page {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+    padding: 16px 14px 60px;
+  }
+
+  .checkout-form-side, .checkout-summary-side {
+    padding: 24px 16px;
+  }
+
+  .payment-method-selector {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+
+  .method-chip {
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+
+  /* Admin Console Mobile Responsiveness */
+  .admin-shell {
+    grid-template-columns: 1fr !important;
+    padding: 16px 12px 60px;
+  }
+
+  .admin-sidebar {
+    padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+
+  .admin-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 8px;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-nav button {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .dashboard-bento {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modals Mobile Scaling */
+  .modal-card {
+    width: 94vw !important;
+    max-height: 88vh !important;
+    padding: 24px 18px !important;
+    margin: auto;
+  }
+
+  /* Data Tables Mobile Overflow */
+  .table-scroll, .data-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .product-card .card-media {
+    height: 165px;
+  }
+
+  .product-card-body {
+    padding: 10px 8px;
+  }
+
+  .product-card h3 {
+    font-size: 12.5px;
+  }
+
+  .product-card .add-cart-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .payment-method-selector {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
 
 
 
