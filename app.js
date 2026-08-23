@@ -1772,17 +1772,14 @@ function home() {
           </div>
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
-          ${(settings.heroMediaUrl && (settings.heroMediaType === 'video' || settings.heroMediaUrl.includes('.mp4') || settings.heroMediaUrl.includes('.webm') || settings.heroMediaUrl.includes('.mov') || settings.heroMediaUrl.startsWith('data:video/'))) ? `
-            <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md)">
-              <source src="${settings.heroMediaUrl}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
-            <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" style="position:absolute;bottom:16px;right:16px;background:rgba(9,60,53,0.88);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-full);padding:7px 15px;font-size:12px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.25)">
-              <span class="audio-btn-icon">🔇 Sound Off</span>
-            </button>
-          ` : `
-            <img src="${settings.heroMediaUrl || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=90'}" alt="ByMarie luxury hero">
-          `}
+          <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" poster="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=85" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);display:block">
+            <source src="${settings.heroMediaUrl || 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-coat-posing-40742-large.mp4'}" type="video/mp4">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-coat-posing-40742-large.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" style="position:absolute;bottom:16px;right:16px;background:rgba(9,60,53,0.9);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-full);padding:7px 15px;font-size:12px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.3)">
+            <span class="audio-btn-icon">🔇 Sound Off</span>
+          </button>
           <div class="floating-card">
             <span>New Arrival</span>
             <strong>The Luxury Edit</strong>
