@@ -1537,7 +1537,7 @@ function header() {
       ${announcementMarquee()}
       <header>
         <a class="brand" href="#home" onclick="go('home')">
-          ByMarie
+          BYMARIE
         </a>
         
         <nav class="main-nav">
@@ -1739,7 +1739,7 @@ function mobileDrawer() {
 function footer() {
   return `
     <footer>
-      <div class="brand">ByMarie</div>
+      <div class="brand">BYMARIE</div>
       <p>Elevated, considered essentials for mindful modern living in Ghana and beyond.</p>
       <small>© 2026 ByMarie Studio. All rights reserved. <a href="#admin" style="text-decoration:underline;margin-left:8px">Admin</a></small>
     </footer>
@@ -2639,7 +2639,7 @@ function checkout() {
   return `
     <main class="checkout-page">
       <section class="checkout-form-side animate-fade-up">
-        <a class="brand" href="#home" onclick="go('home')">ByMarie</a>
+        <a class="brand" href="#home" onclick="go('home')">BYMARIE</a>
         
         <div class="checkout-steps">
           <b>1. Details</b> /
@@ -3747,7 +3747,7 @@ function authPage() {
         <div class="auth-showcase-side">
           <div class="auth-showcase-overlay"></div>
           <div class="auth-showcase-content">
-            <a class="brand auth-brand" href="#home" onclick="go('home')">ByMarie</a>
+            <a class="brand auth-brand" href="#home" onclick="go('home')">BYMARIE</a>
             <div class="auth-quote-box">
               <span class="eyebrow" style="color:var(--gold-light)">EST. 2026 • ACCRA</span>
               <h2>Considered Luxury Style &amp; Handcrafted Extraits</h2>
@@ -4292,7 +4292,7 @@ function admin() {
   return `
     <main class="admin-shell">
       <aside class="admin-sidebar">
-        <a class="brand admin-brand" href="#home" onclick="go('home')">ByMarie</a>
+        <a class="brand admin-brand" href="#home" onclick="go('home')">BYMARIE</a>
         <div class="admin-badge">${svgIcon('dot', 8)} Admin Console</div>
 
         <nav class="admin-nav">
