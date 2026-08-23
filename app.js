@@ -1407,49 +1407,50 @@ function header() {
   const isCat = (cat) => currentPage === 'category' && decodeURIComponent(currentParam || '') === cat;
   
   return `
-    ${announcementMarquee()}
-    <header>
-      <button class="hamburger" onclick="mobileMenuOpen=true;render()" aria-label="Open menu">${icon('menu')}</button>
-      
-      <a class="brand" href="#home" onclick="go('home')">
-        <span>B</span>ByMarie
-      </a>
-      
-      <nav class="main-nav">
-        <a href="#home" class="${currentPage === 'home' ? 'active' : ''}" onclick="go('home')">Home</a>
-        <a href="#shop" class="${currentPage === 'shop' && filters.cat === 'All' ? 'active' : ''}" onclick="filters.cat='All';go('shop')">Shop All</a>
-        <a href="#category/Clothing" class="${isCat('Clothing') ? 'active' : ''}" onclick="go('category/Clothing')">Clothing</a>
-        <a href="#category/Shoes" class="${isCat('Shoes') ? 'active' : ''}" onclick="go('category/Shoes')">Shoes</a>
-        <a href="#category/Bags" class="${isCat('Bags') ? 'active' : ''}" onclick="go('category/Bags')">Bags</a>
-        <a href="#category/Wigs" class="${isCat('Wigs') ? 'active' : ''}" onclick="go('category/Wigs')">Wigs</a>
-        <a href="#category/Skin Care" class="${isCat('Skin Care') ? 'active' : ''}" onclick="go('category/Skin Care')">Skin Care</a>
-        <a href="#category/Perfumes" class="${isCat('Perfumes') ? 'active' : ''}" onclick="go('category/Perfumes')">Perfumes</a>
-        <a href="#wholesale" class="${currentPage === 'wholesale' ? 'active' : ''}" style="color:var(--emerald);font-weight:800;display:inline-flex;align-items:center;gap:4px" onclick="go('wholesale')">Wholesale ⚡</a>
-      </nav>
-      
-      <div class="header-actions">
-        <button class="icon-btn" style="gap:6px" aria-label="Quick Search" onclick="openQuickSearchModal()">
-          ${icon('search')} <span class="kbd" style="font-size:10px">⌘K</span>
-        </button>
-        <button class="icon-btn" aria-label="Wishlist" onclick="go('wishlist')">
-          ${icon('heart')}
-          ${wishlist.length ? `<span class="badge-count">${wishlist.length}</span>` : ''}
-        </button>
-        <button class="icon-btn" aria-label="Cart" onclick="go('cart')">
-          ${icon('bag')}
-          ${cartCount() ? `<span class="badge-count">${cartCount()}</span>` : ''}
-        </button>
-        ${user.loggedIn ? `
-          <button class="account-btn user-logged-in" onclick="go('account')">
-            <span>${user.name ? user.name.split(' ')[0] : 'Account'}</span>
+    <div class="header-sticky-wrapper">
+      ${announcementMarquee()}
+      <header>
+        <button class="hamburger" onclick="mobileMenuOpen=true;render()" aria-label="Open menu">${icon('menu')}</button>
+        
+        <a class="brand" href="#home" onclick="go('home')">
+          <span>B</span>ByMarie
+        </a>
+        
+        <nav class="main-nav">
+          <a href="#home" class="${currentPage === 'home' ? 'active' : ''}" onclick="go('home')">Home</a>
+          <a href="#shop" class="${currentPage === 'shop' && filters.cat === 'All' ? 'active' : ''}" onclick="filters.cat='All';go('shop')">Shop All</a>
+          <a href="#category/Clothing" class="${isCat('Clothing') ? 'active' : ''}" onclick="go('category/Clothing')">Clothing</a>
+          <a href="#category/Shoes" class="${isCat('Shoes') ? 'active' : ''}" onclick="go('category/Shoes')">Shoes</a>
+          <a href="#category/Bags" class="${isCat('Bags') ? 'active' : ''}" onclick="go('category/Bags')">Bags</a>
+          <a href="#category/Wigs" class="${isCat('Wigs') ? 'active' : ''}" onclick="go('category/Wigs')">Wigs</a>
+          <a href="#category/Skin Care" class="${isCat('Skin Care') ? 'active' : ''}" onclick="go('category/Skin Care')">Skin Care</a>
+          <a href="#category/Perfumes" class="${isCat('Perfumes') ? 'active' : ''}" onclick="go('category/Perfumes')">Perfumes</a>
+        </nav>
+        
+        <div class="header-actions">
+          <button class="icon-btn" style="gap:6px" aria-label="Quick Search" onclick="openQuickSearchModal()">
+            ${icon('search')} <span class="kbd" style="font-size:10px">⌘K</span>
           </button>
-        ` : `
-          <button class="account-btn" onclick="authMode='signin';go('auth')">
-            <span>${icon('user')}</span> Sign In / Join
+          <button class="icon-btn" aria-label="Wishlist" onclick="go('wishlist')">
+            ${icon('heart')}
+            ${wishlist.length ? `<span class="badge-count">${wishlist.length}</span>` : ''}
           </button>
-        `}
-      </div>
-    </header>
+          <button class="icon-btn" aria-label="Cart" onclick="go('cart')">
+            ${icon('bag')}
+            ${cartCount() ? `<span class="badge-count">${cartCount()}</span>` : ''}
+          </button>
+          ${user.loggedIn ? `
+            <button class="account-btn user-logged-in" onclick="go('account')">
+              <span>${user.name ? user.name.split(' ')[0] : 'Account'}</span>
+            </button>
+          ` : `
+            <button class="account-btn" onclick="authMode='signin';go('auth')">
+              <span>${icon('user')}</span> Sign In / Join
+            </button>
+          `}
+        </div>
+      </header>
+    </div>
     ${mobileDrawer()}
   `;
 }
