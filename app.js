@@ -1469,21 +1469,53 @@ function header() {
           <button class="icon-btn" style="gap:6px" aria-label="Quick Search" onclick="openQuickSearchModal()">
             ${icon('search')} <span class="kbd" style="font-size:10px">⌘K</span>
           </button>
+
+          <!-- Notification Bell with Badge -->
+          <button class="icon-btn header-bell-btn" aria-label="Notifications" title="Notifications" onclick="toast('Notification: 10% Welcome Promo (WELCOME10) active on your account!', 'info')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="badge-count" style="background:#c24d67">1</span>
+          </button>
+
+          <!-- Orders Box Icon -->
+          <button class="icon-btn" aria-label="Orders" title="Track Orders" onclick="accountTab='orders';go('account')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </button>
+
+          <!-- Wishlist Heart -->
           <button class="icon-btn" aria-label="Wishlist" onclick="go('wishlist')">
             ${icon('heart')}
             ${wishlist.length ? `<span class="badge-count">${wishlist.length}</span>` : ''}
           </button>
+
+          <!-- Shopping Bag -->
           <button class="icon-btn" aria-label="Cart" onclick="go('cart')">
             ${icon('bag')}
             ${cartCount() ? `<span class="badge-count">${cartCount()}</span>` : ''}
           </button>
+
           ${user.loggedIn ? `
-            <button class="account-btn user-logged-in" onclick="go('account')">
-              <span>${user.name ? user.name.split(' ')[0] : 'Account'}</span>
-            </button>
+            <div class="header-user-group" style="display:flex;align-items:center;gap:8px">
+              <button class="header-user-btn" onclick="go('account')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)">
+                <span>${user.name ? user.name.split(' ')[0].toLowerCase() : 'account'}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </button>
+              <button class="header-signout-btn" onclick="clearUser()" style="background:none;border:none;cursor:pointer;font-size:12.5px;color:var(--muted);padding:0;transition:color 0.2s">
+                Sign out
+              </button>
+            </div>
           ` : `
             <button class="account-btn" onclick="authMode='signin';go('auth')">
-              <span>${icon('user')}</span> Sign In / Join
+              <span>${icon('user')}</span> Sign In
             </button>
           `}
         </div>
@@ -3280,38 +3312,72 @@ function account() {
         ` : ''}
 
         ${accountTab === 'address' ? `
-          <h3 style="font-size:22px;margin-bottom:18px">Saved Delivery Address &amp; Sizing Profile</h3>
+          <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:0 0 24px;color:var(--ink);font-weight:600">My Account</h1>
           
-          <form class="review-form-card" onsubmit="saveUserProfile(event)" style="margin-bottom:28px">
-            <h4 style="margin:0 0 16px;font-size:16px">Primary Delivery Address</h4>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Recipient Full Name</label>
-                <input required name="name" value="${user.name}">
+          <!-- Profile Card -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+            <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin:0 0 20px;color:var(--ink)">Profile</h3>
+            <form onsubmit="saveUserProfile(event)">
+              <div class="form-group" style="margin-bottom:18px">
+                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">FULL NAME</label>
+                <input required name="name" value="${user.name || ''}" placeholder="Enter full name" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
-              <div class="form-group">
-                <label>Contact Phone / WhatsApp</label>
-                <input required name="phone" value="${user.phone}">
+              <div class="form-group" style="margin-bottom:18px">
+                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">PHONE NUMBER</label>
+                <input required name="phone" value="${user.phone || ''}" placeholder="054 XXX XXXX" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
-              <div class="form-group full">
-                <label>Street Address / House No.</label>
-                <input required name="address" value="${user.address}">
+              <div class="form-group" style="margin-bottom:22px">
+                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">EMAIL</label>
+                <div style="display:flex;align-items:center;gap:10px;background:#f4f4f5;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px">
+                  <span style="font-size:13px;color:var(--muted)">🔒</span>
+                  <input readonly disabled value="${user.email || ''}" style="border:none;background:transparent;width:100%;outline:none;font-size:13.5px;color:var(--muted)">
+                </div>
               </div>
-              <div class="form-group">
-                <label>City / Town</label>
-                <input required name="city" value="${user.city}">
+              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer">Save Profile</button>
+            </form>
+          </div>
+
+          <!-- Saved Delivery Card -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+            <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin:0 0 4px;color:var(--ink)">Saved Delivery</h3>
+            <p style="color:var(--muted);font-size:12px;margin:0 0 20px">This will pre-fill your address at checkout</p>
+            
+            <form onsubmit="saveUserProfile(event)">
+              <!-- Store Pickup Toggle -->
+              <div style="display:flex;justify-content:space-between;align-items:center;background:#fafafa;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px">
+                <div>
+                  <strong style="font-size:13.5px;color:var(--ink);display:block">Prefer Store Pickup</strong>
+                  <small style="color:var(--muted);font-size:11.5px">Pick up for free at ByMarie Atelier, Cantonments, Accra</small>
+                </div>
+                <label style="position:relative;display:inline-block;width:44px;height:24px;margin:0;cursor:pointer">
+                  <input type="checkbox" name="preferPickup" ${user.preferPickup ? 'checked' : ''} onchange="user.preferPickup=this.checked;saveUser(user);render()" style="opacity:0;width:0;height:0">
+                  <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:${user.preferPickup ? '#c24d67' : '#e4e4e7'};border-radius:24px;transition:0.3s">
+                    <span style="position:absolute;height:18px;width:18px;left:${user.preferPickup ? '22px' : '3px'};bottom:3px;background:white;border-radius:50%;transition:0.3s;display:block"></span>
+                  </span>
+                </label>
               </div>
-              <div class="form-group">
-                <label>Region</label>
-                <select name="region">
-                  ${['Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 'Volta', 'Northern'].map(r => `
-                    <option ${user.region === r ? 'selected' : ''}>${r}</option>
-                  `).join('')}
-                </select>
+
+              <div class="form-group" style="margin-bottom:18px">
+                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">STREET ADDRESS</label>
+                <input required name="address" value="${user.address || ''}" placeholder="e.g. 18 Ring Road Central" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
-            </div>
-            <button class="primary" type="submit" style="margin-top:14px">Save Delivery Address</button>
-          </form>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+                <div class="form-group">
+                  <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">CITY</label>
+                  <input required name="city" value="${user.city || 'Accra'}" placeholder="Accra" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">REGION</label>
+                  <select name="region" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink);background:#fff">
+                    ${['Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 'Volta', 'Northern'].map(r => `
+                      <option ${(user.region || 'Greater Accra') === r ? 'selected' : ''}>${r}</option>
+                    `).join('')}
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer">Save Delivery Address</button>
+            </form>
+          </div>
 
           <form class="review-form-card" onsubmit="saveUserPreferences(event)">
             <h4 style="margin:0 0 16px;font-size:16px">✨ My Fit &amp; Luxury Scent Preferences</h4>
