@@ -2997,6 +2997,35 @@ function account() {
           </button>
         </div>
 
+        <!-- Mobile Scrollable Tab Bar -->
+        <div class="account-mobile-tab-bar">
+          <button class="account-mobile-tab-btn ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Rewards</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ Wholesale</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address &amp; Fit</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security</button>
+          <button class="account-mobile-tab-btn ${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge</button>
+          ${isAdminUser() ? `<button class="account-mobile-tab-btn" style="background:var(--gold);color:var(--ink);border-color:var(--gold)" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
+          <button class="account-mobile-tab-btn" style="color:var(--red)" onclick="clearUser()">Sign Out</button>
+        </div>
+
+        ${isAdminUser() ? `
+          <div style="background:linear-gradient(135deg, #093c35 0%, #155d53 100%);color:#fff;border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 14px rgba(9,60,53,0.25)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">⚙️</span>
+              <div>
+                <strong style="font-size:13.5px;display:block">Store Administrator Console</strong>
+                <small style="color:var(--gold-light);font-size:11px">Manage products, orders, inventory &amp; CMS</small>
+              </div>
+            </div>
+            <button class="primary" style="background:var(--gold);color:var(--ink);border:0;padding:6px 14px;font-size:11.5px;font-weight:800" onclick="go('admin')">
+              Open Console ↗
+            </button>
+          </div>
+        ` : ''}
+
         <div class="stats-row">
           <div class="stat-box">
             <span>Total Orders</span>
