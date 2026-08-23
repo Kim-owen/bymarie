@@ -3015,6 +3015,8 @@ function account() {
               }).join('')}
             </div>
           ` : '<p style="color:var(--muted)">Your wishlist is currently empty.</p>'}
+        ` : ''}
+
         ${accountTab === 'wholesale' ? `
           <div style="background:linear-gradient(135deg, var(--sage-light) 0%, #fff 100%);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:24px;margin-bottom:24px">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
