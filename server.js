@@ -27,8 +27,14 @@ try {
   console.warn('Directory init warning:', e.message);
 }
 
-// Serve static uploaded files
+// Serve static uploaded files & root static assets (index.html, styles.css, app.js)
 app.use('/uploads', express.static(UPLOADS_DIR));
+app.use(express.static(__dirname));
+
+// Root storefront route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Configure Multer for File Uploads
 const storage = multer.diskStorage({
