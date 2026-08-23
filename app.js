@@ -3154,16 +3154,16 @@ function account() {
         </div>
 
         ${isAdminUser() ? `
-          <div style="background:linear-gradient(135deg, #093c35 0%, #155d53 100%);color:#fff;border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 14px rgba(9,60,53,0.25)">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:20px">⚙️</span>
-              <div>
-                <strong style="font-size:13.5px;display:block">Store Administrator Console</strong>
-                <small style="color:var(--gold-light);font-size:11px">Manage products, orders, inventory &amp; CMS</small>
+          <div class="admin-quick-banner">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0">
+              <span style="font-size:20px;flex-shrink:0">⚙️</span>
+              <div style="min-width:0">
+                <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Store Administrator Console</strong>
+                <small style="color:var(--gold-light);font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Manage products, orders, inventory &amp; CMS</small>
               </div>
             </div>
-            <button class="primary" style="background:var(--gold);color:var(--ink);border:0;padding:6px 14px;font-size:11.5px;font-weight:800" onclick="go('admin')">
-              Open Console ↗
+            <button class="primary admin-banner-btn" onclick="go('admin')">
+              Open ↗
             </button>
           </div>
         ` : ''}
@@ -3387,36 +3387,36 @@ function account() {
         ` : ''}
 
         ${accountTab === 'wholesale' ? `
-          <div style="background:linear-gradient(135deg, var(--sage-light) 0%, #fff 100%);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:24px;margin-bottom:24px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <span class="badge" style="background:var(--emerald);color:#fff;font-weight:800;padding:4px 10px;font-size:11px">⚡ VIP WHOLESALE PORTAL</span>
+          <div class="wholesale-box">
+            <div class="wholesale-header-tag">
+              <span class="badge" style="background:#c24d67;color:#fff;font-weight:800;padding:4px 10px;font-size:11px">⚡ VIP WHOLESALE PORTAL</span>
               <small style="color:var(--muted);font-weight:700">Direct Factory Tier Discounts</small>
             </div>
-            <h3 style="font-size:24px;margin:4px 0 10px;color:var(--ink)">Wholesale &amp; Bulk Purchasing (Up to 40% Off)</h3>
-            <p style="color:var(--ink);font-size:14px;line-height:1.6;margin-bottom:20px;max-width:640px">
+            <h3 class="wholesale-title">Wholesale &amp; Bulk Purchasing (Up to 40% Off)</h3>
+            <p class="wholesale-desc">
               Registered ByMarie VIP Members get access to exclusive bulk tier pricing across raw virgin wigs, luxury designer handbags, perfumes, and apparel. Minimum order quantity starts at 5 items.
             </p>
 
-            <div class="stats-row" style="margin-bottom:24px">
-              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+            <div class="wholesale-tiers-grid">
+              <div class="stat-box">
                 <span>Tier 1 (5–10 items)</span>
-                <strong style="color:var(--emerald)">15% OFF</strong>
+                <strong style="color:#c24d67">15% OFF</strong>
               </div>
-              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+              <div class="stat-box">
                 <span>Tier 2 (11–25 items)</span>
-                <strong style="color:var(--emerald)">25% OFF</strong>
+                <strong style="color:#c24d67">25% OFF</strong>
               </div>
-              <div class="stat-box" style="background:#fff;border:1px solid var(--line)">
+              <div class="stat-box">
                 <span>VIP Master (25+ items)</span>
-                <strong style="color:var(--emerald)">40% OFF</strong>
+                <strong style="color:#c24d67">40% OFF</strong>
               </div>
             </div>
 
-            <div style="display:flex;gap:12px;flex-wrap:wrap">
-              <a href="https://wa.me/233241002000?text=Hello%20ByMarie,%20I%20am%20interested%20in%20a%20Wholesale/Bulk%20Order" target="_blank" class="primary" style="padding:12px 22px;text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+            <div class="wholesale-actions-row">
+              <a href="https://wa.me/233241002000?text=Hello%20ByMarie,%20I%20am%20interested%20in%20a%20Wholesale/Bulk%20Order" target="_blank" class="primary wholesale-primary-btn">
                 💬 Contact Wholesale Concierge
               </a>
-              <button type="button" class="secondary-btn" onclick="filters.cat='All';go('shop')">Explore Catalog for Bulk</button>
+              <button type="button" class="secondary-btn wholesale-secondary-btn" onclick="filters.cat='All';go('shop')">Explore Catalog for Bulk</button>
             </div>
           </div>
         ` : ''}
