@@ -4988,10 +4988,49 @@ footer small {
   transition: all 0.2s ease;
 }
 
+.topup-amount-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .topup-chip:hover, .topup-chip.active {
   border-color: var(--emerald);
   background: var(--sage);
   color: var(--emerald-dark);
+}
+
+.mobile-transaction-cards {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mobile-transaction-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-subtle);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mobile-transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-transaction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .checkout-auth-banner {
@@ -5767,6 +5806,51 @@ html, body {
     justify-content: center !important;
     text-align: center !important;
     box-sizing: border-box !important;
+  }
+
+  /* Digital Float Wallet Mobile Card */
+  .account-digital-wallet-card {
+    padding: 20px 16px !important;
+    border-radius: var(--radius-md) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .account-digital-wallet-card .wallet-card-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .account-digital-wallet-card .wallet-balance-big {
+    font-size: 32px !important;
+    margin: 4px 0 14px !important;
+  }
+
+  .account-digital-wallet-card .wallet-card-foot {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-top: 12px !important;
+  }
+
+  .account-digital-wallet-card .wallet-card-foot button {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .topup-amount-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .mobile-transaction-cards {
+    display: flex !important;
+  }
+
+  .account-layout .table-scroll {
+    display: none !important;
   }
 
   /* Cart & Checkout Mobile Optimization */

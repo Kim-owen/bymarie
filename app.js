@@ -3296,39 +3296,64 @@ function account() {
             <span style="font-size:12px;color:var(--muted)">Showing recent activity</span>
           </div>
 
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Transaction</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${transactions.map(t => `
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
                 <tr>
-                  <td>
-                    <strong>${t.note || 'Wallet Activity'}</strong>
-                    <small style="display:block;color:var(--muted);font-family:'DM Mono'">${t.id || 'TXN'}</small>
-                  </td>
-                  <td>
-                    <span class="badge ${t.type === 'Credit' ? 'delivered' : 'pending'}" style="font-size:11px">
-                      ${t.type === 'Credit' ? '↓ Credit (+)' : '↑ Debit (−)'}
-                    </span>
-                  </td>
-                  <td>
-                    <b style="color:${t.type === 'Credit' ? 'var(--emerald)' : 'var(--ink)'}">
-                      ${t.type === 'Credit' ? '+' : '−'}${money(t.amount || 0)}
-                    </b>
-                  </td>
-                  <td><small>${t.date || 'Recent'}</small></td>
-                  <td><span class="badge delivered" style="font-size:10px">✓ Verified</span></td>
+                  <th>Transaction</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${transactions.map(t => `
+                  <tr>
+                    <td>
+                      <strong>${t.note || 'Wallet Activity'}</strong>
+                      <small style="display:block;color:var(--muted);font-family:'DM Mono'">${t.id || 'TXN'}</small>
+                    </td>
+                    <td>
+                      <span class="badge ${t.type === 'Credit' ? 'delivered' : 'pending'}" style="font-size:11px">
+                        ${t.type === 'Credit' ? '↓ Credit (+)' : '↑ Debit (−)'}
+                      </span>
+                    </td>
+                    <td>
+                      <b style="color:${t.type === 'Credit' ? 'var(--emerald)' : 'var(--ink)'}">
+                        ${t.type === 'Credit' ? '+' : '−'}${money(t.amount || 0)}
+                      </b>
+                    </td>
+                    <td><small>${t.date || 'Recent'}</small></td>
+                    <td><span class="badge delivered" style="font-size:10px">✓ Verified</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Responsive Transaction Cards -->
+          <div class="mobile-transaction-cards">
+            ${transactions.map(t => `
+              <div class="mobile-transaction-card">
+                <div class="mobile-transaction-header">
+                  <div>
+                    <strong style="font-size:13px;display:block">${t.note || 'Wallet Activity'}</strong>
+                    <small style="color:var(--muted);font-family:'DM Mono';font-size:11px">${t.id || 'TXN'}</small>
+                  </div>
+                  <b style="font-size:14.5px;color:${t.type === 'Credit' ? 'var(--emerald)' : 'var(--red)'}">
+                    ${t.type === 'Credit' ? '+' : '−'}${money(t.amount || 0)}
+                  </b>
+                </div>
+                <div class="mobile-transaction-footer">
+                  <span class="badge ${t.type === 'Credit' ? 'delivered' : 'pending'}" style="font-size:10px">
+                    ${t.type === 'Credit' ? '↓ Credit' : '↑ Debit'}
+                  </span>
+                  <small style="color:var(--muted);font-size:11px">${t.date || 'Recent'}</small>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         ` : ''}
 
         ${accountTab === 'rewards' ? `
