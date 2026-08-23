@@ -246,13 +246,11 @@ img {
 }
 
 /* ===================================================
-   LUXURY HEADER NAVIGATION (STICKY & STABLE)
+   LUXURY HEADER NAVIGATION (STATIC AT TOP)
    =================================================== */
 
 .header-sticky-wrapper {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  position: static !important;
   width: 100%;
 }
 
@@ -262,15 +260,11 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0 clamp(20px, 4.5vw, 90px);
-  background: rgba(253, 251, 247, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(253, 251, 247, 0.98);
   border-bottom: 1px solid rgba(228, 221, 209, 0.6);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  transition: all 0.3s ease;
+  position: static !important;
+  top: auto !important;
+  z-index: 100;
 }
 
 .brand {
