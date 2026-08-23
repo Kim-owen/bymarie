@@ -14,13 +14,18 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Ensure upload directory & data directory exist
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const DATA_DIR = path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
+// Ensure upload directory & data directory exist (Handle Vercel read-only filesystem)
+const isVercel = !!process.env.VERCEL;
+const UPLOADS_DIR = isVercel ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+const DATA_DIR = isVercel ? '/tmp/data' : path.join(__dirname, 'data');
+const DB_FILE = isVercel ? '/tmp/data/db.json' : path.join(DATA_DIR, 'db.json');
 
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+} catch (e) {
+  console.warn('Directory init warning:', e.message);
+}
 
 // Serve static uploaded files
 app.use('/uploads', express.static(UPLOADS_DIR));
@@ -39,8 +44,16 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 // Database Helpers (JSON DB Adapter + Supabase Client)
 function readDB() {
   try {
-    if (!fs.existsSync(DB_FILE)) return { products: [], orders: [], coupons: [], site_settings: {} };
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
+    const seedPath = path.join(__dirname, 'data', 'db.json');
+    if (isVercel && !fs.existsSync(DB_FILE) && fs.existsSync(seedPath)) {
+      try {
+        fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+        fs.copyFileSync(seedPath, DB_FILE);
+      } catch (e) {}
+    }
+    const targetFile = fs.existsSync(DB_FILE) ? DB_FILE : (fs.existsSync(seedPath) ? seedPath : null);
+    if (!targetFile) return { products: [], orders: [], coupons: [], site_settings: {} };
+    const content = fs.readFileSync(targetFile, 'utf-8');
     return JSON.parse(content);
   } catch (err) {
     console.error('Error reading JSON DB:', err);
@@ -50,7 +63,9 @@ function readDB() {
 
 function writeDB(data) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    if (fs.existsSync(path.dirname(DB_FILE))) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    }
   } catch (err) {
     console.error('Error writing JSON DB:', err);
   }
