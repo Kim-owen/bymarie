@@ -1020,164 +1020,276 @@ h1, h2, h3, .serif {
    PRODUCT CARDS (ANIMATED & LUXURY)
    =================================================== */
 
+/* ===================================================
+   HAUTE COUTURE CATALOG & PRODUCT CARD STYLES
+   =================================================== */
+
+.catalog-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 2px 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.catalog-filters-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-subtle);
+  transition: all 0.2s ease;
+}
+
+.catalog-filters-toggle-btn:hover {
+  background: var(--sand);
+  border-color: #c24d67;
+}
+
+.catalog-pills-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.catalog-pill-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.catalog-pill-btn.active {
+  background: #c24d67;
+  color: #fff;
+  border-color: #c24d67;
+  box-shadow: 0 3px 10px rgba(194, 77, 103, 0.3);
+}
+
+.collection-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 24px;
+}
+
+.collection-bar {
+  width: 4px;
+  height: 38px;
+  background: #c24d67;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.collection-title {
+  font-family: 'Playfair Display', 'Bodoni Moda', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #18181b;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.collection-count {
+  font-size: 13px;
+  color: #71717a;
+  font-weight: 500;
+  margin-top: 2px;
+  display: block;
+}
+
+/* 2-Column Responsive Luxury Product Grid */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 26px;
+  gap: 22px;
 }
 
 .product-card {
-  background: #fff;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--line);
-  overflow: hidden;
-  transition: all 0.35s var(--ease-out);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  position: relative;
+  box-shadow: none;
+  transition: transform 0.25s ease;
 }
 
 .product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-hover);
-  border-color: rgba(9, 60, 53, 0.25);
+  transform: translateY(-4px);
 }
 
-.product-image {
-  height: 320px;
-  background: var(--sand);
+.product-card-image-box {
   position: relative;
+  border-radius: 14px;
   overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: #f4f4f5;
   cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
-.product-image img {
+.product-card-image-box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.product-card:hover .product-image img {
-  transform: scale(1.08);
+.product-card:hover .product-card-image-box img {
+  transform: scale(1.05);
 }
 
-.tag {
+/* Floating Elements on Image */
+.floating-color-dots {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  padding: 5px 11px;
-  border-radius: var(--radius-full);
-  background: rgba(251, 240, 225, 0.95);
-  backdrop-filter: blur(8px);
-  color: #8c521b;
-  font-weight: 800;
-  font-size: 10px;
-  letter-spacing: 0.4px;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
   z-index: 2;
-  box-shadow: var(--shadow-subtle);
 }
 
-.wish {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 38px;
-  height: 38px;
+.floating-color-dot {
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  display: inline-block;
+}
+
+.floating-stock-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: #c24d67;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(194, 77, 103, 0.35);
+}
+
+.floating-add-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #c24d67;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1;
   display: grid;
   place-items: center;
-  font-size: 19px;
-  color: var(--ink);
+  border: none;
+  cursor: pointer;
   z-index: 2;
-  transition: all 0.25s var(--ease-out);
-  box-shadow: var(--shadow-subtle);
+  box-shadow: 0 4px 12px rgba(194, 77, 103, 0.4);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
 }
 
-.wish:hover {
-  background: #fff;
+.floating-add-btn:hover {
   transform: scale(1.15);
+  background: #a3384f;
 }
 
-.wish.saved {
-  color: var(--red);
-  animation: heartPop 0.4s var(--ease-spring);
-}
-
-.quick {
+.floating-wish-btn {
   position: absolute;
-  bottom: 14px;
-  left: 14px;
-  right: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  padding: 12px;
-  border-radius: var(--radius-md);
-  font-weight: 800;
-  font-size: 11px;
-  text-align: center;
-  color: var(--ink);
-  transform: translateY(70px);
-  transition: transform 0.3s var(--ease-out);
+  top: 10px;
+  left: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
   z-index: 2;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-.product-card:hover .quick {
-  transform: translateY(0);
+.floating-wish-btn.saved {
+  color: #c24d67;
 }
 
-.product-info {
-  padding: 20px 18px;
+.floating-wish-btn:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+/* Product Info Below Image */
+.product-card-details {
+  padding: 8px 2px 4px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
 }
 
-.product-info p {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.product-info h3 {
-  font-size: 15px;
+.product-card-attr {
+  font-size: 10.5px;
   font-weight: 700;
-  margin: 6px 0 8px;
-  line-height: 1.35;
+  letter-spacing: 0.8px;
+  color: #71717a;
+  text-transform: uppercase;
+  margin-bottom: 3px;
 }
 
-.product-info h3 a:hover {
-  color: var(--emerald);
+.product-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #18181b;
+  margin: 0 0 4px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.rating {
-  font-size: 12px;
-  color: var(--gold);
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.product-card-title a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.rating span {
-  color: var(--muted);
-  font-weight: 500;
-  font-size: 11px;
+.product-card-title a:hover {
+  color: #c24d67;
 }
 
-.price {
-  font-size: 15px;
-  font-weight: 800;
-  margin: 8px 0 16px;
-  color: var(--ink);
+.product-card-price {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #18181b;
 }
-
-.price del {
   font-weight: 500;
   color: var(--muted-light);
   margin-left: 6px;
@@ -5344,23 +5456,24 @@ html, body {
   .product-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
-    padding: 0 4px;
+    padding: 0 2px;
   }
 
   .product-card {
-    border-radius: var(--radius-md);
+    border-radius: 0 !important;
   }
 
-  .product-card .card-media {
-    height: 190px;
+  .product-card-image-box {
+    aspect-ratio: 3 / 4 !important;
+    border-radius: 12px !important;
   }
 
-  .product-card h3 {
-    font-size: 13.5px;
+  .product-card-title {
+    font-size: 13px !important;
   }
 
-  .product-card .price-row {
-    font-size: 13px;
+  .product-card-price {
+    font-size: 13px !important;
   }
 
   /* Account Layout Mobile Optimization */

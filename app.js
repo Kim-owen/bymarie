@@ -1804,64 +1804,47 @@ function stopCardHoverSlide(id) {
 function productCard(p, delayClass = '') {
   const isSaved = wishlist.includes(p.id);
   const outOfStock = p.stock <= 0;
-  const hasColors = p.colors && p.colors.length > 0 && !p.colors.includes('Standard') && !p.colors.includes('50ml Extrait') && !p.colors.includes('30ml Dropper') && !p.colors.includes('50ml Jar') && !p.colors.includes('300g Amber Glass') && !p.colors.includes('150ml Pump');
+  const primaryColor = (p.colors && p.colors.length && p.colors[0] !== 'Standard' && !p.colors[0].includes('ml') && !p.colors[0].includes('Jar') && !p.colors[0].includes('Glass')) ? p.colors[0] : null;
+  const attrLabel = primaryColor ? primaryColor.toUpperCase() : p.category.toUpperCase();
   const images = (p.images && p.images.length) ? p.images : [p.image];
   const curSlide = cardSlideState[p.id] || 0;
   
   return `
-    <article class="product-card animate-fade-up ${delayClass}" onmouseenter="startCardHoverSlide('${p.id}')" onmouseleave="stopCardHoverSlide('${p.id}')">
-      <div class="product-image" onclick="go('product/${p.id}')">
-        <div class="card-slider-track" id="track-${p.id}" style="transform:translateX(-${curSlide * 100}%)">
-          ${images.map((img, idx) => `
-            <div class="card-slide-item">
-              <img loading="lazy" src="${img}" alt="${p.name} look ${idx + 1}">
-            </div>
-          `).join('')}
-        </div>
-        ${images.length > 1 ? `
-          <button class="card-slide-arrow prev" onclick="slideCardImg('${p.id}', -1, event)" aria-label="Previous image">‹</button>
-          <button class="card-slide-arrow next" onclick="slideCardImg('${p.id}', 1, event)" aria-label="Next image">›</button>
-          <div class="card-slider-indicators">
-            ${images.map((_, idx) => `
-              <span class="card-slider-dot dot-${p.id} ${idx === curSlide ? 'active' : ''}"></span>
+    <article class="product-card animate-fade-up ${delayClass}">
+      <div class="product-card-image-box" onclick="go('product/${p.id}')">
+        <img loading="lazy" src="${images[curSlide] || p.image}" alt="${p.name}">
+        
+        <!-- Top Right Color Swatch Dots -->
+        ${primaryColor ? `
+          <div class="floating-color-dots">
+            ${p.colors.slice(0, 3).map(c => `
+              <span class="floating-color-dot" style="background-color:${getColorHex(c)}" title="${c}"></span>
             `).join('')}
           </div>
         ` : ''}
-        ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
-        <button class="wish ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation();toggleWish('${p.id}')" aria-label="Save ${p.name}">
-          ${isSaved ? icon('heartFull') : icon('heart')}
+
+        <!-- Top Left Subtle Wishlist Button -->
+        <button class="floating-wish-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation();toggleWish('${p.id}')" aria-label="Save ${p.name}">
+          ${isSaved ? '♥' : '♡'}
         </button>
-        <button class="quick" onclick="event.stopPropagation();openQuickView('${p.id}')">Quick View</button>
+
+        <!-- Bottom Left Urgency Pill -->
+        ${outOfStock ? `
+          <span class="floating-stock-badge" style="background:#52525b">Out of stock</span>
+        ` : (p.stock <= 3 ? `
+          <span class="floating-stock-badge">Only ${p.stock} left</span>
+        ` : (p.tag ? `
+          <span class="floating-stock-badge">${p.tag}</span>
+        ` : ''))}
+
+        <!-- Bottom Right Floating Quick Add Button -->
+        <button class="floating-add-btn" ${outOfStock ? 'disabled style="opacity:0.4"' : ''} onclick="event.stopPropagation();add('${p.id}')" title="Add to Bag">+</button>
       </div>
-      <div class="product-info">
-        <div class="product-category-row">
-          <p>${p.category}</p>
-          ${hasColors ? `
-            <div class="card-swatches" title="${p.colors.length} available options: ${p.colors.join(', ')}">
-              ${p.colors.slice(0, 4).map(c => `
-                <span class="swatch-dot" style="background-color:${getColorHex(c)}" title="${c}"></span>
-              `).join('')}
-              ${p.colors.length > 4 ? `<span class="swatch-more">+${p.colors.length - 4}</span>` : ''}
-            </div>
-          ` : ''}
-        </div>
-        <h3><a href="#product/${p.id}" onclick="go('product/${p.id}')">${p.name}</a></h3>
-        ${hasColors && (p.category === 'Clothing' || p.category === 'Shoes' || p.category === 'Bags' || p.category === 'Wigs') ? `
-          <div class="card-color-labels">
-            <small>Options: <strong>${p.colors.join(' • ')}</strong></small>
-          </div>
-        ` : ''}
-        <div class="rating">
-          ${icon('star')} ${p.rating} <span>(${p.reviews ? p.reviews.length : Math.round(p.rating * 14)})</span>
-        </div>
-        <div class="price">
-          ${money(p.price)}
-          ${p.old ? `<del>${money(p.old)}</del>` : ''}
-        </div>
-        <button class="add" ${outOfStock ? 'disabled' : ''} onclick="add('${p.id}')">
-          ${outOfStock ? 'Out of stock' : 'Add to bag'}
-          <span>${icon('plus')}</span>
-        </button>
+
+      <div class="product-card-details">
+        <span class="product-card-attr">${attrLabel}</span>
+        <h3 class="product-card-title"><a href="#product/${p.id}" onclick="go('product/${p.id}')">${p.name}</a></h3>
+        <div class="product-card-price">GHS ${p.price.toFixed(2)}</div>
       </div>
     </article>
   `;
@@ -2169,44 +2152,47 @@ function shop(categoryParam) {
   if (filters.sort === 'Best rated') list.sort((a, b) => b.rating - a.rating);
   if (filters.sort === 'Newest') list.sort((a, b) => (b.id.localeCompare(a.id)));
   
-  const categoryOptions = ['All', 'Clothing', 'Shoes', 'Bags', 'Wigs', 'Skin Care', 'Perfumes', 'Lifestyle', 'Nails', 'Panties', 'Toiletries'];
+  const categoryOptions = [
+    { label: 'ALL', cat: 'All' },
+    { label: 'CLOTHING', cat: 'Clothing' },
+    { label: 'SHOES', cat: 'Shoes' },
+    { label: 'BAGS', cat: 'Bags' },
+    { label: 'WIGS', cat: 'Wigs' },
+    { label: 'SKIN CARE', cat: 'Skin Care' },
+    { label: 'PERFUMES', cat: 'Perfumes' },
+    { label: 'LIFESTYLE', cat: 'Lifestyle' },
+    { label: 'NAILS', cat: 'Nails' },
+    { label: 'PANTIES', cat: 'Panties' }
+  ];
 
   return `
-    <main class="shop-page">
-      <div class="page-intro animate-fade-up">
-        <span class="eyebrow">DISCOVER THE COLLECTION</span>
-        <h1>${filters.cat === 'All' ? 'The Entire Shop' : filters.cat}</h1>
-        <p>Pieces with intention, tailored for your personal style and calm space.</p>
-      </div>
+    <main class="shop-page animate-fade-up">
+      <!-- Horizontal Category Filters Bar -->
+      <div class="catalog-filter-bar">
+        <button type="button" class="catalog-filters-toggle-btn" onclick="openQuickSearchModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Filters
+        </button>
 
-      <div class="shop-controls animate-fade-up delay-1">
-        <div class="searchbox">
-          <span>${icon('search')}</span>
-          <input aria-label="Search catalog" value="${filters.search}" oninput="filters.search=this.value;render()" placeholder="Search pieces, shoes, bags, wigs, scents...">
-        </div>
-        <div class="filters">
-          <select onchange="filters.cat=this.value;render()">
-            ${categoryOptions.map(x => `<option ${filters.cat === x ? 'selected' : ''}>${x}</option>`).join('')}
-          </select>
-          <select onchange="filters.sort=this.value;render()">
-            ${['Featured', 'Best rated', 'Newest', 'Price: low to high', 'Price: high to low'].map(x => `<option ${filters.sort === x ? 'selected' : ''}>${x}</option>`).join('')}
-          </select>
-          
-          <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-full);padding:6px 14px;font-size:12px;font-weight:700">
-            <span>Max Price: <b>${money(filters.maxPrice || 1000)}</b></span>
-            <input type="range" min="50" max="1000" step="25" value="${filters.maxPrice || 1000}" oninput="filters.maxPrice=Number(this.value);render()" style="width:90px;cursor:pointer">
-          </div>
-
-          <label class="check">
-            <input type="checkbox" ${filters.available ? 'checked' : ''} onchange="filters.available=this.checked;render()">
-            In stock only
-          </label>
-          <button class="reset" onclick="filters={cat:'All',search:'',sort:'Featured',available:false,maxPrice:1000};render()">Reset filters</button>
+        <div class="catalog-pills-row">
+          ${categoryOptions.map(opt => `
+            <button class="catalog-pill-btn ${(filters.cat.toLowerCase() === opt.cat.toLowerCase() || (opt.cat === 'All' && filters.cat === 'All')) ? 'active' : ''}" onclick="filters.cat='${opt.cat}';render()">
+              ${opt.label}
+            </button>
+          `).join('')}
         </div>
       </div>
 
-      <p class="results-meta">Showing ${list.length} ${list.length === 1 ? 'item' : 'items'}</p>
+      <!-- Section Title & Counter -->
+      <div class="collection-header-row">
+        <div class="collection-bar"></div>
+        <div>
+          <h2 class="collection-title">${filters.cat === 'All' ? 'The Collection' : filters.cat}</h2>
+          <span class="collection-count">${list.length} pieces</span>
+        </div>
+      </div>
 
+      <!-- 2-Column Responsive Product Grid -->
       ${list.length ? `
         <div class="product-grid">
           ${list.map((p, idx) => productCard(p, `delay-${(idx % 4) + 1}`)).join('')}
