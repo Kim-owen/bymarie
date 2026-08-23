@@ -614,6 +614,94 @@ function saveUsers(users) {
   localStorage.setItem('bymarie-users', JSON.stringify(users));
 }
 
+const INITIAL_NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    title: '🎉 10% Welcome Discount Active',
+    desc: 'Use promo code WELCOME10 at checkout to receive 10% off your entire order across all luxury categories.',
+    date: 'Today',
+    type: 'promo',
+    icon: '🏷️',
+    read: false,
+    actionText: 'Shop Now & Save →',
+    actionRoute: 'shop'
+  },
+  {
+    id: 'notif-2',
+    title: '🚚 Complimentary Greater Accra Delivery',
+    desc: 'Free doorstep delivery is automatically applied on all orders over GH₵ 300 across Accra.',
+    date: 'Yesterday',
+    type: 'shipping',
+    icon: '📦',
+    read: false,
+    actionText: 'Explore Collections →',
+    actionRoute: 'shop'
+  },
+  {
+    id: 'notif-3',
+    title: '💳 Float Wallet Paystack Top-Up Live',
+    desc: 'You can now top up your store Float Wallet balance instantly using MTN Mobile Money, Telecel Cash, or Card.',
+    date: '2 days ago',
+    type: 'wallet',
+    icon: '💳',
+    read: false,
+    actionText: 'View Float Wallet →',
+    actionRoute: 'account'
+  },
+  {
+    id: 'notif-4',
+    title: '👑 New Collection Drop — The Luxury Edit',
+    desc: 'Discover our newest Italian suede slingback mules, sculpted leather crescent bags, and raw virgin HD lace crowns.',
+    date: '3 days ago',
+    type: 'drop',
+    icon: '✨',
+    read: true,
+    actionText: 'Discover The Edit →',
+    actionRoute: 'shop'
+  }
+];
+
+function getNotifications() {
+  const data = localStorage.getItem('bymarie-notifications');
+  if (!data) {
+    localStorage.setItem('bymarie-notifications', JSON.stringify(INITIAL_NOTIFICATIONS));
+    return INITIAL_NOTIFICATIONS;
+  }
+  try {
+    return JSON.parse(data);
+  } catch {
+    return INITIAL_NOTIFICATIONS;
+  }
+}
+
+function saveNotifications(notifs) {
+  localStorage.setItem('bymarie-notifications', JSON.stringify(notifs));
+}
+
+function getUnreadNotifsCount() {
+  return getNotifications().filter(n => !n.read).length;
+}
+
+function markAllNotifsRead() {
+  const list = getNotifications().map(n => ({ ...n, read: true }));
+  saveNotifications(list);
+  toast('All notifications marked as read ✓');
+  render();
+}
+
+function markNotifRead(id) {
+  const list = getNotifications().map(n => n.id === id ? { ...n, read: true } : n);
+  saveNotifications(list);
+  render();
+}
+
+function deleteNotification(id) {
+  const list = getNotifications().filter(n => n.id !== id);
+  saveNotifications(list);
+  toast('Notification dismissed');
+  render();
+}
+
 function adjustUserWallet(userId, deltaAmount) {
   const users = getUsers();
   const u = users.find(x => x.id === userId || x.email === userId);
@@ -1470,12 +1558,12 @@ function header() {
           </button>
 
           <!-- Notification Bell with Badge -->
-          <button class="icon-btn header-bell-btn" aria-label="Notifications" title="Notifications" onclick="toast('Notification: 10% Welcome Promo (WELCOME10) active on your account!', 'info')">
+          <button class="icon-btn header-bell-btn" aria-label="Notifications" title="Notifications" onclick="go('notifications')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            <span class="badge-count" style="background:#c24d67">1</span>
+            ${getUnreadNotifsCount() > 0 ? `<span class="badge-count" style="background:#c24d67">${getUnreadNotifsCount()}</span>` : ''}
           </button>
 
           <!-- Orders Box Icon -->
@@ -1611,6 +1699,10 @@ function mobileDrawer() {
             <a href="#account" onclick="mobileMenuOpen=false;accountTab='wholesale';go('account')" class="drawer-link-item wholesale-link">
               <span>⚡ VIP Wholesale &amp; Bulk Purchasing</span>
               <small style="background:var(--emerald);color:#fff;padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">40% OFF</small>
+            </a>
+            <a href="#notifications" onclick="mobileMenuOpen=false;go('notifications')" class="drawer-link-item">
+              <span>🔔 Notifications &amp; Updates</span>
+              <small style="background:#c24d67;color:#fff;padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">${getUnreadNotifsCount()} new</small>
             </a>
             <a href="#wishlist" onclick="mobileMenuOpen=false;go('wishlist')" class="drawer-link-item">
               <span>♡ Favourites &amp; Wishlist</span>
@@ -3553,6 +3645,93 @@ function saveUserSecurity(event) {
   saveUser(user);
   toast('Security & notification preferences updated! ⚡');
   render();
+}
+
+let notifFilter = 'all';
+
+function notificationsPage() {
+  const notifs = getNotifications();
+  const unreadCount = getUnreadNotifsCount();
+  
+  let filtered = notifs;
+  if (notifFilter === 'unread') filtered = notifs.filter(n => !n.read);
+  else if (notifFilter !== 'all') filtered = notifs.filter(n => n.type === notifFilter);
+
+  return `
+    <main class="notifications-page-shell animate-fade-up">
+      <div class="notifications-container">
+        <div class="notifications-header">
+          <div>
+            <span class="eyebrow">UPDATES &amp; ALERTS</span>
+            <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:4px 0 6px;color:var(--ink)">Notifications</h1>
+            <p style="color:var(--muted);font-size:13.5px;margin:0">Stay updated on exclusive member promos, order tracking, and atelier collection drops.</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            ${unreadCount > 0 ? `
+              <button class="secondary-btn" onclick="markAllNotifsRead()" style="font-size:12.5px;padding:8px 16px">
+                ✓ Mark all as read (${unreadCount})
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="notifications-filter-row">
+          <button class="notif-chip ${notifFilter === 'all' ? 'active' : ''}" onclick="notifFilter='all';render()">
+            All (${notifs.length})
+          </button>
+          <button class="notif-chip ${notifFilter === 'unread' ? 'active' : ''}" onclick="notifFilter='unread';render()">
+            Unread (${unreadCount})
+          </button>
+          <button class="notif-chip ${notifFilter === 'promo' ? 'active' : ''}" onclick="notifFilter='promo';render()">
+            Promos &amp; Deals
+          </button>
+          <button class="notif-chip ${notifFilter === 'shipping' ? 'active' : ''}" onclick="notifFilter='shipping';render()">
+            Shipping &amp; Orders
+          </button>
+          <button class="notif-chip ${notifFilter === 'wallet' ? 'active' : ''}" onclick="notifFilter='wallet';render()">
+            Float Wallet
+          </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="notifications-list">
+          ${filtered.length ? filtered.map(item => `
+            <div class="notification-card ${item.read ? 'read' : 'unread'}">
+              <div class="notif-icon-wrap ${item.type}">
+                ${item.icon || '🔔'}
+              </div>
+              <div class="notif-body">
+                <div class="notif-title-row">
+                  <h4>${item.title}</h4>
+                  <span class="notif-date">${item.date}</span>
+                </div>
+                <p class="notif-desc">${item.desc}</p>
+                <div class="notif-actions">
+                  ${item.actionText ? `
+                    <button class="primary" style="padding:6px 14px;font-size:11.5px" onclick="markNotifRead('${item.id}');go('${item.actionRoute || 'shop'}')">
+                      ${item.actionText}
+                    </button>
+                  ` : ''}
+                  ${!item.read ? `
+                    <button class="notif-mark-read-btn" onclick="markNotifRead('${item.id}')">Mark as read</button>
+                  ` : ''}
+                  <button class="notif-delete-btn" onclick="deleteNotification('${item.id}')" title="Dismiss">✕</button>
+                </div>
+              </div>
+            </div>
+          `).join('') : `
+            <div class="notifications-empty">
+              <span style="font-size:42px;display:block;margin-bottom:12px">📭</span>
+              <h3 style="font-size:18px;margin-bottom:6px">No notifications</h3>
+              <p style="color:var(--muted);font-size:13px;margin-bottom:16px">You're completely caught up with all ByMarie announcements!</p>
+              <button class="primary" onclick="go('shop')">Explore Collections</button>
+            </div>
+          `}
+        </div>
+      </div>
+    </main>
+  `;
 }
 
 function authPage() {
@@ -6202,6 +6381,7 @@ function render() {
     content = authPage();
   }
   else if (page === 'wishlist') content = wishlistPage();
+  else if (page === 'notifications') content = notificationsPage();
   else if (page === 'admin') content = admin();
   else content = notFound();
 
