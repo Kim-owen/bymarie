@@ -544,3 +544,5 @@ app.listen(PORT, async () => {
 
   await autoSeedSupabase();
 });
+
+module.exports = app;

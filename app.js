@@ -535,6 +535,8 @@ const INITIAL_ORDERS = [
   }
 ];
 
+const API_BASE = (typeof window !== 'undefined' && window.location.origin.includes('localhost:3000')) ? 'http://localhost:5000/api' : '/api';
+
 let authMode = 'signin';
 let adminAuthenticated = false;
 const ADMIN_EMAIL = 'adichieifeoma@gmail.com';
