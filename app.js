@@ -1353,19 +1353,57 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+let luxuryAudioElement = null;
+
 function toggleHeroVideoAudio(btn) {
   const vid = document.getElementById('hero-main-video');
+  const iconSpan = btn ? btn.querySelector('.audio-btn-icon') : null;
   if (vid) {
-    vid.muted = !vid.muted;
-    const iconSpan = btn.querySelector('.audio-btn-icon');
     if (vid.muted) {
-      if (iconSpan) iconSpan.textContent = '🔇 Sound Off';
-      toast('Hero video muted', 'info');
-    } else {
+      vid.muted = false;
+      vid.volume = 1.0;
       vid.play().catch(() => {});
       if (iconSpan) iconSpan.textContent = '🔊 Sound On';
-      toast('Hero video audio unmuted 🔊', 'info');
+      toast('Hero video audio enabled 🔊', 'info');
+
+      if (!luxuryAudioElement) {
+        luxuryAudioElement = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=ambient-piano-amp-strings-10711.mp3');
+        luxuryAudioElement.loop = true;
+        luxuryAudioElement.volume = 0.35;
+      }
+      luxuryAudioElement.play().catch(() => {});
+    } else {
+      vid.muted = true;
+      if (iconSpan) iconSpan.textContent = '🔇 Sound Off';
+      toast('Hero video audio muted', 'info');
+      if (luxuryAudioElement) luxuryAudioElement.pause();
     }
+  }
+}
+
+function initHeroVideoMobilePlayback() {
+  const vid = document.getElementById('hero-main-video');
+  if (!vid) return;
+
+  vid.muted = true;
+  vid.defaultMuted = true;
+  vid.setAttribute('muted', '');
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('webkit-playsinline', '');
+
+  const promise = vid.play();
+  if (promise !== undefined) {
+    promise.catch(() => {
+      const playOnInteraction = () => {
+        vid.play().catch(() => {});
+        document.removeEventListener('touchstart', playOnInteraction);
+        document.removeEventListener('scroll', playOnInteraction);
+        document.removeEventListener('click', playOnInteraction);
+      };
+      document.addEventListener('touchstart', playOnInteraction, { once: true, passive: true });
+      document.addEventListener('scroll', playOnInteraction, { once: true, passive: true });
+      document.addEventListener('click', playOnInteraction, { once: true });
+    });
   }
 }
 
@@ -5648,6 +5686,7 @@ function render() {
 
   if (page === 'home') {
     initCategorySliders();
+    initHeroVideoMobilePlayback();
   }
 }
 
