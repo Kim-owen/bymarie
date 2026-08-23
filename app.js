@@ -1285,7 +1285,13 @@ function add(id, variant = null, size = null) {
   
   saveCart();
   render();
-  toast(`${p.name} added to your bag`);
+
+  const details = [];
+  if (chosenVariant && chosenVariant !== 'Standard') details.push(chosenVariant.trim());
+  if (chosenSize) details.push(chosenSize.trim());
+  const detailStr = details.length ? ` (${details.join(', ')})` : '';
+
+  toast(`${p.name}${detailStr} added to bag`);
 }
 
 function toggleWish(id) {
@@ -1383,16 +1389,24 @@ function toast(message, type = 'success') {
 
   const item = document.createElement('div');
   item.className = `toast-item toast-${type}`;
-  const iconSymbol = type === 'warning' ? '⚠️' : type === 'info' ? 'ℹ️' : icon('sparkle');
-  item.innerHTML = `<span class="toast-icon">${iconSymbol}</span> <div class="toast-body">${message}</div>`;
+  
+  let iconHtml = '<span class="toast-badge-success">✓</span>';
+  if (type === 'warning') iconHtml = '<span class="toast-badge-warn">⚠️</span>';
+  else if (type === 'info') iconHtml = '<span class="toast-badge-info">ℹ️</span>';
+  else if (type === 'error') iconHtml = '<span class="toast-badge-error">✕</span>';
+
+  item.innerHTML = `${iconHtml} <div class="toast-body">${message}</div>`;
   container.appendChild(item);
 
+  requestAnimationFrame(() => {
+    item.classList.add('toast-show');
+  });
+
   setTimeout(() => {
-    item.style.opacity = '0';
-    item.style.transform = 'translateY(-10px)';
-    item.style.transition = 'all 0.3s ease';
-    setTimeout(() => item.remove(), 300);
-  }, 3200);
+    item.classList.remove('toast-show');
+    item.classList.add('toast-hide');
+    setTimeout(() => item.remove(), 350);
+  }, 2800);
 }
 
 function openQuickSearchModal() {
