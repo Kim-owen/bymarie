@@ -1773,8 +1773,8 @@ function home() {
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
           <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);display:block">
+            <source src="${settings.heroMediaUrl || 'assets/hero-fashion.mp4'}" type="video/mp4">
             <source src="assets/hero-fashion.mp4" type="video/mp4">
-            <source src="/assets/hero-fashion.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" style="position:absolute;bottom:16px;right:16px;background:rgba(9,60,53,0.9);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-full);padding:7px 15px;font-size:12px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.3)">
@@ -4510,6 +4510,53 @@ function renderAdminSiteCMS() {
       </div>
     </form>
   `;
+}
+
+async function handleHeroVideoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  toast('Uploading hero campaign video... 🎬', 'info');
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        const input = document.querySelector('input[name="heroMediaUrl"]');
+        if (input) input.value = data.url;
+        const current = getSiteSettings();
+        current.heroMediaUrl = data.url;
+        current.heroMediaType = 'video';
+        saveSiteSettings(current);
+        toast('Campaign video uploaded & saved successfully! ⚡');
+        render();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend video upload fallback to FileReader:', err);
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const input = document.querySelector('input[name="heroMediaUrl"]');
+    if (input) input.value = dataUrl;
+    const current = getSiteSettings();
+    current.heroMediaUrl = dataUrl;
+    current.heroMediaType = 'video';
+    saveSiteSettings(current);
+    toast('Hero video uploaded & applied live! 🎬');
+    render();
+  };
+  reader.readAsDataURL(file);
 }
 
 function saveCMSFromAdmin(event) {
