@@ -420,10 +420,13 @@ nav.main-nav a:hover::after, nav.main-nav a.active::after {
   transform: translateY(-1px);
 }
 
-.hamburger {
+.hamburger, .hamburger-btn {
   display: none;
-  font-size: 24px;
-  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--ink);
 }
 
 /* ===================================================
@@ -5036,21 +5039,53 @@ html, body {
 @media (max-width: 768px) {
   /* Header Mobile Optimization */
   header {
-    padding: 10px 14px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 
   .brand {
     font-size: 20px;
+    margin-right: auto;
+  }
+
+  .main-nav {
+    display: none !important;
   }
 
   .header-actions {
-    gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-search-desktop,
+  .header-wishlist-desktop,
+  .header-user-desktop,
+  .header-signin-desktop {
+    display: none !important;
+  }
+
+  .hamburger-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--ink);
+    margin-left: 2px;
   }
 
   .icon-btn {
     width: 36px;
     height: 36px;
     padding: 0;
+    display: grid;
+    place-items: center;
   }
 
   .wallet-pill {

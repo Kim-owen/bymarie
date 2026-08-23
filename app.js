@@ -1448,8 +1448,6 @@ function header() {
     <div class="header-sticky-wrapper">
       ${announcementMarquee()}
       <header>
-        <button class="hamburger" onclick="mobileMenuOpen=true;render()" aria-label="Open menu">${icon('menu')}</button>
-        
         <a class="brand" href="#home" onclick="go('home')">
           <span>B</span>ByMarie
         </a>
@@ -1466,7 +1464,8 @@ function header() {
         </nav>
         
         <div class="header-actions">
-          <button class="icon-btn" style="gap:6px" aria-label="Quick Search" onclick="openQuickSearchModal()">
+          <!-- Desktop Search Trigger -->
+          <button class="icon-btn header-search-desktop" style="gap:6px" aria-label="Quick Search" onclick="openQuickSearchModal()">
             ${icon('search')} <span class="kbd" style="font-size:10px">⌘K</span>
           </button>
 
@@ -1480,7 +1479,7 @@ function header() {
           </button>
 
           <!-- Orders Box Icon -->
-          <button class="icon-btn" aria-label="Orders" title="Track Orders" onclick="accountTab='orders';go('account')">
+          <button class="icon-btn header-orders-btn" aria-label="Orders" title="Track Orders" onclick="accountTab='orders';go('account')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -1488,8 +1487,8 @@ function header() {
             </svg>
           </button>
 
-          <!-- Wishlist Heart -->
-          <button class="icon-btn" aria-label="Wishlist" onclick="go('wishlist')">
+          <!-- Wishlist Heart (Desktop only) -->
+          <button class="icon-btn header-wishlist-desktop" aria-label="Wishlist" onclick="go('wishlist')">
             ${icon('heart')}
             ${wishlist.length ? `<span class="badge-count">${wishlist.length}</span>` : ''}
           </button>
@@ -1500,8 +1499,9 @@ function header() {
             ${cartCount() ? `<span class="badge-count">${cartCount()}</span>` : ''}
           </button>
 
+          <!-- User Group (Desktop only) -->
           ${user.loggedIn ? `
-            <div class="header-user-group" style="display:flex;align-items:center;gap:8px">
+            <div class="header-user-desktop" style="display:flex;align-items:center;gap:8px">
               <button class="header-user-btn" onclick="go('account')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)">
                 <span>${user.name ? user.name.split(' ')[0].toLowerCase() : 'account'}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1514,10 +1514,19 @@ function header() {
               </button>
             </div>
           ` : `
-            <button class="account-btn" onclick="authMode='signin';go('auth')">
+            <button class="account-btn header-signin-desktop" onclick="authMode='signin';go('auth')">
               <span>${icon('user')}</span> Sign In
             </button>
           `}
+
+          <!-- Mobile Hamburger Toggle on Right -->
+          <button class="hamburger-btn" onclick="mobileMenuOpen=true;render()" aria-label="Open menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
         </div>
       </header>
     </div>
