@@ -1363,8 +1363,8 @@ function toggleHeroVideoAudio(btn) {
       vid.muted = false;
       vid.volume = 1.0;
       vid.play().catch(() => {});
-      if (iconSpan) iconSpan.textContent = '🔊 Sound On';
-      toast('Hero video audio enabled 🔊', 'info');
+      if (iconSpan) iconSpan.textContent = '🔊';
+      toast('Hero video audio unmuted 🔊', 'info');
 
       if (!luxuryAudioElement) {
         luxuryAudioElement = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=ambient-piano-amp-strings-10711.mp3');
@@ -1374,8 +1374,8 @@ function toggleHeroVideoAudio(btn) {
       luxuryAudioElement.play().catch(() => {});
     } else {
       vid.muted = true;
-      if (iconSpan) iconSpan.textContent = '🔇 Sound Off';
-      toast('Hero video audio muted', 'info');
+      if (iconSpan) iconSpan.textContent = '🔇';
+      toast('Hero video audio muted 🔇', 'info');
       if (luxuryAudioElement) luxuryAudioElement.pause();
     }
   }
@@ -1773,12 +1773,13 @@ function home() {
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
           <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);display:block">
+            <source src="${settings.heroMediaUrl || 'assets/bymarie.mp4'}" type="video/mp4">
             <source src="assets/bymarie.mp4" type="video/mp4">
             <source src="assets/hero-fashion.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" style="position:absolute;bottom:16px;right:16px;background:rgba(9,60,53,0.9);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-full);padding:7px 15px;font-size:12px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.3)">
-            <span class="audio-btn-icon">🔇 Sound Off</span>
+          <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
+            <span class="audio-btn-icon">🔇</span>
           </button>
           <div class="floating-card">
             <span>New Arrival</span>
