@@ -1353,6 +1353,22 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+function toggleHeroVideoAudio(btn) {
+  const vid = document.getElementById('hero-main-video');
+  if (vid) {
+    vid.muted = !vid.muted;
+    const iconSpan = btn.querySelector('.audio-btn-icon');
+    if (vid.muted) {
+      if (iconSpan) iconSpan.textContent = '🔇 Sound Off';
+      toast('Hero video muted', 'info');
+    } else {
+      vid.play().catch(() => {});
+      if (iconSpan) iconSpan.textContent = '🔊 Sound On';
+      toast('Hero video audio unmuted 🔊', 'info');
+    }
+  }
+}
+
 // ===================================================
 // HEADER & MARQUEE ANNOUNCEMENT
 // ===================================================
@@ -1425,9 +1441,6 @@ function header() {
         </button>
         ${user.loggedIn ? `
           <button class="account-btn user-logged-in" onclick="go('account')">
-            <span class="wallet-pill" title="Click to Top Up Float Wallet" onclick="event.stopPropagation();activeModal='topup_wallet';render()">
-              ${svgIcon('wallet', 13)} ${money(user.walletBalance || 0)}
-            </span>
             <span>${user.name ? user.name.split(' ')[0] : 'Account'}</span>
           </button>
         ` : `
@@ -1721,10 +1734,13 @@ function home() {
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
           ${(settings.heroMediaUrl && (settings.heroMediaType === 'video' || settings.heroMediaUrl.includes('.mp4') || settings.heroMediaUrl.includes('.webm') || settings.heroMediaUrl.includes('.mov') || settings.heroMediaUrl.startsWith('data:video/'))) ? `
-            <video autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md)">
+            <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md)">
               <source src="${settings.heroMediaUrl}" type="video/mp4">
               Your browser does not support the video tag.
             </video>
+            <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" style="position:absolute;bottom:16px;right:16px;background:rgba(9,60,53,0.88);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-full);padding:7px 15px;font-size:12px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.25)">
+              <span class="audio-btn-icon">🔇 Sound Off</span>
+            </button>
           ` : `
             <img src="${settings.heroMediaUrl || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=90'}" alt="ByMarie luxury hero">
           `}
