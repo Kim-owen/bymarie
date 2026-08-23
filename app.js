@@ -3496,7 +3496,7 @@ function account() {
                 <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">STREET ADDRESS</label>
                 <input required name="address" value="${user.address || ''}" placeholder="e.g. 18 Ring Road Central" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+              <div class="form-grid" style="margin-bottom:22px">
                 <div class="form-group">
                   <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">CITY</label>
                   <input required name="city" value="${user.city || 'Accra'}" placeholder="Accra" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">

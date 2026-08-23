@@ -5853,6 +5853,22 @@ html, body {
     display: none !important;
   }
 
+  /* Profile, Address & Preferences Mobile Cards */
+  .account-layout form input,
+  .account-layout form select,
+  .account-layout form textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .account-layout form button[type="submit"] {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    padding: 12px 18px !important;
+  }
+
   /* Cart & Checkout Mobile Optimization */
   .cart-layout {
     grid-template-columns: 1fr !important;
