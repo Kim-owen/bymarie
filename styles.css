@@ -2546,6 +2546,87 @@ h1, h2, h3, .serif {
 .stats-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
 .stats-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
 
+/* Account Portal Extended Feature Cards & Components */
+.account-digital-wallet-card {
+  background: linear-gradient(135deg, #093c35 0%, #155d53 60%, #c59737 100%);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(9, 60, 53, 0.28);
+  margin-bottom: 24px;
+}
+
+.account-digital-wallet-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.account-digital-wallet-card .wallet-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.account-digital-wallet-card .wallet-balance-big {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  font-weight: 700;
+  margin: 4px 0 16px;
+  letter-spacing: -0.5px;
+}
+
+.account-digital-wallet-card .wallet-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 14px;
+  font-size: 12px;
+}
+
+.tier-progress-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.tier-progress-track {
+  width: 100%;
+  height: 10px;
+  background: var(--sand);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 12px 0 8px;
+}
+
+.tier-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--emerald) 0%, var(--gold) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+
+.support-faq-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-subtle);
+}
+
 /* ===================================================
    ADMIN DASHBOARD BENTO
    =================================================== */

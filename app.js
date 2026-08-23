@@ -2940,21 +2940,44 @@ function account() {
   const orders = allOrders.filter(o => !o.email || o.email.toLowerCase() === user.email.toLowerCase() || o.phone === user.phone);
   const totalSpend = orders.reduce((sum, o) => sum + o.total, 0);
 
+  // VIP Points & Tier Calculator
+  const loyaltyPoints = Math.floor(totalSpend / 10);
+  let tierName = 'Silver Member';
+  let tierProgress = Math.min(100, Math.round((loyaltyPoints / 100) * 100));
+  let nextTierGoal = 100;
+  if (loyaltyPoints >= 250) {
+    tierName = 'Diamond VIP Inner Circle';
+    tierProgress = 100;
+    nextTierGoal = 250;
+  } else if (loyaltyPoints >= 100) {
+    tierName = 'Gold Connoisseur';
+    tierProgress = Math.min(100, Math.round(((loyaltyPoints - 100) / 150) * 100));
+    nextTierGoal = 250;
+  }
+
+  const transactions = user.walletTransactions || [
+    { id: 'TXN-902148', date: 'Recent', type: 'Credit', amount: user.walletBalance || 0, note: 'Initial Welcome Balance Credit', status: 'Completed' }
+  ];
+
   return `
     <main class="account-layout animate-fade-up">
       <aside class="account-nav">
         <div class="account-profile-header-desktop" style="margin-bottom:16px">
-          <span class="eyebrow">MY ACCOUNT</span>
+          <span class="eyebrow">${tierName.toUpperCase()}</span>
           <h2 style="font-size:24px;margin-top:4px">${user.name || 'Member'}</h2>
           <small style="color:var(--muted);display:block;margin-bottom:8px">${user.email}</small>
-          <span class="wallet-pill" onclick="activeModal='topup_wallet';render()" style="cursor:pointer">
+          <span class="wallet-pill" onclick="accountTab='wallet';render()" style="cursor:pointer">
             ${svgIcon('wallet', 13)} ${money(user.walletBalance || 0)}
           </span>
         </div>
-        <button class="${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
+        <button class="${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders &amp; Tracking (${orders.length})</button>
+        <button class="${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet &amp; Ledger</button>
+        <button class="${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Tier &amp; Rewards (${loyaltyPoints} pts)</button>
         <button class="${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
         <button class="${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ Wholesale &amp; Bulk</button>
-        <button class="${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address</button>
+        <button class="${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address &amp; Fit Profile</button>
+        <button class="${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security &amp; Alerts</button>
+        <button class="${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge &amp; Help</button>
         ${isAdminUser() ? `<button class="${accountTab === 'admin' ? 'active' : ''}" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
         <button class="secondary-btn" onclick="clearUser()">Sign Out</button>
       </aside>
@@ -2969,7 +2992,7 @@ function account() {
               <small style="color:var(--muted);font-size:12px">${user.email}</small>
             </div>
           </div>
-          <button type="button" class="account-wallet-chip" onclick="activeModal='topup_wallet';render()" title="Click to top up float wallet">
+          <button type="button" class="account-wallet-chip" onclick="accountTab='wallet';render()" title="Click to view float wallet">
             💳 ${money(user.walletBalance || 0)}
           </button>
         </div>
@@ -2980,8 +3003,8 @@ function account() {
             <strong>${orders.length}</strong>
           </div>
           <div class="stat-box">
-            <span>Deliveries</span>
-            <strong>${orders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Shipped').length}</strong>
+            <span>VIP Loyalty Points</span>
+            <strong>${loyaltyPoints} <small style="font-size:13px;color:var(--gold)">pts</small></strong>
           </div>
           <div class="stat-box">
             <span>Spend</span>
@@ -3058,6 +3081,128 @@ function account() {
           ` : '<p style="color:var(--muted)">No orders placed yet.</p>'}
         ` : ''}
 
+        ${accountTab === 'wallet' ? `
+          <!-- Digital Float Wallet Card -->
+          <div class="account-digital-wallet-card">
+            <div class="wallet-card-header">
+              <div>
+                <span class="eyebrow" style="color:var(--gold-light)">BYMARIE MEMBER FLOAT WALLET</span>
+                <h3 style="margin:2px 0 0;font-size:18px;color:#fff">${user.name || 'Member'}</h3>
+              </div>
+              <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:11px;font-weight:700">⚡ ACTIVE</span>
+            </div>
+            
+            <small style="color:rgba(255,255,255,0.7);display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px">Available Store Balance</small>
+            <div class="wallet-balance-big">${money(user.walletBalance || 0)}</div>
+
+            <div class="wallet-card-foot">
+              <div>
+                <small style="color:rgba(255,255,255,0.6);display:block">Account Reference</small>
+                <b style="font-family:'DM Mono';letter-spacing:0.5px">${user.id || 'BM-VIP-2026'}</b>
+              </div>
+              <button class="primary" style="background:var(--gold);color:var(--ink);border:0;padding:8px 18px;font-weight:800" onclick="activeModal='topup_wallet';render()">
+                + Top Up Wallet Funds
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Top Up Presets -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
+            <h4 style="margin:0 0 8px;font-size:15px">⚡ Quick Top-Up via Paystack</h4>
+            <p style="color:var(--muted);font-size:12.5px;margin-bottom:14px">Instantly load your balance using MTN Mobile Money, Telecel Cash, or Visa / Mastercard.</p>
+            <div class="topup-amount-chips" style="margin-bottom:0">
+              ${[100, 250, 500, 1000].map(amt => `
+                <button type="button" class="topup-chip" onclick="activeModal='topup_wallet';render();setTimeout(()=>{const inp=document.getElementById('topup-amt-input');if(inp)inp.value=${amt}},50)">
+                  + GH₵ ${amt}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Wallet Transaction Ledger -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <h4 style="margin:0;font-size:17px">Transaction Ledger &amp; History</h4>
+            <span style="font-size:12px;color:var(--muted)">Showing recent activity</span>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Transaction</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactions.map(t => `
+                <tr>
+                  <td>
+                    <strong>${t.note || 'Wallet Activity'}</strong>
+                    <small style="display:block;color:var(--muted);font-family:'DM Mono'">${t.id || 'TXN'}</small>
+                  </td>
+                  <td>
+                    <span class="badge ${t.type === 'Credit' ? 'delivered' : 'pending'}" style="font-size:11px">
+                      ${t.type === 'Credit' ? '↓ Credit (+)' : '↑ Debit (−)'}
+                    </span>
+                  </td>
+                  <td>
+                    <b style="color:${t.type === 'Credit' ? 'var(--emerald)' : 'var(--ink)'}">
+                      ${t.type === 'Credit' ? '+' : '−'}${money(t.amount || 0)}
+                    </b>
+                  </td>
+                  <td><small>${t.date || 'Recent'}</small></td>
+                  <td><span class="badge delivered" style="font-size:10px">✓ Verified</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : ''}
+
+        ${accountTab === 'rewards' ? `
+          <div class="tier-progress-card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <span class="eyebrow" style="color:var(--emerald)">LOYALTY STATUS</span>
+                <h3 style="font-size:24px;margin:2px 0 4px">${tierName}</h3>
+                <small style="color:var(--muted)">Earn 10 points for every GH₵ 100 spent across all collections.</small>
+              </div>
+              <div style="text-align:right">
+                <strong style="font-size:28px;color:var(--gold)">${loyaltyPoints}</strong>
+                <small style="display:block;color:var(--muted);font-weight:700">VIP POINTS</small>
+              </div>
+            </div>
+
+            <div class="tier-progress-track">
+              <div class="tier-progress-fill" style="width:${tierProgress}%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:600">
+              <span>Current: ${loyaltyPoints} pts</span>
+              <span>Next Milestone: ${nextTierGoal} pts</span>
+            </div>
+          </div>
+
+          <h4 style="font-size:17px;margin:24px 0 12px">Unlocked VIP Member Privileges</h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:24px">
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+              <span style="font-size:24px">🎁</span>
+              <strong style="display:block;margin:6px 0 2px;font-size:14px">Complimentary Gift Packaging</strong>
+              <small style="color:var(--muted)">Signature satin ribbons &amp; embossed gift boxes on request.</small>
+            </div>
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+              <span style="font-size:24px">⚡</span>
+              <strong style="display:block;margin:6px 0 2px;font-size:14px">Priority Same-Day Dispatch</strong>
+              <small style="color:var(--muted)">Orders placed before 2:00 PM dispatched first.</small>
+            </div>
+            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+              <span style="font-size:24px">👑</span>
+              <strong style="display:block;margin:6px 0 2px;font-size:14px">Private Drops Early Access</strong>
+              <small style="color:var(--muted)">Preview limited edition silk &amp; hair drops 24h early.</small>
+            </div>
+          </div>
+        ` : ''}
+
         ${accountTab === 'wishlist' ? `
           <h3 style="font-size:20px;margin-bottom:18px">Saved Favourites</h3>
           ${wishlist.length ? `
@@ -3106,32 +3251,157 @@ function account() {
         ` : ''}
 
         ${accountTab === 'address' ? `
-          <h3 style="font-size:22px;margin-bottom:18px">Saved Delivery Address</h3>
-          <form class="review-form-card" onsubmit="saveUserProfile(event)">
+          <h3 style="font-size:22px;margin-bottom:18px">Saved Delivery Address &amp; Sizing Profile</h3>
+          
+          <form class="review-form-card" onsubmit="saveUserProfile(event)" style="margin-bottom:28px">
+            <h4 style="margin:0 0 16px;font-size:16px">Primary Delivery Address</h4>
             <div class="form-grid">
               <div class="form-group">
-                <label>Recipient Name</label>
+                <label>Recipient Full Name</label>
                 <input required name="name" value="${user.name}">
               </div>
               <div class="form-group">
-                <label>Contact Phone</label>
+                <label>Contact Phone / WhatsApp</label>
                 <input required name="phone" value="${user.phone}">
               </div>
               <div class="form-group full">
-                <label>Street Address</label>
+                <label>Street Address / House No.</label>
                 <input required name="address" value="${user.address}">
               </div>
               <div class="form-group">
-                <label>City</label>
+                <label>City / Town</label>
                 <input required name="city" value="${user.city}">
               </div>
               <div class="form-group">
                 <label>Region</label>
-                <input required name="region" value="${user.region}">
+                <select name="region">
+                  ${['Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 'Volta', 'Northern'].map(r => `
+                    <option ${user.region === r ? 'selected' : ''}>${r}</option>
+                  `).join('')}
+                </select>
               </div>
             </div>
-            <button class="primary" type="submit">Update Address</button>
+            <button class="primary" type="submit" style="margin-top:14px">Save Delivery Address</button>
           </form>
+
+          <form class="review-form-card" onsubmit="saveUserPreferences(event)">
+            <h4 style="margin:0 0 16px;font-size:16px">✨ My Fit &amp; Luxury Scent Preferences</h4>
+            <p style="color:var(--muted);font-size:12.5px;margin-bottom:16px">Personalize your luxury curation so our stylists pre-filter your favorite fits and fragrance notes.</p>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Preferred Clothing Size</label>
+                <select name="clothingSize">
+                  ${['XS (UK 6)', 'S (UK 8)', 'M (UK 10)', 'L (UK 12)', 'XL (UK 14)', 'XXL (UK 16)'].map(sz => `
+                    <option ${user.clothingSize === sz ? 'selected' : ''}>${sz}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Shoe Size (EU)</label>
+                <select name="shoeSize">
+                  ${['36', '37', '38', '39', '40', '41', '42'].map(sz => `
+                    <option ${user.shoeSize === sz ? 'selected' : ''}>EU ${sz}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Preferred Wig Length</label>
+                <select name="wigLength">
+                  ${['18 Inch', '22 Inch', '26 Inch', '30 Inch', '32 Inch'].map(len => `
+                    <option ${user.wigLength === len ? 'selected' : ''}>${len}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Favorite Fragrance Notes</label>
+                <select name="scentFamily">
+                  ${['Oud & Amber Extraits', 'Warm Vanilla & Gourmand', 'White Floral & Jasmine', 'Fresh Citrus & Neroli'].map(sc => `
+                    <option ${user.scentFamily === sc ? 'selected' : ''}>${sc}</option>
+                  `).join('')}
+                </select>
+              </div>
+            </div>
+            <button class="primary" type="submit" style="margin-top:14px">Save Style Preferences</button>
+          </form>
+        ` : ''}
+
+        ${accountTab === 'security' ? `
+          <h3 style="font-size:22px;margin-bottom:18px">Security &amp; Account Preferences</h3>
+          
+          <form class="review-form-card" onsubmit="saveUserSecurity(event)" style="margin-bottom:24px">
+            <h4 style="margin:0 0 16px;font-size:16px">Password &amp; Security Passcode</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" name="oldPass" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" name="newPass" placeholder="Minimum 6 characters">
+              </div>
+            </div>
+
+            <div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px">
+              <h4 style="margin:0 0 12px;font-size:15px">Notification Preferences</h4>
+              <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-size:13px">
+                <input type="checkbox" name="notifyWhatsApp" ${user.notifyWhatsApp !== false ? 'checked' : ''}>
+                <span>Receive instant order tracking &amp; courier dispatch alerts on WhatsApp</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+                <input type="checkbox" name="notifyEmail" ${user.notifyEmail !== false ? 'checked' : ''}>
+                <span>Receive seasonal private sale invitations &amp; new collection edits via Email</span>
+              </label>
+            </div>
+
+            <button class="primary" type="submit" style="margin-top:18px">Update Security Settings</button>
+          </form>
+
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong style="display:block;font-size:14px;color:var(--ink)">🔒 256-Bit Encrypted Member Session</strong>
+              <small style="color:var(--muted)">Signed in via verified local credentials.</small>
+            </div>
+            <button class="secondary-btn" onclick="clearUser()">Sign Out of All Devices</button>
+          </div>
+        ` : ''}
+
+        ${accountTab === 'support' ? `
+          <h3 style="font-size:22px;margin-bottom:18px">Concierge &amp; Help Center</h3>
+          
+          <div style="background:linear-gradient(135deg, var(--sage-light) 0%, #fff 100%);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+            <div>
+              <span class="badge" style="background:var(--emerald);color:#fff;font-weight:800;padding:3px 8px;font-size:10.5px">24/7 DEDICATED ASSISTANCE</span>
+              <h4 style="margin:6px 0 2px;font-size:18px">Connect with ByMarie Concierge</h4>
+              <small style="color:var(--muted)">Speak directly with our fashion consultants, fragrance specialists &amp; courier coordinators.</small>
+            </div>
+            <a href="https://wa.me/233240000000?text=Hello%20ByMarie%20Concierge,%20my%20name%20is%20${encodeURIComponent(user.name||'Member')}" target="_blank" class="primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+              💬 Chat on WhatsApp
+            </a>
+          </div>
+
+          <h4 style="font-size:16px;margin:20px 0 12px">Frequently Asked Questions</h4>
+          
+          <div class="support-faq-card">
+            <strong style="font-size:14px;display:block;margin-bottom:4px">📦 How does Greater Accra doorstep delivery work?</strong>
+            <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
+              Complimentary on all orders over GH₵ 300. Orders placed before 2:00 PM are dispatched same-day with live rider tracking.
+            </p>
+          </div>
+
+          <div class="support-faq-card">
+            <strong style="font-size:14px;display:block;margin-bottom:4px">💳 How do I fund my Float Wallet?</strong>
+            <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
+              Navigate to the Float Wallet tab and click Top Up Funds. You can pay via MTN MoMo, Telecel Cash, or Card with instant automated verification.
+            </p>
+          </div>
+
+          <div class="support-faq-card">
+            <strong style="font-size:14px;display:block;margin-bottom:4px">🔄 What is the return / exchange policy?</strong>
+            <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
+              Unworn items with tags intact may be exchanged within 7 days of delivery. Custom virgin wigs and opened fragrance bottles are final sale.
+            </p>
+          </div>
         ` : ''}
       </section>
     </main>
@@ -3148,7 +3418,36 @@ function saveUserProfile(event) {
   user.city = fd.get('city');
   user.region = fd.get('region');
   saveUser(user);
-  toast('Profile details updated');
+  toast('Delivery address details updated successfully! 📍');
+  render();
+}
+
+function saveUserPreferences(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const user = getUser();
+  user.clothingSize = fd.get('clothingSize');
+  user.shoeSize = fd.get('shoeSize');
+  user.wigLength = fd.get('wigLength');
+  user.scentFamily = fd.get('scentFamily');
+  saveUser(user);
+  toast('Style and sizing preferences saved! ✨');
+  render();
+}
+
+function saveUserSecurity(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const user = getUser();
+  const newPass = fd.get('newPass');
+  if (newPass && newPass.length >= 6) {
+    user.password = newPass;
+    toast('Password updated successfully 🔒');
+  }
+  user.notifyWhatsApp = fd.get('notifyWhatsApp') === 'on';
+  user.notifyEmail = fd.get('notifyEmail') === 'on';
+  saveUser(user);
+  toast('Security & notification preferences updated! ⚡');
   render();
 }
 
