@@ -5475,8 +5475,18 @@ async function syncAdminWithBackend(silent = false) {
 
     if (pRes.status === 'fulfilled' && pRes.value.ok) {
       const data = await pRes.value.json();
-      if (Array.isArray(data) && data.length) {
-        saveProducts(data);
+      if (Array.isArray(data)) {
+        const cleanProds = data.filter(p => {
+          if (!p || !p.id || !p.name) return false;
+          const id = String(p.id).toLowerCase();
+          if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
+          const nm = String(p.name).toLowerCase();
+          if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
+            return false;
+          }
+          return true;
+        });
+        saveProducts(cleanProds);
         syncCount++;
       }
     }

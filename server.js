@@ -105,18 +105,40 @@ app.get('/api/health', (req, res) => {
 
 // Get all products (with category, search & price filtering)
 app.get('/api/products', async (req, res) => {
+  let list = [];
   const client = getSupabaseClient();
   if (client) {
     try {
       const { data, error } = await client.from('products').select('*');
-      if (!error && data && data.length) return res.json(data);
+      if (!error && data) {
+        list = data.filter(p => {
+          if (!p || !p.id || !p.name) return false;
+          const id = String(p.id).toLowerCase();
+          if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
+          const nm = String(p.name).toLowerCase();
+          if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
+            return false;
+          }
+          return true;
+        });
+        return res.json(list);
+      }
     } catch (e) {
       console.warn('Supabase fetch failed, falling back to local DB:', e.message);
     }
   }
 
   const db = readDB();
-  let list = db.products || [];
+  list = (db.products || []).filter(p => {
+    if (!p || !p.id || !p.name) return false;
+    const id = String(p.id).toLowerCase();
+    if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
+    const nm = String(p.name).toLowerCase();
+    if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
+      return false;
+    }
+    return true;
+  });
   
   const { cat, search, minPrice, maxPrice } = req.query;
   if (cat && cat !== 'All') {
