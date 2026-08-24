@@ -517,14 +517,15 @@ async function fetchCatalogFromSupabase() {
 }
 
 // Clean one-time purge of legacy mock data
-if (typeof localStorage !== 'undefined' && localStorage.getItem('bymarie-v3-clean-db') !== 'true') {
+if (typeof localStorage !== 'undefined' && localStorage.getItem('bymarie-v5-clean') !== 'true') {
   localStorage.setItem('bymarie-products', JSON.stringify([]));
   localStorage.setItem('bymarie-orders', JSON.stringify([]));
   localStorage.setItem('bymarie-coupons', JSON.stringify([]));
+  localStorage.setItem('bymarie-notifications', JSON.stringify([]));
   localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
   localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
   localStorage.setItem('bymarie-cart', JSON.stringify([]));
-  localStorage.setItem('bymarie-v3-clean-db', 'true');
+  localStorage.setItem('bymarie-v5-clean', 'true');
 }
 
 // State Helpers
@@ -3956,6 +3957,9 @@ function admin() {
               <strong style="color:var(--gold-light);font-size:13px">${money(totalRevenue)}</strong>
             </div>
             <span class="store-status"><i></i> Production Live</span>
+            <button class="secondary-btn" style="padding:6px 12px;font-size:12px;background:#092420;color:#fff;border-color:rgba(255,255,255,0.15);display:inline-flex;align-items:center;gap:6px" onclick="syncAdminWithBackend()">
+              ⚡ Sync DB
+            </button>
             <button class="icon-btn" aria-label="Notifications" onclick="commandPaletteOpen=true;commandPaletteQuery='';render()">
               ${svgIcon('bell', 18)}
               ${alertCount || pendingOrders ? `<span class="badge-count">${alertCount + pendingOrders}</span>` : ''}
@@ -4319,6 +4323,29 @@ function renderAdminProducts(products) {
 }
 
 function renderAdminInventory(products) {
+  if (!products.length) {
+    return `
+      <div class="admin-top-bar animate-fade-up">
+        <div>
+          <span class="eyebrow" style="color:var(--gold-light)">STOCK SENTINEL</span>
+          <h1 style="font-size:32px;margin-top:4px">Inventory Control &amp; Replenishment</h1>
+        </div>
+        <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">
+          ${svgIcon('plus', 16)} Add First Piece
+        </button>
+      </div>
+
+      <div class="admin-empty-state animate-fade-up" style="padding:60px 24px;text-align:center">
+        <span style="font-size:44px;display:block;margin-bottom:12px">🛡️</span>
+        <h2 style="font-family:'Playfair Display',serif;font-size:26px;color:#fff;margin-bottom:8px">Stock Sentinel Standby</h2>
+        <p style="color:#a1a1aa;font-size:14px;max-width:480px;margin:0 auto 20px">No products currently in the boutique catalog. Add luxury pieces to activate automated stock alerts, replenishment meters, and batch stepper controls.</p>
+        <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">
+          ${svgIcon('plus', 16)} Add First Piece
+        </button>
+      </div>
+    `;
+  }
+
   const f = adminInventoryFilter;
   const query = f.search.toLowerCase().trim();
   const list = products.filter(p => {
@@ -4337,6 +4364,9 @@ function renderAdminInventory(products) {
         <span class="eyebrow" style="color:var(--gold-light)">STOCK SENTINEL</span>
         <h1 style="font-size:32px;margin-top:4px">Inventory Control &amp; Replenishment</h1>
       </div>
+      <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">
+        ${svgIcon('plus', 16)} Add New Piece
+      </button>
     </div>
 
     <div class="admin-filter-bar">
