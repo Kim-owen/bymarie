@@ -4,27 +4,31 @@
 
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  const purgeKey = 'bymarie-clean-v7-covers';
+  const purgeKey = 'bymarie-clean-v10-fresh-db';
   if (!localStorage.getItem(purgeKey)) {
+    localStorage.setItem('bymarie-products', JSON.stringify([]));
+    localStorage.setItem('bymarie-orders', JSON.stringify([]));
+    localStorage.setItem('bymarie-coupons', JSON.stringify([]));
+    localStorage.setItem('bymarie-notifications', JSON.stringify([]));
+    localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
+    localStorage.setItem('bymarie-cart', JSON.stringify([]));
     const raw = localStorage.getItem('bymarie-site-settings');
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (parsed.categoryCovers) {
-          parsed.categoryCovers = {
-            'Clothing': [],
-            'Shoes': [],
-            'Bags': [],
-            'Wigs': [],
-            'Skin Care': [],
-            'Perfumes': [],
-            'Lifestyle': [],
-            'Nails': [],
-            'Panties': [],
-            'Toiletries': []
-          };
-          localStorage.setItem('bymarie-site-settings', JSON.stringify(parsed));
-        }
+        parsed.categoryCovers = {
+          'Clothing': [],
+          'Shoes': [],
+          'Bags': [],
+          'Wigs': [],
+          'Skin Care': [],
+          'Perfumes': [],
+          'Lifestyle': [],
+          'Nails': [],
+          'Panties': [],
+          'Toiletries': []
+        };
+        localStorage.setItem('bymarie-site-settings', JSON.stringify(parsed));
       } catch (e) {}
     }
     localStorage.setItem(purgeKey, 'true');
