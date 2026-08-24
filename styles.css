@@ -271,8 +271,54 @@ header {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-main {
-  padding-top: 150px;
+/* Universal Top Clearance for Sticky Header across ALL pages */
+main,
+.shop-page,
+.detail-container,
+.cart-container,
+.checkout-container,
+.confirmation-container,
+.account-shell,
+.auth-page-shell,
+.notifications-page-shell,
+.wholesale-page,
+.not-found-page {
+  padding-top: 140px !important;
+  box-sizing: border-box;
+}
+
+/* Home hero handles its own visual padding under translucent header */
+main:has(.hero),
+.hero-parent-main {
+  padding-top: 0 !important;
+}
+
+.hero {
+  padding-top: 150px !important;
+}
+
+/* Admin console is a standalone dashboard with zero top padding */
+.admin-shell,
+.admin-login-shell {
+  padding-top: 0 !important;
+}
+
+@media (max-width: 768px) {
+  main,
+  .shop-page,
+  .detail-container,
+  .cart-container,
+  .checkout-container,
+  .confirmation-container,
+  .account-shell,
+  .auth-page-shell,
+  .notifications-page-shell,
+  .wholesale-page {
+    padding-top: 126px !important;
+  }
+  .hero {
+    padding-top: 136px !important;
+  }
 }
 
 .brand {
