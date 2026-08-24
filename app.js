@@ -2409,6 +2409,23 @@ function handleCheckoutSubmit(event) {
   }
 }
 
+function playNotificationChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1318.51, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch (e) {}
+}
+
 async function completeOrder(order) {
   toast('Verifying prices and registering order on server...', 'info');
 
@@ -2443,6 +2460,21 @@ async function completeOrder(order) {
     orders.unshift(verifiedOrder);
     saveOrders(orders);
 
+    // Register In-Dashboard Admin Notification
+    const notifs = getNotifications();
+    notifs.unshift({
+      id: `notif-${Date.now()}`,
+      type: 'order',
+      title: `⚡ New Order #${verifiedOrder.id} Placed!`,
+      message: `${verifiedOrder.name} placed an order for GH₵ ${Number(verifiedOrder.total || 0).toFixed(2)} (${verifiedOrder.city}).`,
+      date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • Today',
+      target: 'admin',
+      orderId: verifiedOrder.id,
+      read: false
+    });
+    saveNotifications(notifs);
+    playNotificationChime();
+
     cart = [];
     saveCart();
     appliedCoupon = null;
@@ -2450,7 +2482,7 @@ async function completeOrder(order) {
 
     activeModal = null;
     go(`confirmation/${verifiedOrder.id}`);
-    toast('Order confirmed & secured server-side! ⚡');
+    toast('Order confirmed! Admin alert sent via SMS, Email & Dashboard ⚡');
     return;
   } catch (err) {
     console.error('Server order submission error:', err);
