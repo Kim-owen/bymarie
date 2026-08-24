@@ -11,9 +11,22 @@
     "promoCodeNotice": "WELCOME10",
     "brandEthosTitle": "Created for slow living and enduring beauty.",
     "brandEthosText": "Every ByMarie garment, heel, handbag, virgin crown, formula, and intimate essential is conceived with intentional restraint.",
+    "ethosImageUrl": "",
     "contactEmail": "concierge@bymarie.com",
     "contactPhone": "+233 24 000 0000",
-    "accraAddress": "18 Ring Road Central, Cantonments, Accra, Ghana"
+    "accraAddress": "18 Ring Road Central, Cantonments, Accra, Ghana",
+    "categoryCovers": {
+      "Clothing": "",
+      "Shoes": "",
+      "Bags": "",
+      "Wigs": "",
+      "Skin Care": "",
+      "Perfumes": "",
+      "Lifestyle": "",
+      "Nails": "",
+      "Panties": "",
+      "Toiletries": ""
+    }
   },
   "users": [
     {

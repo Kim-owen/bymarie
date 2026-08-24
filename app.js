@@ -423,9 +423,22 @@ const INITIAL_SITE_SETTINGS = {
   promoCodeNotice: 'WELCOME10',
   brandEthosTitle: 'Created for slow living and enduring beauty.',
   brandEthosText: 'Every ByMarie garment, heel, handbag, virgin crown, formula, and intimate essential is conceived with intentional restraint. We believe true luxury lies in simplicity, pure materials, and timeless craftsmanship.',
+  ethosImageUrl: '',
   contactEmail: 'concierge@bymarie.com',
   contactPhone: '+233 24 000 0000',
-  accraAddress: '18 Ring Road Central, Cantonments, Accra, Ghana'
+  accraAddress: '18 Ring Road Central, Cantonments, Accra, Ghana',
+  categoryCovers: {
+    'Clothing': '',
+    'Shoes': '',
+    'Bags': '',
+    'Wigs': '',
+    'Skin Care': '',
+    'Perfumes': '',
+    'Lifestyle': '',
+    'Nails': '',
+    'Panties': '',
+    'Toiletries': ''
+  }
 };
 
 function getSiteSettings() {
@@ -1311,7 +1324,7 @@ function home() {
         </div>
       </section>
 
-      <!-- Collections Grid (with Smooth Sliding Imagery Across All Collections) -->
+      <!-- Collections Grid (Dynamic Covers Managed via Admin CMS) -->
       <section id="collections" class="section">
         <div class="section-head animate-fade-up">
           <div>
@@ -1322,132 +1335,36 @@ function home() {
         </div>
         <div class="category-grid">
           ${[
-            [
-              'Clothing',
-              'Thoughtful silhouettes and breathable weaves tailored for easy living.',
-              'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85',
-              '01 // SILHOUETTES',
-              [
-                'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Shoes',
-              'Italian suede kitten mules, artisan leather slides, and strappy stilettos.',
-              'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=900&q=85',
-              '02 // FOOTWEAR',
-              [
-                'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Bags',
-              'Sculptural crescent leather totes, woven raffia boxes, and silk clutches.',
-              'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=85',
-              '03 // HANDBAGS',
-              [
-                'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Wigs',
-              'Raw virgin bone straight hair and glueless 13x6 invisible melt HD frontals.',
-              'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85',
-              '04 // LUXURY WIGS',
-              [
-                'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Skin Care',
-              'Biocompatible actives & cold-pressed botanicals for radiant glowing skin.',
-              'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85',
-              '05 // SKIN CARE',
-              [
-                'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Perfumes',
-              'Characterful extract formulations that leave an unforgettable trail.',
-              'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=85',
-              '06 // EXTRAITS',
-              [
-                'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Lifestyle',
-              'Artisanal home scents, stonewashed waffle robes, and tranquil essentials.',
-              'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85',
-              '07 // LIFESTYLE',
-              [
-                'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Nails',
-              'Non-toxic 7-free mineral nail lacquers and handcrafted salon press-ons.',
-              'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=900&q=85',
-              '08 // NAILS',
-              [
-                'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=900&q=85'
-              ]
-            ],
-            [
-              'Panties',
-              'Second-skin seamless briefs and delicate French lace intimates.',
-              'https://images.unsplash.com/photo-1583846783214-7229a91b20ed?auto=format&fit=crop&w=900&q=85',
-              '09 // PANTIES',
-              [
-                'https://images.unsplash.com/photo-1583846783214-7229a91b20ed?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=85',
-                'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=85'
-              ]
-            ]
-          ].map((c, i) => `
-            <div class="category-card animate-fade-up delay-${(i % 3) + 1}" onclick="go('category/${encodeURIComponent(c[0])}')" id="cat-card-${i}">
-              ${c[4] && c[4].length ? `
-                <div class="category-slider" id="cat-slider-${i}">
-                  ${c[4].map((img, sIdx) => `
-                    <img class="category-slide-img ${sIdx === 0 ? 'active' : ''}" src="${img}" alt="${c[0]} look ${sIdx + 1}">
-                  `).join('')}
+            { name: 'Clothing', subtitle: 'Thoughtful silhouettes and breathable weaves tailored for easy living.', code: '01 // SILHOUETTES', icon: '👗' },
+            { name: 'Shoes', subtitle: 'Italian suede kitten mules, artisan leather slides, and strappy stilettos.', code: '02 // FOOTWEAR', icon: '👠' },
+            { name: 'Bags', subtitle: 'Sculptural crescent leather totes, woven raffia boxes, and silk clutches.', code: '03 // HANDBAGS', icon: '👜' },
+            { name: 'Wigs', subtitle: 'Raw virgin bone straight hair and glueless 13x6 invisible melt HD frontals.', code: '04 // LUXURY WIGS', icon: '💇‍♀️' },
+            { name: 'Skin Care', subtitle: 'Biocompatible actives & cold-pressed botanicals for radiant glowing skin.', code: '05 // SKIN CARE', icon: '✨' },
+            { name: 'Perfumes', subtitle: 'Characterful extract formulations that leave an unforgettable trail.', code: '06 // EXTRAITS', icon: '🌸' },
+            { name: 'Lifestyle', subtitle: 'Artisanal home scents, stonewashed waffle robes, and tranquil essentials.', code: '07 // LIFESTYLE', icon: '🕯️' },
+            { name: 'Nails', subtitle: 'Non-toxic 7-free mineral nail lacquers and handcrafted salon press-ons.', code: '08 // NAILS', icon: '💅' },
+            { name: 'Panties', subtitle: 'Second-skin seamless briefs and delicate French lace intimates.', code: '09 // PANTIES', icon: '👙' },
+            { name: 'Toiletries', subtitle: 'Gentle oat lipid cleansers and nourishing botanical daily care.', code: '10 // BATH & BODY', icon: '🛁' }
+          ].map((cat, i) => {
+            const coverUrl = (settings.categoryCovers && settings.categoryCovers[cat.name]) ? settings.categoryCovers[cat.name] : '';
+            return `
+              <div class="category-card animate-fade-up delay-${(i % 3) + 1}" onclick="go('category/${encodeURIComponent(cat.name)}')">
+                ${coverUrl ? `
+                  <img src="${coverUrl}" alt="${cat.name}" style="width:100%;height:100%;object-fit:cover">
+                ` : `
+                  <div class="category-card-placeholder">
+                    <span class="category-card-placeholder-icon">${cat.icon}</span>
+                  </div>
+                `}
+                <div>
+                  <span>${cat.code}</span>
+                  <h3>${cat.name}</h3>
+                  <p>${cat.subtitle}</p>
+                  <button>Explore ${cat.name} ${icon('arrow')}</button>
                 </div>
-                <div class="category-slider-dots">
-                  ${c[4].map((_, sIdx) => `
-                    <span class="category-slider-dot ${sIdx === 0 ? 'active' : ''}" id="cat-dot-${i}-${sIdx}"></span>
-                  `).join('')}
-                </div>
-              ` : `
-                <img src="${c[2]}" alt="${c[0]}">
-              `}
-              <div>
-                <span>${c[3]}</span>
-                <h3>${c[0]}</h3>
-                <p>${c[1]}</p>
-                <button>Explore ${c[0]} ${icon('arrow')}</button>
               </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </section>
 
@@ -1491,7 +1408,16 @@ function home() {
             </div>
           </div>
           <div class="animate-fade-up delay-2">
-            <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=85" alt="ByMarie Philosophy" style="border-radius:var(--radius-lg);box-shadow:var(--shadow-hover);width:100%;height:460px;object-fit:cover">
+            ${settings.ethosImageUrl ? `
+              <img src="${settings.ethosImageUrl}" alt="ByMarie Philosophy" style="border-radius:var(--radius-lg);box-shadow:var(--shadow-hover);width:100%;height:460px;object-fit:cover">
+            ` : `
+              <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(145deg, #093c35 0%, #041a16 100%);border:1px solid rgba(197,151,55,0.35);border-radius:var(--radius-lg);padding:40px 24px;min-height:420px;box-shadow:var(--shadow-md)">
+                <div style="width:68px;height:68px;border-radius:50%;border:1.5px solid #c59737;display:grid;place-items:center;color:#c59737;font-family:'Cinzel',serif;font-size:26px;font-weight:700;margin-bottom:14px;box-shadow:0 0 20px rgba(197,151,55,0.25)">M</div>
+                <span class="eyebrow" style="color:var(--gold-light);margin-bottom:8px">HAUTE COUTURE ATELIER</span>
+                <h3 style="font-family:'Playfair Display',serif;font-size:24px;color:#fff;margin-bottom:10px">The Art of Pure Intention</h3>
+                <p style="color:#a1a1aa;font-size:13px;max-width:320px;line-height:1.6">Every collection cover and campaign image is curated directly by our creative directors via the Admin Console.</p>
+              </div>
+            `}
           </div>
         </div>
       </section>
@@ -4880,7 +4806,63 @@ function renderAdminSiteCMS() {
         </div>
       </div>
 
+      <!-- Category Collection Covers & Brand Imagery Section -->
       <div class="cms-card animate-fade-up delay-4">
+        <h3 style="color:#fff">🖼️ Category Collection Covers &amp; Brand Imagery</h3>
+        <p style="color:#a1a1aa;font-size:13px;margin-bottom:18px">
+          Upload covers for each boutique collection or paste high-resolution image URLs. These covers dynamically appear on the homepage collections grid.
+        </p>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Brand Philosophy / Ethos Cover Image</label>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input name="ethosImageUrl" value="${settings.ethosImageUrl || ''}" placeholder="Image URL / Upload file below" style="flex:1">
+              <label class="secondary-btn" style="cursor:pointer;padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+                📁 Upload Photo <input type="file" accept="image/*" style="display:none" onchange="handleAdminCoverUpload(event, 'ethos')">
+              </label>
+            </div>
+            ${settings.ethosImageUrl ? `
+              <div style="margin-top:8px;max-width:180px;border-radius:8px;overflow:hidden;border:1px solid #3f3f46">
+                <img src="${settings.ethosImageUrl}" style="width:100%;height:100px;object-fit:cover">
+              </div>
+            ` : ''}
+          </div>
+
+          ${[
+            ['Clothing', 'Clothing & Silhouettes'],
+            ['Shoes', 'Shoes & Footwear'],
+            ['Bags', 'Luxury Bags & Totes'],
+            ['Wigs', 'Raw Virgin & HD Wigs'],
+            ['Skin Care', 'Skin Care & Botanicals'],
+            ['Perfumes', 'Perfumes & Extraits'],
+            ['Lifestyle', 'Lifestyle & Home Care'],
+            ['Nails', 'Nails & Lacquers'],
+            ['Panties', 'Panties & Intimates'],
+            ['Toiletries', 'Bath & Toiletries']
+          ].map(([catKey, catTitle]) => {
+            const currentCover = (settings.categoryCovers && settings.categoryCovers[catKey]) || '';
+            return `
+              <div class="form-group">
+                <label>${catTitle} Cover</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input name="catCover_${catKey}" value="${currentCover}" placeholder="URL / Upload file" style="flex:1;font-size:12px">
+                  <label class="secondary-btn" style="cursor:pointer;padding:6px 10px;font-size:11px;display:flex;align-items:center">
+                    📁 <input type="file" accept="image/*" style="display:none" onchange="handleAdminCoverUpload(event, '${catKey}')">
+                  </label>
+                </div>
+                ${currentCover ? `
+                  <div style="margin-top:6px;width:60px;height:40px;border-radius:4px;overflow:hidden;border:1px solid #3f3f46">
+                    <img src="${currentCover}" style="width:100%;height:100%;object-fit:cover">
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="cms-card animate-fade-up delay-5">
         <h3 style="color:#fff">📞 Concierge &amp; Contact Details</h3>
         <div class="form-grid">
           <div class="form-group">
@@ -5410,8 +5392,19 @@ async function deleteWholesaleInquiry(id) {
 async function saveCMSFromAdmin(event) {
   event.preventDefault();
   const fd = new FormData(event.target);
+  const cur = getSiteSettings();
+  const updatedCovers = { ...(cur.categoryCovers || {}) };
+
+  [
+    'Clothing', 'Shoes', 'Bags', 'Wigs', 'Skin Care',
+    'Perfumes', 'Lifestyle', 'Nails', 'Panties', 'Toiletries'
+  ].forEach(cat => {
+    const val = fd.get(`catCover_${cat}`);
+    if (val !== null) updatedCovers[cat] = (val || '').trim();
+  });
+
   const updatedSettings = {
-    ...getSiteSettings(),
+    ...cur,
     announcementText: fd.get('announcementText') || '',
     promoCodeNotice: fd.get('promoCodeNotice') || '',
     heroTitle: fd.get('heroTitle') || '',
@@ -5419,6 +5412,8 @@ async function saveCMSFromAdmin(event) {
     heroMediaUrl: fd.get('heroMediaUrl') || '',
     brandEthosTitle: fd.get('brandEthosTitle') || '',
     brandEthosText: fd.get('brandEthosText') || '',
+    ethosImageUrl: (fd.get('ethosImageUrl') || '').trim(),
+    categoryCovers: updatedCovers,
     contactEmail: fd.get('contactEmail') || '',
     contactPhone: fd.get('contactPhone') || '',
     accraAddress: fd.get('accraAddress') || ''
@@ -5435,6 +5430,36 @@ async function saveCMSFromAdmin(event) {
       body: JSON.stringify(updatedSettings)
     });
   } catch (e) {}
+}
+
+function handleAdminCoverUpload(event, target) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  toast(`Processing cover photo: ${file.name}...`, 'info');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const settings = getSiteSettings();
+    if (target === 'ethos') {
+      settings.ethosImageUrl = dataUrl;
+    } else {
+      if (!settings.categoryCovers) settings.categoryCovers = {};
+      settings.categoryCovers[target] = dataUrl;
+    }
+    saveSiteSettings(settings);
+    toast(`Cover updated for ${target}! ⚡`);
+    render();
+
+    try {
+      fetch(`${API_BASE}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      }).catch(() => {});
+    } catch (err) {}
+  };
+  reader.readAsDataURL(file);
 }
 
 function handleHeroVideoUpload(event) {

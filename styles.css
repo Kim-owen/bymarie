@@ -867,6 +867,29 @@ h1, h2, h3, .serif {
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
 }
 
+.category-card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, #0d3830 0%, #031411 100%);
+  border: 1px solid rgba(197, 151, 55, 0.2);
+  z-index: 1;
+}
+
+.category-card-placeholder-icon {
+  font-size: 38px;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  transition: transform 0.4s var(--ease-out);
+}
+
+.category-card:hover .category-card-placeholder-icon {
+  transform: scale(1.15) translateY(-2px);
+}
+
 .category-card::after {
   content: '';
   position: absolute;
