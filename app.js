@@ -2,9 +2,38 @@
 // BYMARIE LUXURY E-COMMERCE - APPLICATION ENGINE
 // ===================================================
 
+const ADMIN_EMAIL = 'adichieifeoma@gmail.com';
+
+const INITIAL_PRODUCTS = [];
+const INITIAL_COUPONS = [];
+const INITIAL_ORDERS = [];
+const INITIAL_NOTIFICATIONS = [];
+
+const INITIAL_USERS = [
+  {
+    id: 'usr-admin-01',
+    name: 'Ifeoma Adichie',
+    email: 'adichieifeoma@gmail.com',
+    phone: '+233 24 100 2000',
+    address: 'Executive Suite, Cantonments, Accra',
+    walletBalance: 0.00,
+    joinedDate: '01 Jan 2026',
+    ordersCount: 0,
+    status: 'Super Admin'
+  }
+];
+
+const INITIAL_USER = INITIAL_USERS[0];
+
+const API_BASE = (typeof window !== 'undefined' && window.location.origin.includes('localhost:3000')) ? 'http://localhost:5000/api' : '/api';
+
+let authMode = 'signin';
+let adminAuthenticated = false;
+let adminMobileDrawerOpen = false;
+
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  const purgeKey = 'bymarie-hard-wipe-all-mocks-2026-v2';
+  const purgeKey = 'bymarie-hard-wipe-all-mocks-2026-v3';
   if (!localStorage.getItem(purgeKey)) {
     localStorage.setItem('bymarie-products', JSON.stringify([]));
     localStorage.setItem('bymarie-orders', JSON.stringify([]));
@@ -36,35 +65,6 @@
   }
 })();
 
-const INITIAL_PRODUCTS = [];
-
-const INITIAL_COUPONS = [];
-
-const INITIAL_ORDERS = [];
-
-const API_BASE = (typeof window !== 'undefined' && window.location.origin.includes('localhost:3000')) ? 'http://localhost:5000/api' : '/api';
-
-let authMode = 'signin';
-let adminAuthenticated = false;
-let adminMobileDrawerOpen = false;
-const ADMIN_EMAIL = 'adichieifeoma@gmail.com';
-
-const INITIAL_USERS = [
-  {
-    id: 'usr-admin-01',
-    name: 'Ifeoma Adichie',
-    email: 'adichieifeoma@gmail.com',
-    phone: '+233 24 100 2000',
-    address: 'Executive Suite, Cantonments, Accra',
-    walletBalance: 0.00,
-    joinedDate: '01 Jan 2026',
-    ordersCount: 0,
-    status: 'Super Admin'
-  }
-];
-
-const INITIAL_USER = INITIAL_USERS[0];
-
 function getUsers() {
   const data = localStorage.getItem('bymarie-users');
   if (data === null) {
@@ -77,8 +77,6 @@ function getUsers() {
 function saveUsers(users) {
   localStorage.setItem('bymarie-users', JSON.stringify(users));
 }
-
-const INITIAL_NOTIFICATIONS = [];
 
 function getNotifications() {
   const data = localStorage.getItem('bymarie-notifications');
