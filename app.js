@@ -2,6 +2,35 @@
 // BYMARIE LUXURY E-COMMERCE - APPLICATION ENGINE
 // ===================================================
 
+(function autoHealStaleSettings() {
+  if (typeof localStorage === 'undefined') return;
+  const purgeKey = 'bymarie-clean-v7-covers';
+  if (!localStorage.getItem(purgeKey)) {
+    const raw = localStorage.getItem('bymarie-site-settings');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.categoryCovers) {
+          parsed.categoryCovers = {
+            'Clothing': [],
+            'Shoes': [],
+            'Bags': [],
+            'Wigs': [],
+            'Skin Care': [],
+            'Perfumes': [],
+            'Lifestyle': [],
+            'Nails': [],
+            'Panties': [],
+            'Toiletries': []
+          };
+          localStorage.setItem('bymarie-site-settings', JSON.stringify(parsed));
+        }
+      } catch (e) {}
+    }
+    localStorage.setItem(purgeKey, 'true');
+  }
+})();
+
 const INITIAL_PRODUCTS = [];
 
 const INITIAL_COUPONS = [];
@@ -442,24 +471,67 @@ const INITIAL_SITE_SETTINGS = {
   }
 };
 
+function isValidImageSrc(s) {
+  if (typeof s !== 'string') return false;
+  const str = s.trim();
+  if (!str) return false;
+  if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('assets/') || str.startsWith('/assets/')) {
+    return true;
+  }
+  if (str.startsWith('data:image/') && str.includes(';base64,') && str.split(';base64,')[1] && str.split(';base64,')[1].length > 20) {
+    return true;
+  }
+  return false;
+}
+
 function getCategoryCoverList(catName) {
   const settings = getSiteSettings();
   if (!settings.categoryCovers || !settings.categoryCovers[catName]) return [];
   const val = settings.categoryCovers[catName];
-  if (Array.isArray(val)) return val.filter(Boolean);
+  if (Array.isArray(val)) {
+    return val.filter(isValidImageSrc);
+  }
   if (typeof val === 'string' && val.trim()) {
-    return val.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+    const trimmed = val.trim();
+    if (isValidImageSrc(trimmed)) return [trimmed];
+    if (!trimmed.startsWith('data:image/')) {
+      return trimmed.split(/\n+/).flatMap(line => line.split(',')).map(s => s.trim()).filter(isValidImageSrc);
+    }
   }
   return [];
 }
 
 function getSiteSettings() {
   const data = localStorage.getItem('bymarie-site-settings');
-  if (!data) {
-    localStorage.setItem('bymarie-site-settings', JSON.stringify(INITIAL_SITE_SETTINGS));
-    return INITIAL_SITE_SETTINGS;
+  let settings = INITIAL_SITE_SETTINGS;
+  if (data) {
+    try {
+      settings = { ...INITIAL_SITE_SETTINGS, ...JSON.parse(data) };
+    } catch {
+      settings = INITIAL_SITE_SETTINGS;
+    }
   }
-  try { return { ...INITIAL_SITE_SETTINGS, ...JSON.parse(data) }; } catch { return INITIAL_SITE_SETTINGS; }
+
+  // Auto-clean category covers from any broken legacy split strings
+  if (settings.categoryCovers) {
+    const cleanedCovers = {};
+    for (const [cat, covers] of Object.entries(settings.categoryCovers)) {
+      if (Array.isArray(covers)) {
+        cleanedCovers[cat] = covers.filter(isValidImageSrc);
+      } else if (typeof covers === 'string' && isValidImageSrc(covers)) {
+        cleanedCovers[cat] = [covers];
+      } else {
+        cleanedCovers[cat] = [];
+      }
+    }
+    settings.categoryCovers = cleanedCovers;
+  }
+
+  if (settings.ethosImageUrl && !isValidImageSrc(settings.ethosImageUrl)) {
+    settings.ethosImageUrl = '';
+  }
+
+  return settings;
 }
 
 function saveSiteSettings(settings) {
