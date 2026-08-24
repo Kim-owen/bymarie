@@ -129,16 +129,7 @@ app.get('/api/products', async (req, res) => {
   }
 
   const db = readDB();
-  list = (db.products || []).filter(p => {
-    if (!p || !p.id || !p.name) return false;
-    const id = String(p.id).toLowerCase();
-    if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
-    const nm = String(p.name).toLowerCase();
-    if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
-      return false;
-    }
-    return true;
-  });
+  list = (db.products || []).filter(p => p && p.isCustom === true);
   
   const { cat, search, minPrice, maxPrice } = req.query;
   if (cat && cat !== 'All') {
@@ -158,7 +149,7 @@ app.get('/api/products', async (req, res) => {
 // Get single product
 app.get('/api/products/:id', (req, res) => {
   const db = readDB();
-  const prod = (db.products || []).find(p => p.id === req.params.id);
+  const prod = (db.products || []).find(p => p.id === req.params.id && p.isCustom === true);
   if (!prod) return res.status(404).json({ error: 'Product not found' });
   res.json(prod);
 });
@@ -166,8 +157,9 @@ app.get('/api/products/:id', (req, res) => {
 // Create product package
 app.post('/api/products', async (req, res) => {
   const newProduct = {
-    id: req.body.id || `prod-${Date.now()}`,
-    name: req.body.name || 'New Package',
+    id: req.body.id || `bm-piece-${Date.now()}`,
+    isCustom: true,
+    name: req.body.name || 'New Piece',
     category: req.body.category || 'Clothing',
     price: Number(req.body.price || 0),
     old: Number(req.body.old || 0),

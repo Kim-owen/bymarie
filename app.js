@@ -4,7 +4,7 @@
 
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  const purgeKey = 'bymarie-purge-100-percent-clean-v1';
+  const purgeKey = 'bymarie-hard-wipe-all-mocks-2026-v2';
   if (!localStorage.getItem(purgeKey)) {
     localStorage.setItem('bymarie-products', JSON.stringify([]));
     localStorage.setItem('bymarie-orders', JSON.stringify([]));
@@ -624,16 +624,8 @@ function getProducts() {
   try {
     const list = JSON.parse(data);
     if (!Array.isArray(list)) return [];
-    const cleaned = list.filter(p => {
-      if (!p || !p.id || !p.name) return false;
-      const id = String(p.id).toLowerCase();
-      if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
-      const nm = String(p.name).toLowerCase();
-      if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
-        return false;
-      }
-      return true;
-    });
+    // Strictly return only products created and saved by the administrator
+    const cleaned = list.filter(p => p && p.isCustom === true);
     if (cleaned.length !== list.length) {
       localStorage.setItem('bymarie-products', JSON.stringify(cleaned));
     }
@@ -5504,6 +5496,7 @@ async function saveProductFromModal(event) {
 
   const updatedProduct = {
     id,
+    isCustom: true,
     name: fd.get('name'),
     category: fd.get('category'),
     price: Number(fd.get('price')),
