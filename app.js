@@ -3056,6 +3056,20 @@ function renderOrderStatusTimeline(status) {
       `).join('')}
     </div>
   `;
+let accountMenuOpen = false;
+
+function getAccountTabLabel(tab, ordersCount, walletBalance, points, wishlistCount) {
+  switch (tab) {
+    case 'orders': return `📦 Orders & Tracking (${ordersCount || 0})`;
+    case 'wallet': return `💳 Float Wallet (${money(walletBalance || 0)})`;
+    case 'rewards': return `⭐ VIP Rewards (${points || 0} pts)`;
+    case 'address': return `📍 Saved Delivery & Fit`;
+    case 'wholesale': return `⚡ VIP Wholesale (Bulk)`;
+    case 'wishlist': return `♡ Saved Wishlist (${wishlistCount || 0})`;
+    case 'security': return `🔒 Security & Alerts`;
+    case 'support': return `💬 24/7 Concierge`;
+    default: return `📦 Orders & Tracking`;
+  }
 }
 
 function account() {
