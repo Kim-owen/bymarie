@@ -401,21 +401,37 @@ async function sendAdminOrderNotifications(order) {
   `;
 
   try {
-    if (process.env.RESEND_API_KEY) {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (resendApiKey) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
       const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <onboarding@resend.dev>';
-      await fetchFn('https://api.resend.com/emails', {
+      const targetEmail = process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com';
+      const res = await fetchFn('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: fromAddress,
-          to: [ADMIN_EMAIL],
+          to: [targetEmail],
           subject: `⚡ New Order Alert #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
           html: emailHtml
         })
       });
+      const data = await res.json();
+      if (data.error || data.statusCode >= 400) {
+        // If domain restricted to registered email in sandbox, retry with sunumanfred14@gmail.com
+        await fetchFn('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'ByMarie Orders <onboarding@resend.dev>',
+            to: ['sunumanfred14@gmail.com'],
+            subject: `⚡ New Order Alert #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
+            html: emailHtml
+          })
+        });
+      }
+      console.log(`📧 [EMAIL DISPATCH] Alert sent to Admin for Order #${order.id}. Resend ID:`, data.id || data);
     }
-    console.log(`📧 [EMAIL DISPATCH] Alert sent to Admin (${ADMIN_EMAIL}) for Order #${order.id}`);
   } catch (err) {
     console.warn('Email dispatch notification note:', err.message);
   }
