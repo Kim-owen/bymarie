@@ -4,27 +4,7 @@
 
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  try {
-    const raw = localStorage.getItem('bymarie-products');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const clean = parsed.filter(p => {
-          if (!p || !p.id || !p.name) return false;
-          const id = String(p.id).toLowerCase();
-          if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
-          const nm = String(p.name).toLowerCase();
-          if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
-            return false;
-          }
-          return true;
-        });
-        localStorage.setItem('bymarie-products', JSON.stringify(clean));
-      }
-    }
-  } catch (e) {}
-
-  const purgeKey = 'bymarie-clean-v35-zero-all-mocked-images';
+  const purgeKey = 'bymarie-purge-100-percent-clean-v1';
   if (!localStorage.getItem(purgeKey)) {
     localStorage.setItem('bymarie-products', JSON.stringify([]));
     localStorage.setItem('bymarie-orders', JSON.stringify([]));
@@ -32,6 +12,7 @@
     localStorage.setItem('bymarie-notifications', JSON.stringify([]));
     localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
     localStorage.setItem('bymarie-cart', JSON.stringify([]));
+    localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
     const raw = localStorage.getItem('bymarie-site-settings');
     if (raw) {
       try {
@@ -3969,36 +3950,7 @@ const ADMIN_TAB_TITLES = {
 
 function getWholesaleInquiries() {
   const data = localStorage.getItem('bymarie-wholesale-inquiries');
-  if (!data) {
-    const initial = [
-      {
-        id: 'WS-1082',
-        date: '24 Aug 2026',
-        company: 'Bella Luxe Beauty Lounge',
-        contact: 'Akua Frimpong',
-        phone: '+233 24 188 9900',
-        email: 'akua@bellaluxe.com',
-        city: 'East Legon, Accra',
-        volume: '100 – 250 units',
-        notes: 'Interested in Raw Virgin Human Hair Wigs & Silk Robes for bridal glam suite.',
-        status: 'New'
-      },
-      {
-        id: 'WS-1081',
-        date: '22 Aug 2026',
-        company: 'Kempinski Hotel Gold Coast City Boutique',
-        contact: 'Kofi Mensah',
-        phone: '+233 50 444 8822',
-        email: 'retail@kempinski-accra.com',
-        city: 'Ministries, Accra',
-        volume: '250 – 500 units',
-        notes: 'Handcrafted Extraits & Daily Botanical body lotions for VIP hotel suites and boutique.',
-        status: 'Quoted'
-      }
-    ];
-    localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify(initial));
-    return initial;
-  }
+  if (!data) return [];
   try { return JSON.parse(data); } catch { return []; }
 }
 
