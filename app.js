@@ -1055,6 +1055,22 @@ function header() {
           </button>
         </div>
       </header>
+
+      <!-- Storefront Mobile Category Swipeable Menu Bar -->
+      <div class="storefront-mobile-menu-bar mobile-only">
+        <button class="storefront-menu-pill ${currentPage === 'home' ? 'active' : ''}" onclick="go('home')">✨ Home</button>
+        <button class="storefront-menu-pill ${currentPage === 'shop' && filters.cat === 'All' ? 'active' : ''}" onclick="filters.cat='All';go('shop')">All Pieces</button>
+        <button class="storefront-menu-pill ${isCat('Clothing') ? 'active' : ''}" onclick="go('category/Clothing')">👗 Clothing</button>
+        <button class="storefront-menu-pill ${isCat('Shoes') ? 'active' : ''}" onclick="go('category/Shoes')">👠 Shoes</button>
+        <button class="storefront-menu-pill ${isCat('Bags') ? 'active' : ''}" onclick="go('category/Bags')">👜 Bags</button>
+        <button class="storefront-menu-pill ${isCat('Wigs') ? 'active' : ''}" onclick="go('category/Wigs')">💇‍♀️ Wigs</button>
+        <button class="storefront-menu-pill ${isCat('Skin Care') ? 'active' : ''}" onclick="go('category/Skin Care')">✨ Skin Care</button>
+        <button class="storefront-menu-pill ${isCat('Perfumes') ? 'active' : ''}" onclick="go('category/Perfumes')">🌸 Perfumes</button>
+        <button class="storefront-menu-pill ${isCat('Lifestyle') ? 'active' : ''}" onclick="go('category/Lifestyle')">🕯️ Lifestyle</button>
+        <button class="storefront-menu-pill ${isCat('Nails') ? 'active' : ''}" onclick="go('category/Nails')">💅 Nails</button>
+        <button class="storefront-menu-pill ${isCat('Panties') ? 'active' : ''}" onclick="go('category/Panties')">👙 Panties</button>
+        <button class="storefront-menu-pill ${isCat('Toiletries') ? 'active' : ''}" onclick="go('category/Toiletries')">🛁 Toiletries</button>
+      </div>
     </div>
     ${mobileDrawer()}
   `;
@@ -4052,6 +4068,17 @@ function admin() {
               ${svgIcon('search', 15)}
             </button>
           </div>
+        </div>
+
+        <!-- Mobile Horizontal Tab Menu Bar (Swipeable Quick Switcher) -->
+        <div class="admin-mobile-tab-strip mobile-only">
+          ${ADMIN_NAV.flatMap(g => g.items).map(item => `
+            <button class="admin-tab-pill ${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';render()">
+              ${svgIcon(item.icon, 13)}
+              <span>${item.label}</span>
+              ${navCounts[item.key] ? `<b class="pill-count ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : ''}
+            </button>
+          `).join('')}
         </div>
 
         <section class="admin-body">
