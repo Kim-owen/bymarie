@@ -3056,6 +3056,8 @@ function renderOrderStatusTimeline(status) {
       `).join('')}
     </div>
   `;
+}
+
 let accountMenuOpen = false;
 
 function getAccountTabLabel(tab, ordersCount, walletBalance, points, wishlistCount) {
