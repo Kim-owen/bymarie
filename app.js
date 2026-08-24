@@ -3103,6 +3103,24 @@ function account() {
 
   return `
     <main class="account-shell animate-fade-up">
+      <!-- Dedicated Account Top Sub-Navbar -->
+      <div class="account-sub-navbar">
+        <button type="button" class="account-back-btn" onclick="filters.cat='All';go('shop')">
+          ← Back to Boutique
+        </button>
+        <div class="account-sub-title">
+          <span>BYMARIE PRIVATE CLIENT ATELIER</span>
+        </div>
+        <div class="account-sub-actions">
+          <button type="button" class="sub-nav-btn" onclick="go('notifications')" title="Notifications">
+            🔔
+          </button>
+          <button type="button" class="sub-nav-btn" onclick="openDrawer('cart')" title="Shopping Bag">
+            🛍️ <span class="sub-nav-badge">${cart.length}</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Top Luxury Atelier Member Card -->
       <div class="account-hero-card">
         <div class="account-hero-profile">
