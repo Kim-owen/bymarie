@@ -4167,17 +4167,6 @@ function admin() {
           </div>
         </div>
 
-        <!-- Mobile Horizontal Tab Menu Bar (Swipeable Quick Switcher) -->
-        <div class="admin-mobile-tab-strip mobile-only">
-          ${ADMIN_NAV.flatMap(g => g.items).map(item => `
-            <button class="admin-tab-pill ${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';render()">
-              ${svgIcon(item.icon, 13)}
-              <span>${item.label}</span>
-              ${navCounts[item.key] ? `<b class="pill-count ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : ''}
-            </button>
-          `).join('')}
-        </div>
-
         <section class="admin-body">
           ${adminTab === 'dashboard' ? renderAdminDashboard(products, orders, totalRevenue, lowStockProducts, outOfStockProducts, users) : ''}
           ${adminTab === 'orders' ? renderAdminOrders(orders) : ''}
