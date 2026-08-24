@@ -403,11 +403,12 @@ async function sendAdminOrderNotifications(order) {
   try {
     if (process.env.RESEND_API_KEY) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <onboarding@resend.dev>';
       await fetchFn('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'ByMarie Orders <orders@bymarie.com>',
+          from: fromAddress,
           to: [ADMIN_EMAIL],
           subject: `⚡ New Order Alert #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
           html: emailHtml
