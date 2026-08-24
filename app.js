@@ -3964,14 +3964,21 @@ function authPage() {
 
   return `
     <main class="auth-page-shell animate-fade-up">
+      <!-- Top Boutique Return Nav -->
+      <div class="auth-top-nav">
+        <button type="button" class="auth-back-btn" onclick="filters.cat='All';go('shop')">
+          ← Back to Boutique
+        </button>
+        <span class="auth-top-tag">BYMARIE PRIVATE CLIENT ACCESS</span>
+      </div>
+
       <div class="auth-page-card">
-        <!-- Left Luxury Showcase Banner -->
+        <!-- Left Luxury Pink Showcase Banner -->
         <div class="auth-showcase-side">
-          <div class="auth-showcase-overlay"></div>
           <div class="auth-showcase-content">
             <a class="brand auth-brand" href="#home" onclick="go('home')">BYMARIE</a>
             <div class="auth-quote-box">
-              <span class="eyebrow" style="color:var(--gold-light)">EST. 2026 • ACCRA</span>
+              <span class="eyebrow" style="color:var(--gold-light);letter-spacing:1.5px">EST. 2026 • ACCRA</span>
               <h2>Considered Luxury Style &amp; Handcrafted Extraits</h2>
               <p>Join the ByMarie inner circle for priority dispatch, member float wallet privileges, and bespoke access to limited edits.</p>
             </div>
@@ -4005,13 +4012,13 @@ function authPage() {
         <div class="auth-form-side">
           <div class="auth-form-head">
             <span class="eyebrow">WELCOME TO BYMARIE</span>
-            <h1 style="font-size:30px;margin:6px 0 10px">${authMode === 'signin' ? 'Sign In to Your Account' : 'Create Your Account'}</h1>
+            <h1 style="font-size:28px;margin:6px 0 10px">${authMode === 'signin' ? 'Sign In to Your Account' : 'Create Your Account'}</h1>
             <p style="color:var(--muted);font-size:13px">
               ${authMode === 'signin' ? "Enter your registered email and password to access your profile." : "Fill in your details below to register your luxury ByMarie membership."}
             </p>
           </div>
 
-          <div class="auth-tab-bar" style="margin:20px 0 24px">
+          <div class="auth-tab-bar">
             <button class="auth-tab-btn ${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';render()">Sign In</button>
             <button class="auth-tab-btn ${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';render()">Create Account</button>
           </div>
@@ -4025,12 +4032,12 @@ function authPage() {
               <div class="form-group" style="margin-bottom:20px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                   <label style="margin:0">Password</label>
-                  <a href="javascript:void(0)" onclick="toast('Password reset link sent to your email', 'info')" style="font-size:12px;color:var(--emerald);text-decoration:underline">Forgot?</a>
+                  <a href="javascript:void(0)" onclick="toast('Password reset link sent to your email', 'info')" style="font-size:12px;color:#c24d67;text-decoration:underline">Forgot?</a>
                 </div>
                 <input required type="password" name="password" placeholder="••••••••">
               </div>
-              <button class="primary" style="width:100%;height:48px;font-size:15px" type="submit">
-                Sign In to Account ${icon('arrow')}
+              <button class="primary" style="width:100%;height:48px;font-size:14.5px;background:#c24d67" type="submit">
+                Sign In to Account →
               </button>
             </form>
           ` : `
@@ -4051,14 +4058,14 @@ function authPage() {
                 <label>Create Password</label>
                 <input required type="password" name="password" placeholder="Minimum 6 characters">
               </div>
-              <button class="primary" style="width:100%;height:48px;font-size:15px" type="submit">
-                Create Account &amp; Join ${icon('arrow')}
+              <button class="primary" style="width:100%;height:48px;font-size:14.5px;background:#c24d67" type="submit">
+                Create Account &amp; Join →
               </button>
             </form>
           `}
 
-          <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--line);text-align:center">
-            <small style="color:var(--muted)">Need help with your account? <a href="#home" onclick="go('home')" style="color:var(--emerald);font-weight:600">Contact Concierge</a></small>
+          <div style="margin-top:24px;padding-top:18px;border-top:1px solid #f2cfd8;text-align:center">
+            <small style="color:var(--muted)">Need help with your account? <a href="#home" onclick="go('home')" style="color:#c24d67;font-weight:700">Contact Concierge</a></small>
           </div>
         </div>
       </div>
