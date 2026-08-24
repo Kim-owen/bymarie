@@ -4102,6 +4102,30 @@ function addAllWholesaleToCart() {
   go('cart');
 }
 
+function handleWholesaleInquirySubmit(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const newInquiry = {
+    id: `WS-${Math.floor(1000 + Math.random() * 9000)}`,
+    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    company: fd.get('company') || 'Direct Wholesale Client',
+    contact: fd.get('contact') || 'Store Buyer',
+    phone: fd.get('phone') || '',
+    email: fd.get('email') || '',
+    city: fd.get('city') || 'Accra, Ghana',
+    volume: fd.get('volume') || '50 – 100 units',
+    notes: fd.get('notes') || 'Standard bulk purchase inquiry',
+    status: 'New'
+  };
+
+  const list = getWholesaleInquiries();
+  list.unshift(newInquiry);
+  saveWholesaleInquiries(list);
+
+  toast('Wholesale quotation request submitted! Our corporate manager will reach out within 4 business hours.');
+  event.target.reset();
+}
+
 function wholesale() {
   const products = getProducts();
   const filtered = products.filter(p => {
@@ -4260,31 +4284,31 @@ function wholesale() {
               Need custom branding, private label hair bundles, hotel amenities, or orders exceeding 100+ units? Speak directly with our dedicated commercial accounts team in Accra.
             </p>
 
-            <form onsubmit="event.preventDefault();toast('Wholesale quotation request submitted! Our corporate manager will reach out within 4 business hours.');this.reset()">
+            <form onsubmit="handleWholesaleInquirySubmit(event)">
               <div class="form-grid">
                 <div class="form-group">
                   <label>Business / Salon / Company Name</label>
-                  <input required placeholder="e.g. Bella Luxe Beauty Lounge">
+                  <input required name="company" placeholder="e.g. Bella Luxe Beauty Lounge">
                 </div>
                 <div class="form-group">
                   <label>Contact Person</label>
-                  <input required placeholder="e.g. Akua Frimpong">
+                  <input required name="contact" placeholder="e.g. Akua Frimpong">
                 </div>
                 <div class="form-group">
                   <label>Corporate Phone / WhatsApp</label>
-                  <input required type="tel" placeholder="e.g. 024 XXX XXXX">
+                  <input required name="phone" type="tel" placeholder="e.g. 024 XXX XXXX">
                 </div>
                 <div class="form-group">
                   <label>Email Address</label>
-                  <input required type="email" placeholder="wholesale@yourcompany.com">
+                  <input required name="email" type="email" placeholder="wholesale@yourcompany.com">
                 </div>
                 <div class="form-group">
                   <label>City &amp; Region</label>
-                  <input required placeholder="e.g. East Legon, Accra / Kumasi">
+                  <input required name="city" placeholder="e.g. East Legon, Accra / Kumasi">
                 </div>
                 <div class="form-group">
                   <label>Estimated Order Volume</label>
-                  <select>
+                  <select name="volume">
                     <option>50 – 100 units</option>
                     <option>100 – 250 units</option>
                     <option>250 – 500 units</option>
@@ -4293,11 +4317,11 @@ function wholesale() {
                 </div>
                 <div class="form-group full">
                   <label>Specific Product Requests &amp; Notes</label>
-                  <textarea rows="3" placeholder="Specify collections of interest (e.g. Raw Wigs, Italian Mules, Silk Robes, Vitamin C Serums, custom packaging)..."></textarea>
+                  <textarea name="notes" rows="3" placeholder="Specify collections of interest (e.g. Raw Wigs, Italian Mules, Silk Robes, Vitamin C Serums, custom packaging)..."></textarea>
                 </div>
               </div>
               <div style="display:flex;gap:14px;margin-top:16px;justify-content:center">
-                <button class="primary" type="submit">Submit Wholesale Inquiry ${icon('arrow')}</button>
+                <button class="primary" style="background:#c24d67" type="submit">Submit Wholesale Inquiry ${icon('arrow')}</button>
                 <button class="secondary-btn" type="button" onclick="toast('Downloading ByMarie 2026 Wholesale Catalogue PDF...')">Download Line-Sheet PDF</button>
               </div>
             </form>
@@ -4406,49 +4430,107 @@ function renderAdminLoginGate() {
 }
 
 const ADMIN_NAV = [
-  { section: 'Overview', items: [
-    { key: 'dashboard', label: 'Dashboard', icon: 'grid' }
+  { section: 'Executive Intelligence', items: [
+    { key: 'dashboard', label: 'Executive Overview', icon: 'grid' },
+    { key: 'orders', label: 'Order Logistics', icon: 'bag' },
+    { key: 'products', label: 'Haute Couture Catalog', icon: 'box' },
+    { key: 'inventory', label: 'Inventory Sentinel', icon: 'layers' }
   ]},
-  { section: 'Catalog', items: [
-    { key: 'products', label: 'Products', icon: 'box' },
-    { key: 'inventory', label: 'Inventory', icon: 'layers' }
+  { section: 'Commercial & CRM', items: [
+    { key: 'users', label: 'VIP Clients & Wallets', icon: 'users' },
+    { key: 'wholesale', label: 'Wholesale B2B Pipeline', icon: 'zap' },
+    { key: 'discounts', label: 'Promo & Marketing', icon: 'tag' }
   ]},
-  { section: 'Sales & Customers', items: [
-    { key: 'orders', label: 'Orders', icon: 'bag' },
-    { key: 'users', label: 'Users & Wallets', icon: 'users' },
-    { key: 'discounts', label: 'Promo Codes', icon: 'tag' }
-  ]},
-  { section: 'Content', items: [
-    { key: 'cms', label: 'Site Content', icon: 'palette' }
-  ]},
-  { section: 'System', items: [
-    { key: 'supabase', label: 'Supabase Backend', icon: 'zap' }
+  { section: 'Store Architecture', items: [
+    { key: 'cms', label: 'Storefront CMS', icon: 'palette' },
+    { key: 'supabase', label: 'Cloud DB & Sync', icon: 'zap' }
   ]}
 ];
 
 const ADMIN_TAB_TITLES = {
-  dashboard: 'Dashboard',
-  products: 'Products',
-  inventory: 'Inventory',
-  orders: 'Orders',
-  users: 'Users & Wallets',
-  discounts: 'Promo Codes',
-  cms: 'Site Content',
-  supabase: 'Supabase Backend'
+  dashboard: 'Executive Overview',
+  orders: 'Order Logistics & Fulfillment',
+  products: 'Haute Couture Product Catalog',
+  inventory: 'Real-Time Stock Sentinel',
+  users: 'VIP Client CRM & Float Wallets',
+  wholesale: 'Wholesale & B2B Commercial Inquiries',
+  discounts: 'Marketing & Promo Engine',
+  cms: 'Storefront CMS & Campaign Media',
+  supabase: 'Supabase Cloud Postgres & Backup'
 };
+
+function getWholesaleInquiries() {
+  const data = localStorage.getItem('bymarie-wholesale-inquiries');
+  if (!data) {
+    const initial = [
+      {
+        id: 'WS-1082',
+        date: '24 Aug 2026',
+        company: 'Bella Luxe Beauty Lounge',
+        contact: 'Akua Frimpong',
+        phone: '+233 24 188 9900',
+        email: 'akua@bellaluxe.com',
+        city: 'East Legon, Accra',
+        volume: '100 – 250 units',
+        notes: 'Interested in Raw Virgin Human Hair Wigs & Silk Robes for bridal glam suite.',
+        status: 'New'
+      },
+      {
+        id: 'WS-1081',
+        date: '22 Aug 2026',
+        company: 'Kempinski Hotel Gold Coast City Boutique',
+        contact: 'Kofi Mensah',
+        phone: '+233 50 444 8822',
+        email: 'retail@kempinski-accra.com',
+        city: 'Ministries, Accra',
+        volume: '250 – 500 units',
+        notes: 'Handcrafted Extraits & Daily Botanical body lotions for VIP hotel suites and boutique.',
+        status: 'Quoted'
+      }
+    ];
+    localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify(initial));
+    return initial;
+  }
+  try { return JSON.parse(data); } catch { return []; }
+}
+
+function saveWholesaleInquiries(list) {
+  localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify(list));
+}
+
+function updateWholesaleInquiryStatus(id, status) {
+  const list = getWholesaleInquiries();
+  const item = list.find(x => x.id === id);
+  if (item) {
+    item.status = status;
+    saveWholesaleInquiries(list);
+    toast(`Inquiry ${id} updated to ${status}`);
+    render();
+  }
+}
+
+function deleteWholesaleInquiry(id) {
+  if (!confirm(`Delete wholesale inquiry ${id}?`)) return;
+  const list = getWholesaleInquiries().filter(x => x.id !== id);
+  saveWholesaleInquiries(list);
+  toast('Wholesale inquiry removed');
+  render();
+}
 
 function getCommandPaletteResults(query) {
   const q = (query || '').toLowerCase().trim();
   const navCommands = [
-    { icon: 'grid', label: 'Go to Dashboard', action: "adminTab='dashboard';commandPaletteOpen=false;render()" },
-    { icon: 'box', label: 'Go to Products', action: "adminTab='products';commandPaletteOpen=false;render()" },
-    { icon: 'layers', label: 'Go to Inventory', action: "adminTab='inventory';commandPaletteOpen=false;render()" },
-    { icon: 'bag', label: 'Go to Orders', action: "adminTab='orders';commandPaletteOpen=false;render()" },
-    { icon: 'tag', label: 'Go to Promo Codes', action: "adminTab='discounts';commandPaletteOpen=false;render()" },
-    { icon: 'palette', label: 'Go to Site Content', action: "adminTab='cms';commandPaletteOpen=false;render()" },
-    { icon: 'zap', label: 'Go to Supabase Backend', action: "adminTab='supabase';commandPaletteOpen=false;render()" },
-    { icon: 'plus', label: 'Add New Product', action: "commandPaletteOpen=false;adminTab='products';render();openProductModal('add')" },
-    { icon: 'download', label: 'Export Orders to CSV', action: "commandPaletteOpen=false;render();exportOrdersCSV()" },
+    { icon: 'grid', label: 'Go to Executive Overview', action: "adminTab='dashboard';commandPaletteOpen=false;render()" },
+    { icon: 'bag', label: 'Go to Order Logistics', action: "adminTab='orders';commandPaletteOpen=false;render()" },
+    { icon: 'box', label: 'Go to Haute Couture Catalog', action: "adminTab='products';commandPaletteOpen=false;render()" },
+    { icon: 'layers', label: 'Go to Inventory Sentinel', action: "adminTab='inventory';commandPaletteOpen=false;render()" },
+    { icon: 'users', label: 'Go to VIP Clients & Wallets', action: "adminTab='users';commandPaletteOpen=false;render()" },
+    { icon: 'zap', label: 'Go to Wholesale B2B Pipeline', action: "adminTab='wholesale';commandPaletteOpen=false;render()" },
+    { icon: 'tag', label: 'Go to Promo & Marketing', action: "adminTab='discounts';commandPaletteOpen=false;render()" },
+    { icon: 'palette', label: 'Go to Storefront CMS', action: "adminTab='cms';commandPaletteOpen=false;render()" },
+    { icon: 'zap', label: 'Go to Cloud DB & Sync', action: "adminTab='supabase';commandPaletteOpen=false;render()" },
+    { icon: 'plus', label: 'Add New Haute Couture Product', action: "commandPaletteOpen=false;adminTab='products';render();openProductModal('add')" },
+    { icon: 'download', label: 'Export Complete Orders CSV', action: "commandPaletteOpen=false;render();exportOrdersCSV()" },
     { icon: 'arrowLeft', label: 'Return to Storefront', action: "commandPaletteOpen=false;go('home')" }
   ];
 
@@ -4465,21 +4547,36 @@ function admin() {
   const products = getProducts();
   const orders = getOrders();
   const coupons = getCoupons();
+  const users = getUsers();
+  const wholesaleInquiries = getWholesaleInquiries();
 
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 8);
   const outOfStockProducts = products.filter(p => p.stock <= 0);
   const alertCount = lowStockProducts.length + outOfStockProducts.length;
   const pendingOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Processing').length;
+  const newWholesaleCount = wholesaleInquiries.filter(w => w.status === 'New').length;
 
-  const users = getUsers();
-  const navCounts = { products: products.length, inventory: alertCount, orders: orders.length, users: users.length, discounts: coupons.length };
+  const navCounts = {
+    products: products.length,
+    inventory: alertCount,
+    orders: orders.length,
+    users: users.length,
+    wholesale: newWholesaleCount,
+    discounts: coupons.length
+  };
 
   return `
     <main class="admin-shell">
+      <!-- Million-Dollar Haute Couture Sidebar -->
       <aside class="admin-sidebar">
-        <a class="brand admin-brand" href="#home" onclick="go('home')">BYMARIE</a>
-        <div class="admin-badge">${svgIcon('dot', 8)} Admin Console</div>
+        <div class="admin-brand-header">
+          <a class="brand admin-brand" href="#home" onclick="go('home')">BYMARIE</a>
+          <div class="admin-executive-tag">
+            <span class="pulse-dot"></span>
+            EXECUTIVE ATELIER
+          </div>
+        </div>
 
         <nav class="admin-nav">
           ${ADMIN_NAV.map(group => `
@@ -4496,26 +4593,38 @@ function admin() {
 
         <div class="admin-sidebar-footer">
           <div class="admin-user-chip">
-            <span class="avatar">A</span>
-            <div><strong>Admin</strong><small>Store Owner</small></div>
+            <span class="avatar" style="background:#c24d67;color:#fff">I</span>
+            <div style="min-width:0">
+              <strong style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ifeoma Adichie</strong>
+              <small style="color:var(--gold)">Super Administrator</small>
+            </div>
           </div>
           <button class="admin-exit" onclick="go('home')">${svgIcon('arrowLeft', 16)} Return to Storefront</button>
         </div>
       </aside>
 
+      <!-- Main Executive Viewport -->
       <div class="admin-main">
+        <!-- Million-Dollar Topbar -->
         <div class="admin-topbar">
           <div class="admin-breadcrumb">
-            <span>Admin</span> / <b>${ADMIN_TAB_TITLES[adminTab] || 'Dashboard'}</b>
+            <span style="color:#a1a1aa">Executive Suite</span> <span style="color:#52525b">/</span> <b style="color:#fff">${ADMIN_TAB_TITLES[adminTab] || 'Dashboard'}</b>
           </div>
+
           <button class="command-palette-trigger" onclick="commandPaletteOpen=true;commandPaletteQuery='';render()">
-            ${svgIcon('search', 14)} <span>Search or jump to...</span> <kbd>⌘K</kbd>
+            ${svgIcon('search', 14)} <span>Search or command palette...</span> <kbd>⌘K</kbd>
           </button>
+
           <select class="admin-mobile-tab-select" aria-label="Admin section" onchange="adminTab=this.value;render()">
             ${ADMIN_NAV.flatMap(g => g.items).map(item => `<option value="${item.key}" ${adminTab === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}
           </select>
+
           <div class="admin-topbar-actions">
-            <span class="store-status"><i></i> Store Online</span>
+            <div class="admin-kpi-pill">
+              <span style="font-size:10px;color:#a1a1aa">LIVE REVENUE</span>
+              <strong style="color:var(--gold-light);font-size:13px">${money(totalRevenue)}</strong>
+            </div>
+            <span class="store-status"><i></i> Production Live</span>
             <button class="icon-btn" aria-label="Notifications" onclick="commandPaletteOpen=true;commandPaletteQuery='';render()">
               ${svgIcon('bell', 18)}
               ${alertCount || pendingOrders ? `<span class="badge-count">${alertCount + pendingOrders}</span>` : ''}
@@ -4524,11 +4633,12 @@ function admin() {
         </div>
 
         <section class="admin-body">
-          ${adminTab === 'dashboard' ? renderAdminDashboard(products, orders, totalRevenue, lowStockProducts, outOfStockProducts) : ''}
+          ${adminTab === 'dashboard' ? renderAdminDashboard(products, orders, totalRevenue, lowStockProducts, outOfStockProducts, users) : ''}
+          ${adminTab === 'orders' ? renderAdminOrders(orders) : ''}
           ${adminTab === 'products' ? renderAdminProducts(products) : ''}
           ${adminTab === 'inventory' ? renderAdminInventory(products) : ''}
-          ${adminTab === 'orders' ? renderAdminOrders(orders) : ''}
           ${adminTab === 'users' ? renderAdminUsers(users) : ''}
+          ${adminTab === 'wholesale' ? renderAdminWholesale(wholesaleInquiries) : ''}
           ${adminTab === 'discounts' ? renderAdminDiscounts(coupons) : ''}
           ${adminTab === 'cms' ? renderAdminSiteCMS() : ''}
           ${adminTab === 'supabase' ? renderAdminSupabaseConfig() : ''}
@@ -4568,13 +4678,13 @@ function areaChartSvg(values, labels, width = 640, height = 200) {
     <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" class="area-chart-svg">
       <defs>
         <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" style="stop-color:var(--emerald);stop-opacity:0.32"/>
-          <stop offset="100%" style="stop-color:var(--emerald);stop-opacity:0"/>
+          <stop offset="0%" style="stop-color:#c24d67;stop-opacity:0.45"/>
+          <stop offset="100%" style="stop-color:#c24d67;stop-opacity:0"/>
         </linearGradient>
       </defs>
       <path d="${areaPath}" fill="url(#revenueGradient)"/>
-      <path d="${linePath}" fill="none" stroke="var(--emerald)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-      ${pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="#fff" stroke="var(--emerald)" stroke-width="2"/>`).join('')}
+      <path d="${linePath}" fill="none" stroke="#c24d67" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+      ${pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="#fff" stroke="#c24d67" stroke-width="2"/>`).join('')}
     </svg>
     <div class="area-chart-labels">
       ${labels.map(l => `<span>${l}</span>`).join('')}
@@ -4582,14 +4692,16 @@ function areaChartSvg(values, labels, width = 640, height = 200) {
   `;
 }
 
-function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfStock) {
+function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfStock, users) {
   const alertTotal = lowStock.length + (outOfStock ? outOfStock.length : 0);
+  const totalFloatBalance = users.reduce((sum, u) => sum + (Number(u.walletBalance) || 0), 0);
+  const aov = orders.length ? (totalRevenue / orders.length) : 0;
 
   const categoryBreakdown = Object.entries(
     products.reduce((acc, p) => { acc[p.category] = (acc[p.category] || 0) + 1; return acc; }, {})
   ).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
   const catTotal = categoryBreakdown.reduce((s, c) => s + c.count, 0) || 1;
-  const catPalette = ['#b83d5e', '#c59737', '#1b638a', '#791b34', '#70428e', '#2b1118', '#d45b7e', '#4a7c59', '#8a6b74', '#e4a253'];
+  const catPalette = ['#c24d67', '#c59737', '#1b638a', '#791b34', '#70428e', '#155d53', '#d45b7e', '#4a7c59', '#8a6b74', '#e4a253'];
 
   let cumPct = 0;
   const gradientStops = categoryBreakdown.map((c, i) => {
@@ -4599,7 +4711,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
     return `${catPalette[i % catPalette.length]} ${start}% ${cumPct}%`;
   }).join(', ');
 
-  const weekly = [4200, 5100, 4700, 6800, 6100, 7900, Math.max(totalRevenue, 8200)];
+  const weekly = [5400, 6800, 6100, 8900, 7800, 10200, Math.max(totalRevenue, 11500)];
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const ordersSpark = trendSpark(orders.length, 'up');
   const catalogSpark = trendSpark(products.length, 'up');
@@ -4608,94 +4720,141 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">EXECUTIVE DASHBOARD</span>
-        <h1 style="font-size:32px;margin-top:4px">Store Performance Overview</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">EXECUTIVE BUSINESS INTELLIGENCE</span>
+        <h1 style="font-size:32px;margin-top:4px">Haute Couture Performance Command</h1>
       </div>
-      <button class="primary" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Product</button>
+      <div style="display:flex;gap:10px">
+        <button class="secondary-btn" onclick="exportOrdersCSV()">📥 Export Sales CSV</button>
+        <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Piece</button>
+      </div>
     </div>
 
-    <div class="dashboard-bento animate-fade-up delay-1">
+    <!-- 6 High-Altitude Financial KPI Bento Grid -->
+    <div class="stats-row cols-3 animate-fade-up delay-1" style="margin-bottom:20px">
+      <div class="stat-card sparkline-card">
+        <div>
+          <span class="stat-icon rose">${svgIcon('tag', 18)}</span>
+          <strong style="color:var(--gold-light)">${money(totalRevenue)}</strong>
+          <span>Gross Merchandise Volume (GMV)</span>
+        </div>
+        <div class="sparkline-wrap">
+          ${sparklineSvg(trendSpark(totalRevenue, 'up'), '#c24d67')}
+          <span class="stat-trend up">${svgIcon('trendUp', 12)} +18.4% WoW</span>
+        </div>
+      </div>
+
+      <div class="stat-card sparkline-card">
+        <div>
+          <span class="stat-icon blue">${svgIcon('bag', 18)}</span>
+          <strong>${money(aov)}</strong>
+          <span>Average Order Value (AOV)</span>
+        </div>
+        <div class="sparkline-wrap">
+          ${sparklineSvg(trendSpark(aov, 'up'), 'var(--blue)')}
+          <span class="stat-trend up">${svgIcon('trendUp', 12)} High Ticket</span>
+        </div>
+      </div>
+
+      <div class="stat-card sparkline-card">
+        <div>
+          <span class="stat-icon gold">${svgIcon('users', 18)}</span>
+          <strong style="color:#38bdf8">${money(totalFloatBalance)}</strong>
+          <span>Member Float Wallet Liabilities</span>
+        </div>
+        <div class="sparkline-wrap">
+          ${sparklineSvg(trendSpark(totalFloatBalance, 'up'), '#38bdf8')}
+          <span class="stat-trend up">${svgIcon('trendUp', 12)} Liquid Balance</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Charts Section -->
+    <div class="dashboard-bento animate-fade-up delay-2">
       <div class="bento-hero-card">
         <div class="stat-card-top">
           <span class="stat-icon rose">${svgIcon('tag', 18)}</span>
-          <span class="stat-trend up">${svgIcon('trendUp', 13)} 16.4%</span>
+          <span class="stat-trend up">${svgIcon('trendUp', 13)} +24.2% Growth</span>
         </div>
-        <strong class="bento-hero-value">${money(totalRevenue)}</strong>
-        <span>Total Gross Sales · Last 7 Days</span>
+        <strong class="bento-hero-value" style="color:#fff">${money(totalRevenue)}</strong>
+        <span style="color:#a1a1aa">7-Day Real-Time Revenue Velocity (Cedis)</span>
         <div class="bento-hero-chart">
           ${areaChartSvg(weekly, weekDays)}
         </div>
       </div>
 
       <div class="bento-donut-card">
-        <h3>Category Breakdown</h3>
+        <h3 style="color:#fff">Collection Mix (${products.length} Items)</h3>
         <div class="donut-wrap">
           <div class="donut-chart" style="background:conic-gradient(${gradientStops})">
-            <div class="donut-hole"><strong>${products.length}</strong><small>Products</small></div>
+            <div class="donut-hole"><strong style="color:#fff">${products.length}</strong><small style="color:#a1a1aa">Pieces</small></div>
           </div>
         </div>
         <div class="donut-legend">
           ${categoryBreakdown.map((c, i) => `
             <div class="donut-legend-row">
               <span class="dot" style="background:${catPalette[i % catPalette.length]}"></span>
-              <span>${c.name}</span>
-              <b>${Math.round((c.count / catTotal) * 100)}%</b>
+              <span style="color:#e4e4e7">${c.name}</span>
+              <b style="color:#fff">${Math.round((c.count / catTotal) * 100)}%</b>
             </div>
           `).join('')}
         </div>
       </div>
     </div>
 
-    <div class="stats-row cols-3 animate-fade-up delay-2">
+    <!-- Secondary KPI Row -->
+    <div class="stats-row cols-3 animate-fade-up delay-3">
       <div class="stat-card sparkline-card">
         <div>
           <span class="stat-icon blue">${svgIcon('bag', 18)}</span>
           <strong>${orders.length}</strong>
-          <span>Total Orders</span>
+          <span>Total Orders Placed</span>
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(ordersSpark, 'var(--blue)')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} 12 new</span>
+          <span class="stat-trend up">${svgIcon('trendUp', 12)} Active Dispatch</span>
         </div>
       </div>
+
       <div class="stat-card sparkline-card">
         <div>
           <span class="stat-icon gold">${svgIcon('box', 18)}</span>
           <strong>${products.length}</strong>
-          <span>Active Catalog</span>
+          <span>Active Pieces in Boutique</span>
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(catalogSpark, 'var(--gold)')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} ${categoryBreakdown.length} collections</span>
+          <span class="stat-trend up">${svgIcon('trendUp', 12)} ${categoryBreakdown.length} Categories</span>
         </div>
       </div>
+
       <div class="stat-card sparkline-card">
         <div>
           <span class="stat-icon ${alertTotal ? 'red' : 'rose'}">${svgIcon('layers', 18)}</span>
-          <strong style="color:${alertTotal ? 'var(--red)' : 'var(--emerald)'}">${alertTotal}</strong>
-          <span>Stock Alerts · Under 8 units</span>
+          <strong style="color:${alertTotal ? 'var(--red)' : '#34d399'}">${alertTotal}</strong>
+          <span>Stock Sentinel Alerts</span>
         </div>
         <div class="sparkline-wrap">
-          ${sparklineSvg(alertSpark, alertTotal ? 'var(--red)' : 'var(--emerald)')}
-          <span class="stat-trend ${alertTotal ? 'down' : 'up'}">${svgIcon(alertTotal ? 'trendDown' : 'trendUp', 12)} ${alertTotal ? 'Needs restock' : 'All healthy'}</span>
+          ${sparklineSvg(alertSpark, alertTotal ? 'var(--red)' : '#34d399')}
+          <span class="stat-trend ${alertTotal ? 'down' : 'up'}">${svgIcon(alertTotal ? 'trendDown' : 'trendUp', 12)} ${alertTotal ? 'Needs Replenishment' : 'Optimal Inventory'}</span>
         </div>
       </div>
     </div>
 
-    <div class="admin-section-head">
-      <h3>Recent Orders</h3>
-      <button class="text-btn" onclick="adminTab='orders';render()">View all ${icon('arrow')}</button>
+    <!-- Recent High-Value Orders -->
+    <div class="admin-section-head" style="margin-top:28px">
+      <h3 style="color:#fff">Recent Live Orders Stream</h3>
+      <button class="text-btn" style="color:var(--gold)" onclick="adminTab='orders';render()">View All Logistics →</button>
     </div>
     <div class="table-scroll">
       <table class="data-table">
         <thead>
           <tr>
             <th>Order ID</th>
-            <th>Customer</th>
+            <th>Client</th>
             <th>Date</th>
             <th>Amount</th>
             <th>Status</th>
-            <th>Update Status</th>
+            <th>Logistics Action</th>
           </tr>
         </thead>
         <tbody>
@@ -4704,12 +4863,15 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
               <td><b>${o.id}</b></td>
               <td>
                 <div class="table-avatar-row">
-                  <span class="table-avatar">${o.name.charAt(0)}</span>
-                  ${o.name}
+                  <span class="table-avatar" style="background:#c24d67;color:#fff">${o.name.charAt(0)}</span>
+                  <div>
+                    <strong>${o.name}</strong>
+                    <small style="color:#a1a1aa;display:block">${o.phone}</small>
+                  </div>
                 </div>
               </td>
               <td>${o.date}</td>
-              <td><b>${money(o.total)}</b></td>
+              <td><b style="color:var(--gold-light)">${money(o.total)}</b></td>
               <td><span class="badge ${o.status.toLowerCase()}">${o.status}</span></td>
               <td>
                 <select class="mini-select" onchange="updateOrderStatus('${o.id}', this.value)">
@@ -4743,16 +4905,16 @@ function renderAdminProducts(products) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">CATALOG MANAGEMENT</span>
-        <h1 style="font-size:32px;margin-top:4px">All Products (${products.length})</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">HAUTE COUTURE CATALOG</span>
+        <h1 style="font-size:32px;margin-top:4px">Product Collections (${products.length})</h1>
       </div>
-      <button class="primary" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Product</button>
+      <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Piece</button>
     </div>
 
     <div class="admin-filter-bar">
       <div class="searchbox">
         <span>${icon('search')}</span>
-        <input aria-label="Search products" value="${f.search}" oninput="adminProductFilter.search=this.value;render()" placeholder="Search by name or category…">
+        <input aria-label="Search products" value="${f.search}" oninput="adminProductFilter.search=this.value;render()" placeholder="Search pieces by name, category, or notes…">
       </div>
       <select onchange="adminProductFilter.category=this.value;render()">
         ${['All', ...categories].map(x => `<option ${f.category === x ? 'selected' : ''}>${x}</option>`).join('')}
@@ -4760,7 +4922,7 @@ function renderAdminProducts(products) {
       <select onchange="adminProductFilter.stock=this.value;render()">
         ${['All', 'In stock', 'Low stock', 'Out of stock'].map(x => `<option ${f.stock === x ? 'selected' : ''}>${x}</option>`).join('')}
       </select>
-      <span class="results-meta" style="margin:0">${list.length} of ${products.length}</span>
+      <span class="results-meta" style="margin:0;color:#a1a1aa">${list.length} of ${products.length} displayed</span>
     </div>
 
     ${list.length ? `
@@ -4768,10 +4930,10 @@ function renderAdminProducts(products) {
         <table class="data-table">
           <thead>
             <tr>
-              <th>Product</th>
+              <th>Piece Details</th>
               <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
+              <th>Retail Price</th>
+              <th>Stock Status</th>
               <th>Rating</th>
               <th>Actions</th>
             </tr>
@@ -4781,26 +4943,29 @@ function renderAdminProducts(products) {
               <tr>
                 <td>
                   <div class="table-product-cell">
-                    <img src="${p.image}" alt="${p.name}">
+                    <img src="${p.image}" alt="${p.name}" style="border-radius:6px;width:44px;height:52px;object-fit:cover">
                     <div>
-                      <strong>${p.name}</strong>
-                      ${p.tag ? `<span class="tag" style="position:static;display:inline-block;margin-top:4px">${p.tag}</span>` : ''}
+                      <strong style="color:#fff">${p.name}</strong>
+                      <div style="display:flex;gap:6px;margin-top:4px">
+                        ${p.tag ? `<span class="tag" style="position:static;display:inline-block;padding:2px 6px;font-size:9px">${p.tag}</span>` : ''}
+                        <small style="color:#a1a1aa;font-size:10px">${p.colors ? p.colors.join(', ') : ''}</small>
+                      </div>
                     </div>
                   </div>
                 </td>
-                <td><span class="badge" style="background:var(--sage);color:var(--emerald)">${p.category}</span></td>
-                <td><b>${money(p.price)}</b>${p.old ? `<del style="color:var(--muted-light);display:block;font-size:11px">${money(p.old)}</del>` : ''}</td>
+                <td><span class="badge" style="background:rgba(194,77,103,0.15);color:#ffb3c1;border:1px solid rgba(194,77,103,0.3)">${p.category}</span></td>
+                <td><b style="color:var(--gold-light)">${money(p.price)}</b>${p.old ? `<del style="color:#71717a;display:block;font-size:11px">${money(p.old)}</del>` : ''}</td>
                 <td>
-                  <button type="button" onclick="toggleProductStockStatus('${p.id}')" title="Click to toggle stock status" class="badge ${p.stock > 8 ? 'delivered' : p.stock > 0 ? 'pending' : 'cancelled'}" style="border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
+                  <button type="button" onclick="toggleProductStockStatus('${p.id}')" title="Click to toggle availability" class="badge ${p.stock > 8 ? 'delivered' : p.stock > 0 ? 'pending' : 'cancelled'}" style="border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
                     ${p.stock > 0 ? `⚡ In Stock (${p.stock})` : '❌ Out of Stock'}
                   </button>
                 </td>
-                <td>★ ${p.rating}</td>
+                <td>★ ${p.rating || 5.0}</td>
                 <td>
                   <div class="table-actions">
-                    <button type="button" class="secondary-btn" style="padding:4px 8px;font-size:11px;background:${p.stock > 0 ? 'var(--red-bg)' : 'var(--sage)'};color:${p.stock > 0 ? 'var(--red)' : 'var(--emerald)'};border-color:${p.stock > 0 ? 'var(--red-line)' : 'var(--emerald-glow)'}" onclick="toggleProductStockStatus('${p.id}')" title="Toggle product availability">${p.stock > 0 ? 'Out of Stock' : 'In Stock'}</button>
-                    <button class="icon-action-btn" title="Edit product" onclick="openProductModal('edit', '${p.id}')">${svgIcon('edit', 15)}</button>
-                    <button class="icon-action-btn danger" title="Delete product" onclick="deleteProduct('${p.id}')">${svgIcon('trash', 15)}</button>
+                    <button type="button" class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="toggleProductStockStatus('${p.id}')">${p.stock > 0 ? 'Set Out' : 'Set In'}</button>
+                    <button class="icon-action-btn" title="Edit piece" onclick="openProductModal('edit', '${p.id}')">${svgIcon('edit', 15)}</button>
+                    <button class="icon-action-btn danger" title="Delete piece" onclick="deleteProduct('${p.id}')">${svgIcon('trash', 15)}</button>
                   </div>
                 </td>
               </tr>
@@ -4811,8 +4976,8 @@ function renderAdminProducts(products) {
     ` : `
       <div class="admin-empty-state">
         <span>${svgIcon('search', 26)}</span>
-        <h3>No products match your filters</h3>
-        <p>Try adjusting the search term or clearing your filters.</p>
+        <h3 style="color:#fff">No pieces match your filters</h3>
+        <p style="color:#a1a1aa">Try adjusting search query or selecting another category.</p>
         <button class="secondary-btn" onclick="adminProductFilter={search:'',category:'All',stock:'All'};render()">Clear filters</button>
       </div>
     `}
@@ -4835,20 +5000,20 @@ function renderAdminInventory(products) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">INVENTORY CONTROL</span>
-        <h1 style="font-size:32px;margin-top:4px">Stock Levels &amp; Replenishment</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">STOCK SENTINEL</span>
+        <h1 style="font-size:32px;margin-top:4px">Inventory Control &amp; Replenishment</h1>
       </div>
     </div>
 
     <div class="admin-filter-bar">
       <div class="searchbox">
         <span>${icon('search')}</span>
-        <input aria-label="Search inventory" value="${f.search}" oninput="adminInventoryFilter.search=this.value;render()" placeholder="Search by name or category…">
+        <input aria-label="Search inventory" value="${f.search}" oninput="adminInventoryFilter.search=this.value;render()" placeholder="Search pieces by name or category…">
       </div>
       <select onchange="adminInventoryFilter.stock=this.value;render()">
         ${['All', 'In stock', 'Low stock', 'Out of stock'].map(x => `<option ${f.stock === x ? 'selected' : ''}>${x}</option>`).join('')}
       </select>
-      <span class="results-meta" style="margin:0">${list.length} of ${products.length}</span>
+      <span class="results-meta" style="margin:0;color:#a1a1aa">${list.length} of ${products.length} items</span>
     </div>
 
     ${list.length ? `
@@ -4856,11 +5021,11 @@ function renderAdminInventory(products) {
         <table class="data-table">
           <thead>
             <tr>
-              <th>Product</th>
+              <th>Piece</th>
               <th>Category</th>
-              <th>Stock Level</th>
-              <th>Status</th>
-              <th>Quick Adjust</th>
+              <th>Stock Meter</th>
+              <th>Health Status</th>
+              <th>Batch Adjustment</th>
             </tr>
           </thead>
           <tbody>
@@ -4868,15 +5033,15 @@ function renderAdminInventory(products) {
               <tr>
                 <td>
                   <div class="table-product-cell">
-                    <img src="${p.image}" alt="${p.name}">
-                    <strong>${p.name}</strong>
+                    <img src="${p.image}" alt="${p.name}" style="border-radius:6px;width:40px;height:48px;object-fit:cover">
+                    <strong style="color:#fff">${p.name}</strong>
                   </div>
                 </td>
-                <td>${p.category}</td>
+                <td><span style="color:#d4d4d8">${p.category}</span></td>
                 <td>
                   <div class="stock-bar-wrap">
-                    <span class="stock-bar-num">${p.stock}</span>
-                    <div class="stock-bar"><div class="stock-bar-fill ${p.stock > 8 ? 'ok' : p.stock > 0 ? 'low' : 'out'}" style="width:${Math.min(100, (p.stock / maxStock) * 100)}%"></div></div>
+                    <span class="stock-bar-num" style="color:#fff;font-weight:700">${p.stock}</span>
+                    <div class="stock-bar" style="background:#27272a"><div class="stock-bar-fill ${p.stock > 8 ? 'ok' : p.stock > 0 ? 'low' : 'out'}" style="width:${Math.min(100, (p.stock / maxStock) * 100)}%"></div></div>
                   </div>
                 </td>
                 <td>
@@ -4886,10 +5051,10 @@ function renderAdminInventory(products) {
                 </td>
                 <td>
                   <div class="table-actions">
-                    <button type="button" class="secondary-btn" style="padding:4px 8px;font-size:11px;background:${p.stock > 0 ? 'var(--red-bg)' : 'var(--sage)'};color:${p.stock > 0 ? 'var(--red)' : 'var(--emerald)'}" onclick="toggleProductStockStatus('${p.id}')">${p.stock > 0 ? 'Set Out of Stock' : 'Set In Stock'}</button>
                     <button class="icon-action-btn" title="Remove one unit" onclick="adjustProductStock('${p.id}', -1)">−1</button>
                     <button class="icon-action-btn" title="Add one unit" onclick="adjustProductStock('${p.id}', 1)">+1</button>
                     <button class="icon-action-btn" title="Add ten units" onclick="adjustProductStock('${p.id}', 10)">+10</button>
+                    <button type="button" class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="toggleProductStockStatus('${p.id}')">${p.stock > 0 ? 'Out' : 'In'}</button>
                   </div>
                 </td>
               </tr>
@@ -4900,8 +5065,8 @@ function renderAdminInventory(products) {
     ` : `
       <div class="admin-empty-state">
         <span>${svgIcon('layers', 26)}</span>
-        <h3>No items match your filters</h3>
-        <p>Try adjusting the search term or clearing your filters.</p>
+        <h3 style="color:#fff">No items match your filters</h3>
+        <p style="color:#a1a1aa">Try adjusting the search query or stock filter.</p>
         <button class="secondary-btn" onclick="adminInventoryFilter={search:'',stock:'All'};render()">Clear filters</button>
       </div>
     `}
@@ -4912,7 +5077,7 @@ function renderAdminOrders(orders) {
   const f = adminOrderFilter;
   const query = f.search.toLowerCase().trim();
   const list = orders.filter(o => {
-    const matchSearch = !query || `${o.id} ${o.name} ${o.phone}`.toLowerCase().includes(query);
+    const matchSearch = !query || `${o.id} ${o.name} ${o.phone} ${o.city}`.toLowerCase().includes(query);
     const matchStatus = f.status === 'All' || o.status === f.status;
     return matchSearch && matchStatus;
   });
@@ -4927,30 +5092,30 @@ function renderAdminOrders(orders) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">CUSTOMER ORDERS</span>
-        <h1 style="font-size:32px;margin-top:4px">Order Logs (${orders.length})</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">LOGISTICS & DISPATCH</span>
+        <h1 style="font-size:32px;margin-top:4px">Customer Orders (${orders.length})</h1>
       </div>
       <button class="secondary-btn" onclick="exportOrdersCSV()">
-        <span>${icon('download')}</span> Export Orders to CSV
+        <span>${icon('download')}</span> Export Orders CSV
       </button>
     </div>
 
-    <div class="stats-row cols-4">
-      <div class="stat-card compact"><strong>${statusCounts.Pending}</strong><span>Pending</span></div>
-      <div class="stat-card compact"><strong>${statusCounts.Processing}</strong><span>Processing</span></div>
-      <div class="stat-card compact"><strong>${statusCounts.Shipped}</strong><span>Shipped</span></div>
-      <div class="stat-card compact"><strong>${statusCounts.Delivered}</strong><span>Delivered</span></div>
+    <div class="stats-row cols-4" style="margin-bottom:20px">
+      <div class="stat-card compact"><strong style="color:#eab308">${statusCounts.Pending}</strong><span>Pending</span></div>
+      <div class="stat-card compact"><strong style="color:#38bdf8">${statusCounts.Processing}</strong><span>Processing</span></div>
+      <div class="stat-card compact"><strong style="color:#a855f7">${statusCounts.Shipped}</strong><span>Shipped</span></div>
+      <div class="stat-card compact"><strong style="color:#34d399">${statusCounts.Delivered}</strong><span>Delivered</span></div>
     </div>
 
     <div class="admin-filter-bar">
       <div class="searchbox">
         <span>${icon('search')}</span>
-        <input aria-label="Search orders" value="${f.search}" oninput="adminOrderFilter.search=this.value;render()" placeholder="Search by order ID, name, or phone…">
+        <input aria-label="Search orders" value="${f.search}" oninput="adminOrderFilter.search=this.value;render()" placeholder="Search by Order ID, client name, phone, or town…">
       </div>
       <select onchange="adminOrderFilter.status=this.value;render()">
         ${['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(x => `<option ${f.status === x ? 'selected' : ''}>${x}</option>`).join('')}
       </select>
-      <span class="results-meta" style="margin:0">${list.length} of ${orders.length}</span>
+      <span class="results-meta" style="margin:0;color:#a1a1aa">${list.length} of ${orders.length} orders</span>
     </div>
 
     ${list.length ? `
@@ -4959,13 +5124,13 @@ function renderAdminOrders(orders) {
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Customer</th>
+              <th>Client</th>
               <th>Date</th>
               <th>Delivery / City</th>
-              <th>Payment</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Manage</th>
+              <th>Payment Method</th>
+              <th>Total Amount</th>
+              <th>Fulfillment Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -4974,17 +5139,17 @@ function renderAdminOrders(orders) {
                 <td><b>${o.id}</b></td>
                 <td>
                   <div class="table-avatar-row">
-                    <span class="table-avatar">${o.name.charAt(0)}</span>
+                    <span class="table-avatar" style="background:#c24d67;color:#fff">${o.name.charAt(0)}</span>
                     <div>
-                      <strong>${o.name}</strong>
-                      <small style="display:block;color:var(--muted)">${o.phone}</small>
+                      <strong style="color:#fff">${o.name}</strong>
+                      <small style="display:block;color:#a1a1aa">${o.phone}</small>
                     </div>
                   </div>
                 </td>
                 <td>${o.date}</td>
-                <td>${o.city} (${o.delivery && o.delivery.includes('Express') ? '⚡ Express' : 'Standard'})</td>
-                <td>${o.payment}</td>
-                <td><b>${money(o.total)}</b></td>
+                <td><small style="color:#e4e4e7">${o.city} (${o.delivery && o.delivery.includes('Express') ? '⚡ Express' : 'Standard'})</small></td>
+                <td><span style="font-size:12px;color:#d4d4d8">${o.payment}</span></td>
+                <td><b style="color:var(--gold-light)">${money(o.total)}</b></td>
                 <td>
                   <select class="mini-select" onchange="updateOrderStatus('${o.id}', this.value)">
                     ${['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(s => `
@@ -4994,8 +5159,8 @@ function renderAdminOrders(orders) {
                 </td>
                 <td>
                   <div class="table-actions">
-                    <button class="icon-action-btn" title="View order" onclick="openOrderModal('${o.id}')">${svgIcon('eye', 15)}</button>
-                    <button class="icon-action-btn" title="Invoice" onclick="openInvoiceModal('${o.id}')">${svgIcon('receipt', 15)}</button>
+                    <button class="icon-action-btn" title="View order summary" onclick="openOrderModal('${o.id}')">${svgIcon('eye', 15)}</button>
+                    <button class="icon-action-btn" title="Printable Luxury Invoice" onclick="openInvoiceModal('${o.id}')">${svgIcon('receipt', 15)}</button>
                   </div>
                 </td>
               </tr>
@@ -5006,8 +5171,8 @@ function renderAdminOrders(orders) {
     ` : `
       <div class="admin-empty-state">
         <span>${svgIcon('bag', 26)}</span>
-        <h3>No orders match your filters</h3>
-        <p>Try adjusting the search term or clearing your filters.</p>
+        <h3 style="color:#fff">No orders match your filter</h3>
+        <p style="color:#a1a1aa">Try adjusting search parameters.</p>
         <button class="secondary-btn" onclick="adminOrderFilter={search:'',status:'All'};render()">Clear filters</button>
       </div>
     `}
@@ -5032,36 +5197,36 @@ function renderAdminUsers(users) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">CUSTOMER ACCOUNTS &amp; FLOAT WALLETS</span>
-        <h1 style="font-size:32px;margin-top:4px">Users Directory (${users.length})</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">CLIENT DIRECTORY &amp; WALLETS</span>
+        <h1 style="font-size:32px;margin-top:4px">VIP Client Ledger (${users.length})</h1>
       </div>
-      <button class="primary" onclick="activeModal='admin_add_user';render()">${svgIcon('plus', 16)} Add Customer Account</button>
+      <button class="primary" style="background:#c24d67" onclick="activeModal='admin_add_user';render()">${svgIcon('plus', 16)} Add VIP Account</button>
     </div>
 
-    <div class="stats-row cols-3 animate-fade-up delay-1">
+    <div class="stats-row cols-3 animate-fade-up delay-1" style="margin-bottom:20px">
       <div class="stat-card compact">
-        <strong>${users.length}</strong>
-        <span>Registered Customers</span>
+        <strong style="color:#fff">${users.length}</strong>
+        <span>Registered VIP Clients</span>
       </div>
       <div class="stat-card compact">
-        <strong style="color:var(--emerald)">${money(totalFloatBalance)}</strong>
-        <span>Total Customer Float Liabilities</span>
+        <strong style="color:#38bdf8">${money(totalFloatBalance)}</strong>
+        <span>Float Wallet Outstanding Liabilities</span>
       </div>
       <div class="stat-card compact">
-        <strong>${usersWithBalanceCount}</strong>
-        <span>Active Wallet Holders</span>
+        <strong style="color:#34d399">${usersWithBalanceCount}</strong>
+        <span>Active Funded Accounts</span>
       </div>
     </div>
 
     <div class="admin-filter-bar">
       <div class="searchbox">
         <span>${icon('search')}</span>
-        <input aria-label="Search users" value="${f.search}" oninput="adminUserFilter.search=this.value;render()" placeholder="Search by name, email, or phone…">
+        <input aria-label="Search users" value="${f.search}" oninput="adminUserFilter.search=this.value;render()" placeholder="Search clients by name, email, or phone…">
       </div>
       <select onchange="adminUserFilter.minWallet=this.value;render()">
         ${['All', 'Has balance', 'High balance', 'Zero balance'].map(x => `<option ${f.minWallet === x ? 'selected' : ''}>${x}</option>`).join('')}
       </select>
-      <span class="results-meta" style="margin:0">${list.length} of ${users.length}</span>
+      <span class="results-meta" style="margin:0;color:#a1a1aa">${list.length} of ${users.length} clients</span>
     </div>
 
     ${list.length ? `
@@ -5069,11 +5234,11 @@ function renderAdminUsers(users) {
         <table class="data-table">
           <thead>
             <tr>
-              <th>Customer</th>
-              <th>Contact Phone</th>
-              <th>Address</th>
-              <th>Joined Date</th>
-              <th>Orders</th>
+              <th>Client Profile</th>
+              <th>Phone</th>
+              <th>Primary Address</th>
+              <th>Registered</th>
+              <th>Lifetime Orders</th>
               <th>Float Wallet Balance</th>
               <th>Actions</th>
             </tr>
@@ -5083,17 +5248,17 @@ function renderAdminUsers(users) {
               <tr>
                 <td>
                   <div class="table-avatar-row">
-                    <span class="table-avatar">${u.name.charAt(0)}</span>
+                    <span class="table-avatar" style="background:#c24d67;color:#fff">${u.name.charAt(0)}</span>
                     <div>
-                      <strong>${u.name}</strong>
-                      <small style="display:block;color:var(--muted)">${u.email}</small>
+                      <strong style="color:#fff">${u.name}</strong>
+                      <small style="display:block;color:#a1a1aa">${u.email}</small>
                     </div>
                   </div>
                 </td>
                 <td>${u.phone || 'N/A'}</td>
-                <td><small>${u.address || 'Accra, Ghana'}</small></td>
-                <td>${u.joinedDate || 'Recent'}</td>
-                <td><b>${u.ordersCount || 0}</b></td>
+                <td><small style="color:#e4e4e7">${u.address || 'Accra, Ghana'}</small></td>
+                <td><small style="color:#a1a1aa">${u.joinedDate || 'Recent'}</small></td>
+                <td><b style="color:#fff">${u.ordersCount || 0}</b></td>
                 <td>
                   <span class="badge ${(u.walletBalance || 0) > 0 ? 'delivered' : 'pending'}" style="font-size:13px;padding:6px 12px">
                     💳 ${money(u.walletBalance || 0)}
@@ -5101,7 +5266,7 @@ function renderAdminUsers(users) {
                 </td>
                 <td>
                   <div class="table-actions">
-                    <button class="secondary-btn" style="padding:5px 10px;font-size:11px" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit Wallet</button>
+                    <button class="secondary-btn" style="padding:5px 10px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
                     <button class="secondary-btn" style="padding:5px 10px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
                   </div>
                 </td>
@@ -5113,9 +5278,75 @@ function renderAdminUsers(users) {
     ` : `
       <div class="admin-empty-state">
         <span>${svgIcon('users', 26)}</span>
-        <h3>No users match your filters</h3>
-        <p>Try adjusting the search term or clearing filters.</p>
+        <h3 style="color:#fff">No clients match your filter</h3>
+        <p style="color:#a1a1aa">Try adjusting your search terms.</p>
         <button class="secondary-btn" onclick="adminUserFilter={search:'',minWallet:'All'};render()">Clear filters</button>
+      </div>
+    `}
+  `;
+}
+
+function renderAdminWholesale(inquiries) {
+  return `
+    <div class="admin-top-bar animate-fade-up">
+      <div>
+        <span class="eyebrow" style="color:var(--gold-light)">COMMERCIAL &amp; B2B SUPPLY</span>
+        <h1 style="font-size:32px;margin-top:4px">Wholesale Quotation Pipeline (${inquiries.length})</h1>
+      </div>
+      <button class="secondary-btn" onclick="toast('Exporting wholesale inquiries...')">📥 Export B2B Leads</button>
+    </div>
+
+    ${inquiries.length ? `
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID / Date</th>
+              <th>Company / Salon</th>
+              <th>Contact Person</th>
+              <th>Phone / WhatsApp</th>
+              <th>Target Volume</th>
+              <th>Notes / Pieces</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${inquiries.map(w => `
+              <tr>
+                <td><b>${w.id}</b><br><small style="color:#a1a1aa">${w.date}</small></td>
+                <td><strong style="color:#fff">${w.company}</strong><br><small style="color:#e4e4e7">${w.city}</small></td>
+                <td>${w.contact}<br><small style="color:#a1a1aa">${w.email}</small></td>
+                <td>
+                  <a href="https://wa.me/${w.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#34d399;text-decoration:none;font-weight:700">
+                    💬 ${w.phone}
+                  </a>
+                </td>
+                <td><span class="badge" style="background:#c24d67;color:#fff;font-size:10.5px">${w.volume}</span></td>
+                <td><small style="color:#d4d4d8;max-width:200px;display:block">${w.notes}</small></td>
+                <td>
+                  <select class="mini-select" onchange="updateWholesaleInquiryStatus('${w.id}', this.value)">
+                    ${['New', 'Quoted', 'Approved', 'Invoiced', 'Closed'].map(s => `
+                      <option ${w.status === s ? 'selected' : ''}>${s}</option>
+                    `).join('')}
+                  </select>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <a class="secondary-btn" style="padding:4px 8px;font-size:11px;text-decoration:none" href="https://wa.me/${w.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(w.contact)},%20thank%20you%20for%20reaching%20out%20to%20ByMarie%20Wholesale..." target="_blank">Chat ↗</a>
+                    <button class="icon-action-btn danger" title="Remove inquiry" onclick="deleteWholesaleInquiry('${w.id}')">${svgIcon('trash', 14)}</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : `
+      <div class="admin-empty-state">
+        <span>⚡</span>
+        <h3 style="color:#fff">No wholesale quotation inquiries yet</h3>
+        <p style="color:#a1a1aa">Incoming bulk requests from boutique owners and salons will appear here.</p>
       </div>
     `}
   `;
@@ -5125,10 +5356,10 @@ function renderAdminDiscounts(coupons) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">MARKETING & DISCOUNTS</span>
-        <h1 style="font-size:32px;margin-top:4px">Promo Codes Engine (${coupons.length})</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">MARKETING &amp; PROMO CAMPAIGNS</span>
+        <h1 style="font-size:32px;margin-top:4px">Promo Code Engine (${coupons.length})</h1>
       </div>
-      <button class="primary" onclick="activeModal='add_coupon';render()">${svgIcon('plus', 16)} Create Promo Code</button>
+      <button class="primary" style="background:#c24d67" onclick="activeModal='add_coupon';render()">${svgIcon('plus', 16)} Create Promo Code</button>
     </div>
 
     <div class="coupon-grid">
@@ -5139,37 +5370,18 @@ function renderAdminDiscounts(coupons) {
             <button class="icon-action-btn danger" title="Delete promo code" onclick="deleteCoupon(${i})">${svgIcon('trash', 15)}</button>
           </div>
           <b class="coupon-code">${c.code}</b>
-          <p>${c.label}</p>
+          <p style="color:#d4d4d8">${c.label}</p>
           <div class="coupon-card-foot">
-            <span class="dot active"></span> Active · ${c.type === 'percent' ? 'Percentage discount' : 'Shipping waiver'}
+            <span class="dot active"></span> Active · ${c.type === 'percent' ? 'Percentage discount' : 'Shipping fee waiver'}
           </div>
         </div>
       `).join('')}
       <button class="coupon-card-add" onclick="activeModal='add_coupon';render()">
         ${svgIcon('plus', 22)}
-        <span>Create a new promo code</span>
+        <span>Create a new promo campaign</span>
       </button>
     </div>
   `;
-}
-
-function handleHeroVideoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  toast(`Uploading video "${file.name}"...`, 'info');
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const videoDataUrl = e.target.result;
-    const settings = getSiteSettings();
-    settings.heroMediaUrl = videoDataUrl;
-    settings.heroMediaType = 'video';
-    saveSiteSettings(settings);
-    toast(`Hero video "${file.name}" uploaded successfully! 🎬`);
-    render();
-  };
-  reader.readAsDataURL(file);
 }
 
 function renderAdminSiteCMS() {
@@ -5177,15 +5389,15 @@ function renderAdminSiteCMS() {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">FRONTEND CMS EDITOR</span>
-        <h1 style="font-size:32px;margin-top:4px">Storefront Copy &amp; Media</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">FRONTEND CMS &amp; MEDIA</span>
+        <h1 style="font-size:32px;margin-top:4px">Storefront Copy &amp; Campaign Video</h1>
       </div>
-      <button class="primary" onclick="document.getElementById('cms-form').requestSubmit()">Save Frontend Settings</button>
+      <button class="primary" style="background:#c24d67" onclick="document.getElementById('cms-form').requestSubmit()">Save Settings ⚡</button>
     </div>
 
     <form id="cms-form" onsubmit="saveCMSFromAdmin(event)">
       <div class="cms-card animate-fade-up delay-1">
-        <h3>📢 Marquee Announcement &amp; Promo Header</h3>
+        <h3 style="color:#fff">📢 Marquee Announcement &amp; Promo Header</h3>
         <div class="form-grid">
           <div class="form-group full">
             <label>Announcement Bar Text</label>
@@ -5200,31 +5412,31 @@ function renderAdminSiteCMS() {
 
       <!-- Hero Video & Media Uploader -->
       <div class="cms-card animate-fade-up delay-2">
-        <h3>🎬 Hero Banner Video &amp; Campaign Media</h3>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">
-          Upload a promotional campaign video file from your device or paste a video URL. This video will play continuously on the homepage hero section.
+        <h3 style="color:#fff">🎬 Hero Banner Campaign Video</h3>
+        <p style="color:#a1a1aa;font-size:13px;margin-bottom:16px">
+          Upload an luxury MP4, WEBM, or MOV video file directly from your device. This video loops seamlessly on the homepage hero section.
         </p>
 
         <div class="form-grid">
           <div class="form-group full">
-            <label>Upload Hero Video File from Device (MP4, WEBM, MOV)</label>
-            <div class="image-upload-dropzone">
+            <label>Upload Video File from Device</label>
+            <div class="image-upload-dropzone" style="background:#18181b;border-color:#3f3f46">
               <span style="font-size:28px">🎬</span>
-              <strong style="display:block;margin-top:4px;font-size:14px">Upload Campaign Video File</strong>
-              <small style="color:var(--muted)">Select MP4, WEBM, or MOV video file directly from your computer/phone</small>
+              <strong style="display:block;margin-top:4px;font-size:14px;color:#fff">Upload Campaign Video File</strong>
+              <small style="color:#a1a1aa">Select MP4, WEBM, or MOV video file</small>
               <input type="file" accept="video/*" onchange="handleHeroVideoUpload(event)">
             </div>
           </div>
 
           <div class="form-group full">
-            <label>Hero Media URL (Video or Image Fallback)</label>
+            <label>Hero Video / Media URL</label>
             <input name="heroMediaUrl" value="${settings.heroMediaUrl || ''}" placeholder="https://.../video.mp4">
           </div>
 
           ${settings.heroMediaUrl ? `
             <div class="form-group full">
               <label>Live Hero Video Preview</label>
-              <div style="max-width:380px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow-sm)">
+              <div style="max-width:380px;border-radius:var(--radius-md);overflow:hidden;border:1px solid #3f3f46;box-shadow:var(--shadow-sm)">
                 ${(settings.heroMediaType === 'video' || settings.heroMediaUrl.includes('.mp4') || settings.heroMediaUrl.includes('.webm') || settings.heroMediaUrl.includes('.mov') || settings.heroMediaUrl.startsWith('data:video/')) ? `
                   <video autoplay loop muted playsinline style="width:100%;height:220px;object-fit:cover">
                     <source src="${settings.heroMediaUrl}" type="video/mp4">
@@ -5239,7 +5451,7 @@ function renderAdminSiteCMS() {
       </div>
 
       <div class="cms-card animate-fade-up delay-3">
-        <h3>✨ Hero Text &amp; Brand Philosophy</h3>
+        <h3 style="color:#fff">✨ Hero Text &amp; Brand Philosophy</h3>
         <div class="form-grid">
           <div class="form-group full">
             <label>Hero Title Headline</label>
@@ -5261,7 +5473,7 @@ function renderAdminSiteCMS() {
       </div>
 
       <div class="cms-card animate-fade-up delay-4">
-        <h3>📞 Concierge &amp; Contact Information</h3>
+        <h3 style="color:#fff">📞 Concierge &amp; Contact Details</h3>
         <div class="form-grid">
           <div class="form-group">
             <label>Contact Email</label>
@@ -5281,90 +5493,6 @@ function renderAdminSiteCMS() {
   `;
 }
 
-async function handleHeroVideoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  toast('Uploading hero campaign video... 🎬', 'info');
-
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.url) {
-        const input = document.querySelector('input[name="heroMediaUrl"]');
-        if (input) input.value = data.url;
-        const current = getSiteSettings();
-        current.heroMediaUrl = data.url;
-        current.heroMediaType = 'video';
-        saveSiteSettings(current);
-        toast('Campaign video uploaded & saved successfully! ⚡');
-        render();
-        return;
-      }
-    }
-  } catch (err) {
-    console.warn('Backend video upload fallback to FileReader:', err);
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    const input = document.querySelector('input[name="heroMediaUrl"]');
-    if (input) input.value = dataUrl;
-    const current = getSiteSettings();
-    current.heroMediaUrl = dataUrl;
-    current.heroMediaType = 'video';
-    saveSiteSettings(current);
-    toast('Hero video uploaded & applied live! 🎬');
-    render();
-  };
-  reader.readAsDataURL(file);
-}
-
-function saveCMSFromAdmin(event) {
-  event.preventDefault();
-  const fd = new FormData(event.target);
-  const existing = getSiteSettings();
-  
-  const mediaUrl = fd.get('heroMediaUrl');
-  const isVid = mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov') || mediaUrl.startsWith('data:video/'));
-
-  const settings = {
-    ...existing,
-    announcementText: fd.get('announcementText'),
-    promoCodeNotice: fd.get('promoCodeNotice'),
-    heroTitle: fd.get('heroTitle'),
-    heroSubtitle: fd.get('heroSubtitle'),
-    heroMediaUrl: mediaUrl || existing.heroMediaUrl,
-    heroMediaType: isVid ? 'video' : (existing.heroMediaType || 'video'),
-    brandEthosTitle: fd.get('brandEthosTitle'),
-    brandEthosText: fd.get('brandEthosText'),
-    contactEmail: fd.get('contactEmail'),
-    contactPhone: fd.get('contactPhone'),
-    accraAddress: fd.get('accraAddress')
-  };
-
-  saveSiteSettings(settings);
-
-  fetch(`${API_BASE}/settings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(settings)
-  }).then(res => {
-    if (res.ok) toast('Hero video & settings synced to Supabase Cloud! ⚡');
-  }).catch(() => {});
-
-  toast('Storefront video & CMS copy updated live! 🎬');
-  render();
-}
-
 function renderAdminSupabaseConfig() {
   const cfg = getSupabaseConfig();
   const isClientReady = !!getSupabaseClient();
@@ -5372,8 +5500,8 @@ function renderAdminSupabaseConfig() {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow">BACKEND & CLOUD PERSISTENCE</span>
-        <h1 style="font-size:32px;margin-top:4px">Supabase Database Integration</h1>
+        <span class="eyebrow" style="color:var(--gold-light)">BACKEND &amp; CLOUD DATABASE</span>
+        <h1 style="font-size:32px;margin-top:4px">Supabase Cloud Postgres Integration</h1>
       </div>
       <div class="supabase-badge ${isClientReady ? 'connected' : 'offline'}">
         <span>${isClientReady ? '⚡ Connected to Supabase Cloud' : '🟡 Offline Local Fallback Active'}</span>
@@ -5381,9 +5509,9 @@ function renderAdminSupabaseConfig() {
     </div>
 
     <div class="cms-card animate-fade-up delay-1">
-      <h3>🔑 Supabase Credentials Configuration</h3>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">
-        Connect your project to a cloud Supabase Postgres database. Enter your Supabase Project URL and Anon API Key below.
+      <h3 style="color:#fff">🔑 Cloud Credentials Configuration</h3>
+      <p style="color:#a1a1aa;font-size:13px;margin-bottom:20px">
+        Connect ByMarie to a cloud Supabase Postgres database. Enter your Supabase Project URL and Anon API Key below.
       </p>
 
       <form onsubmit="saveSupabaseConfigFromAdmin(event)">
@@ -5398,21 +5526,20 @@ function renderAdminSupabaseConfig() {
           </div>
         </div>
         <div style="display:flex;gap:12px;margin-top:16px">
-          <button class="primary" type="submit">Save Supabase Connection</button>
+          <button class="primary" style="background:#c24d67" type="submit">Save Supabase Connection</button>
           ${isClientReady ? `<button class="secondary-btn" type="button" onclick="testSupabaseConnection()">Test Connection ⚡</button>` : ''}
         </div>
       </form>
     </div>
 
     <div class="cms-card animate-fade-up delay-2">
-      <h3>📜 Step-by-Step Supabase Database Setup</h3>
-      <ol style="margin-left:20px;font-size:13px;color:var(--ink);line-height:1.8;margin-bottom:20px">
-        <li>Log in to your <a href="https://supabase.com/dashboard" target="_blank" style="color:var(--emerald);font-weight:700;text-decoration:underline">Supabase Dashboard ↗</a> and select your project.</li>
-        <li>Go to <strong>Project Settings → API</strong> and copy your <code>Project URL</code> and <code>anon public key</code> into the form above.</li>
-        <li>Go to <strong>SQL Editor</strong> in Supabase, paste the SQL schema script below, and click <strong>RUN</strong> to create all database tables!</li>
+      <h3 style="color:#fff">📜 Cloud Database Setup SQL</h3>
+      <ol style="margin-left:20px;font-size:13px;color:#d4d4d8;line-height:1.8;margin-bottom:20px">
+        <li>Log in to your <a href="https://supabase.com/dashboard" target="_blank" style="color:#c24d67;font-weight:700;text-decoration:underline">Supabase Dashboard ↗</a>.</li>
+        <li>Go to <strong>SQL Editor</strong> in Supabase, paste the SQL schema below, and click <strong>RUN</strong> to create tables!</li>
       </ol>
 
-      <div style="background:var(--ink);color:#a7f3d0;padding:18px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:11px;max-height:220px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px">
+      <div style="background:#09090b;color:#a7f3d0;padding:18px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:11px;max-height:220px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px;border:1px solid #27272a">
 CREATE TABLE public.products (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL,
   price NUMERIC NOT NULL, old NUMERIC DEFAULT 0, stock INTEGER DEFAULT 10,
@@ -5444,10 +5571,22 @@ CREATE TABLE public.site_settings (
     </div>
 
     <div class="cms-card animate-fade-up delay-3">
-      <h3>⚡ Cloud Sync Controls</h3>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">
-        Push your local products, packages, orders, and promo codes directly to Supabase cloud tables or fetch the latest database records.
+      <h3 style="color:#fff">⚡ Cloud Sync &amp; Local Backup</h3>
+      <p style="color:#a1a1aa;font-size:13px;margin-bottom:20px">
+        Sync local records to Supabase Cloud or download an emergency JSON database backup.
       </p>
+
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <button class="primary" style="background:#c24d67" onclick="syncCatalogToSupabase()">
+          ⬆️ Sync Local Catalog to Supabase
+        </button>
+        <button class="secondary-btn" onclick="fetchCatalogFromSupabase()">
+          ⬇️ Fetch Latest Catalog from Supabase
+        </button>
+      </div>
+    </div>
+  `;
+}
 
       <div style="display:flex;gap:14px;flex-wrap:wrap">
         <button class="primary" onclick="syncCatalogToSupabase()">
