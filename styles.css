@@ -4070,50 +4070,62 @@ h1, h2, h3, .serif {
   margin-top: 0;
 }
 
-.admin-sidebar button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  color: #a1a1aa;
-  background: transparent;
-  border: none;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
+.admin-nav button,
+.admin-sidebar button,
+.admin-mobile-drawer .admin-nav button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  padding: 11px 14px !important;
+  border-radius: var(--radius-sm) !important;
+  color: #a1a1aa !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-.admin-sidebar button svg {
-  flex-shrink: 0;
-  opacity: 0.75;
-  transition: all 0.2s ease;
+.admin-nav button svg,
+.admin-sidebar button svg,
+.admin-mobile-drawer .admin-nav button svg {
+  flex-shrink: 0 !important;
+  opacity: 0.75 !important;
+  transition: all 0.2s ease !important;
 }
 
-.admin-sidebar button:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+.admin-nav button:hover,
+.admin-sidebar button:hover,
+.admin-mobile-drawer .admin-nav button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
-.admin-sidebar button:hover svg {
-  opacity: 1;
-  color: var(--gold-light);
+.admin-nav button:hover svg,
+.admin-sidebar button:hover svg,
+.admin-mobile-drawer .admin-nav button:hover svg {
+  opacity: 1 !important;
+  color: var(--gold-light) !important;
 }
 
-.admin-sidebar button.active {
-  background: linear-gradient(135deg, rgba(194, 77, 103, 0.25) 0%, rgba(194, 77, 103, 0.08) 100%);
-  border: 1px solid rgba(194, 77, 103, 0.4);
-  color: #ffffff;
-  font-weight: 700;
+.admin-nav button.active,
+.admin-sidebar button.active,
+.admin-mobile-drawer .admin-nav button.active {
+  background: linear-gradient(135deg, rgba(194, 77, 103, 0.3) 0%, rgba(194, 77, 103, 0.12) 100%) !important;
+  border: 1px solid rgba(194, 77, 103, 0.45) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
-.admin-sidebar button.active svg {
-  opacity: 1;
-  color: #ffb3c1;
+.admin-nav button.active svg,
+.admin-sidebar button.active svg,
+.admin-mobile-drawer .admin-nav button.active svg {
+  opacity: 1 !important;
+  color: #ffb3c1 !important;
 }
 
 .nav-count {
@@ -4379,16 +4391,18 @@ h1, h2, h3, .serif {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 290px;
-  max-width: 84vw;
+  width: 300px;
+  max-width: 86vw;
   background: #031210;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  padding: 20px 16px;
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.6);
+  padding: 20px 16px 24px;
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
   box-sizing: border-box;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
