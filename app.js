@@ -674,7 +674,9 @@ let commandPaletteOpen = false;
 let commandPaletteQuery = '';
 let adminProductFilter = { search: '', category: 'All', stock: 'All' };
 let adminOrderFilter = { search: '', status: 'All' };
-let adminInventoryFilter = { search: '', stock: 'All' };
+let adminInventoryFilter = { search: '', category: 'All', stock: 'All' };
+let adminUserFilter = { search: '', minWallet: 'All' };
+let adminWholesaleFilter = { search: '', status: 'All' };
 
 const money = n => `GH₵ ${Number(n).toFixed(2)}`;
 const byId = id => getProducts().find(p => p.id === id);
@@ -4801,10 +4803,10 @@ function renderAdminOrders(orders) {
 }
 
 function renderAdminUsers(users) {
-  const f = adminUserFilter;
-  const query = f.search.toLowerCase().trim();
-  const list = users.filter(u => {
-    const matchSearch = !query || `${u.name} ${u.email} ${u.phone}`.toLowerCase().includes(query);
+  const f = adminUserFilter || { search: '', minWallet: 'All' };
+  const query = (f.search || '').toLowerCase().trim();
+  const list = (users || []).filter(u => {
+    const matchSearch = !query || `${u.name || ''} ${u.email || ''} ${u.phone || ''}`.toLowerCase().includes(query);
     const matchWallet = f.minWallet === 'All'
       || (f.minWallet === 'Has balance' && (u.walletBalance || 0) > 0)
       || (f.minWallet === 'High balance' && (u.walletBalance || 0) >= 500)
