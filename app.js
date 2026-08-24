@@ -4715,6 +4715,109 @@ function renderAdminInventory(products) {
   `;
 }
 
+function exportOrdersToExcel() {
+  const orders = getOrders();
+  if (!orders.length) return toast('No customer orders found to export', 'warning');
+
+  const headers = [
+    'Order ID',
+    'Date',
+    'Customer Name',
+    'Phone',
+    'Email',
+    'Delivery Destination',
+    'City',
+    'Region',
+    'Items Breakdown',
+    'Subtotal (GHS)',
+    'Discount (GHS)',
+    'Delivery Fee (GHS)',
+    'Grand Total (GHS)',
+    'Payment Method',
+    'Fulfillment Status'
+  ];
+
+  const rows = orders.map(o => {
+    const itemsStr = (o.items || []).map(it => `${it.qty}x ${it.name || it.id} (${it.size || ''} ${it.color || ''})`).join('; ');
+    return [
+      `"${o.id}"`,
+      `"${o.date || ''}"`,
+      `"${(o.name || '').replace(/"/g, '""')}"`,
+      `"${(o.phone || '').replace(/"/g, '""')}"`,
+      `"${(o.email || '').replace(/"/g, '""')}"`,
+      `"${(o.address || '').replace(/"/g, '""')}"`,
+      `"${(o.city || '').replace(/"/g, '""')}"`,
+      `"${(o.region || '').replace(/"/g, '""')}"`,
+      `"${itemsStr.replace(/"/g, '""')}"`,
+      `"${(o.subtotal || 0).toFixed(2)}"`,
+      `"${(o.discountAmount || 0).toFixed(2)}"`,
+      `"${(o.deliveryFee || 0).toFixed(2)}"`,
+      `"${(o.total || 0).toFixed(2)}"`,
+      `"${(o.payment || '').replace(/"/g, '""')}"`,
+      `"${o.status || 'Pending'}"`
+    ].join(',');
+  });
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ByMarie-Customer-Orders-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📊 All orders exported to Excel (.csv) successfully! ⚡');
+}
+
+function shareOrderToWhatsApp(orderId) {
+  const order = getOrders().find(o => o.id === orderId);
+  if (!order) return toast('Order not found', 'warning');
+
+  const itemsList = (order.items || []).map(it => `• ${it.qty}x *${it.name || it.id}* (GH₵ ${(it.price || 0).toFixed(2)})`).join('\n');
+
+  const text = `🛍️ *BYMARIE LUXURY BOUTIQUE — ORDER ${order.id}*\n` +
+    `----------------------------------------\n` +
+    `📅 *Date:* ${order.date || 'Today'}\n` +
+    `👤 *Client:* ${order.name}\n` +
+    `📞 *Phone:* ${order.phone}\n` +
+    `📍 *Delivery Destination:* ${order.address}, ${order.city} (${order.region})\n` +
+    `🚚 *Method:* ${order.delivery}\n` +
+    `💳 *Payment:* ${order.payment}\n` +
+    `📊 *Status:* ${order.status}\n\n` +
+    `📦 *Itemized Pieces:*\n` +
+    `${itemsList}\n\n` +
+    `💰 *Grand Total:* GH₵ ${(order.total || 0).toFixed(2)}\n` +
+    `----------------------------------------\n` +
+    `✨ _Dispatched from ByMarie Atelier Hub Accra_`;
+
+  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+  toast('Opening WhatsApp with order summary... 💬');
+}
+
+function shareAllOrdersToWhatsApp() {
+  const orders = getOrders();
+  if (!orders.length) return toast('No orders to share', 'warning');
+
+  const ordersList = orders.slice(0, 20).map((o, idx) => {
+    return `${idx + 1}. *${o.id}* | ${o.name} (${o.phone})\n   📍 ${o.city} • GH₵ ${(o.total || 0).toFixed(2)} [${o.status}]`;
+  }).join('\n\n');
+
+  const text = `📦 *BYMARIE LOGISTICS DISPATCH SCHEDULE*\n` +
+    `📅 *Batch Date:* ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n` +
+    `📊 *Total Orders:* ${orders.length}\n` +
+    `----------------------------------------\n\n` +
+    `${ordersList}\n\n` +
+    `----------------------------------------\n` +
+    `⚡ _ByMarie Executive Dispatch Schedule_`;
+
+  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+  toast('Opening WhatsApp with orders dispatch schedule... 💬');
+}
+
 function renderAdminOrders(orders) {
   const f = adminOrderFilter;
   const query = f.search.toLowerCase().trim();
@@ -4734,12 +4837,17 @@ function renderAdminOrders(orders) {
   return `
     <div class="admin-top-bar animate-fade-up">
       <div>
-        <span class="eyebrow" style="color:var(--gold-light)">LOGISTICS & DISPATCH</span>
+        <span class="eyebrow" style="color:var(--gold-light)">LOGISTICS &amp; DISPATCH</span>
         <h1 style="font-size:32px;margin-top:4px">Customer Orders (${orders.length})</h1>
       </div>
-      <button class="secondary-btn" onclick="exportOrdersCSV()">
-        <span>${icon('download')}</span> Export Orders CSV
-      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e;font-size:12.5px;padding:8px 14px" onclick="shareAllOrdersToWhatsApp()">
+          💬 Share Schedule to WhatsApp
+        </button>
+        <button class="secondary-btn" style="background:#0284c7;color:#fff;border-color:#0284c7;font-size:12.5px;padding:8px 14px" onclick="exportOrdersToExcel()">
+          📊 Export to Excel (.CSV)
+        </button>
+      </div>
     </div>
 
     <div class="stats-row cols-4" style="margin-bottom:20px">
@@ -4781,7 +4889,7 @@ function renderAdminOrders(orders) {
                 <td><b>${o.id}</b></td>
                 <td>
                   <div class="table-avatar-row">
-                    <span class="table-avatar" style="background:#c24d67;color:#fff">${o.name.charAt(0)}</span>
+                    <span class="table-avatar" style="background:#c24d67;color:#fff">${(o.name || 'C').charAt(0).toUpperCase()}</span>
                     <div>
                       <strong style="color:#fff">${o.name}</strong>
                       <small style="display:block;color:#a1a1aa">${o.phone}</small>
@@ -4802,6 +4910,7 @@ function renderAdminOrders(orders) {
                 <td>
                   <div class="table-actions">
                     <button class="icon-action-btn" title="View order summary" onclick="openOrderModal('${o.id}')">${svgIcon('eye', 15)}</button>
+                    <button class="icon-action-btn" title="Share Order to WhatsApp" onclick="shareOrderToWhatsApp('${o.id}')" style="color:#34d399">💬</button>
                     <button class="icon-action-btn" title="Printable Luxury Invoice" onclick="openInvoiceModal('${o.id}')">${svgIcon('receipt', 15)}</button>
                   </div>
                 </td>
@@ -6378,8 +6487,9 @@ function renderModals() {
             <strong style="color:var(--emerald)">${money(order.total)}</strong>
           </div>
 
-          <div style="display:flex;gap:12px;margin-top:20px">
-            <button class="primary" style="flex-grow:1" onclick="openInvoiceModal('${order.id}')">📄 Print / Download Invoice</button>
+          <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+            <button class="primary" style="flex-grow:1" onclick="openInvoiceModal('${order.id}')">📄 Printable Invoice</button>
+            <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e" onclick="shareOrderToWhatsApp('${order.id}')">💬 Share to WhatsApp</button>
             <button class="secondary-btn" onclick="activeModal=null;render()">Close</button>
           </div>
         </div>
@@ -7011,6 +7121,23 @@ function render() {
   else if (page === 'wishlist') content = wishlistPage();
   else if (page === 'notifications') content = notificationsPage();
   else if (page === 'admin') {
+    if (param) adminTab = param;
+    if (isAdminUser()) {
+      content = admin();
+    } else {
+      content = renderAdminLoginGate();
+    }
+  }
+  else if (page === 'users' || page === 'clients') {
+    adminTab = 'users';
+    if (isAdminUser()) {
+      content = admin();
+    } else {
+      content = renderAdminLoginGate();
+    }
+  }
+  else if (page === 'orders' || page === 'logistics') {
+    adminTab = 'orders';
     if (isAdminUser()) {
       content = admin();
     } else {
