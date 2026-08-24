@@ -1100,7 +1100,7 @@ function header() {
           <!-- User Group (Desktop only) -->
           ${user.loggedIn ? `
             <div class="header-user-desktop" style="display:flex;align-items:center;gap:8px">
-              <button class="header-user-btn" onclick="go('account')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)">
+              <button class="header-user-btn" onclick="accountTab='hub';go('account')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)">
                 <span>${user.name ? user.name.split(' ')[0].toLowerCase() : 'account'}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -1218,9 +1218,9 @@ function mobileDrawer() {
               <span>♡ Favourites &amp; Wishlist</span>
               <small style="color:var(--muted)">${wishlist.length} saved</small>
             </a>
-            <a href="#account" onclick="mobileMenuOpen=false;go('account')" class="drawer-link-item">
-              <span>📦 Orders &amp; Delivery Tracking</span>
-              <small style="color:var(--muted)">Account</small>
+            <a href="#account" onclick="mobileMenuOpen=false;accountTab='hub';go('account')" class="drawer-link-item">
+              <span>👑 Member Account &amp; Atelier Hub</span>
+              <small style="color:var(--muted)">Features</small>
             </a>
           </div>
         </div>
@@ -2460,7 +2460,7 @@ function confirmation(orderId) {
 // CUSTOMER ACCOUNT PORTAL
 // ===================================================
 
-let accountTab = 'orders';
+let accountTab = 'hub';
 
 function renderOrderStatusTimeline(status) {
   const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
