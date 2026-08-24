@@ -4094,18 +4094,30 @@ function admin() {
             </div>
           </div>
 
-          <nav class="admin-drawer-nav">
+          <nav style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;overflow-x:hidden;padding:6px 0 20px;flex:1;width:100%;box-sizing:border-box">
             ${ADMIN_NAV.map(group => `
-              <div class="admin-drawer-group">
-                <span class="admin-drawer-group-title">${group.section}</span>
-                <div class="admin-drawer-group-items">
+              <div style="display:flex;flex-direction:column;gap:6px;width:100%">
+                <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-light);padding:0 4px 4px;border-bottom:1px solid rgba(255,255,255,0.07);display:block;margin-bottom:2px">
+                  ${group.section}
+                </span>
+                <div style="display:flex;flex-direction:column;gap:6px;width:100%">
                   ${group.items.map(item => `
-                    <button type="button" class="admin-drawer-btn ${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';adminMobileDrawerOpen=false;render()">
-                      <div class="admin-drawer-btn-left">
-                        <span class="admin-drawer-btn-icon">${svgIcon(item.icon, 18)}</span>
-                        <span class="admin-drawer-btn-text">${item.label}</span>
+                    <button type="button" onclick="adminTab='${item.key}';adminMobileDrawerOpen=false;render()" style="display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:10px 14px;border-radius:8px;background:${adminTab === item.key ? 'linear-gradient(135deg, rgba(194,77,103,0.4) 0%, rgba(194,77,103,0.15) 100%)' : 'rgba(255,255,255,0.04)'};border:1px solid ${adminTab === item.key ? '#c24d67' : 'rgba(255,255,255,0.08)'};color:#ffffff;cursor:pointer;text-align:left;box-sizing:border-box;transition:all 0.2s ease">
+                      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                        <span style="display:grid;place-items:center;color:${adminTab === item.key ? '#ffb3c1' : 'var(--gold-light)'};flex-shrink:0">
+                          ${svgIcon(item.icon, 18)}
+                        </span>
+                        <span style="font-size:13.5px;font-weight:${adminTab === item.key ? '700' : '500'};color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                          ${item.label}
+                        </span>
                       </div>
-                      ${navCounts[item.key] ? `<b class="admin-drawer-badge ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : `<span class="admin-drawer-arrow">›</span>`}
+                      ${navCounts[item.key] ? `
+                        <b style="background:${item.key === 'inventory' && alertCount ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.14)'};color:#ffffff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:12px;border:${item.key === 'inventory' && alertCount ? '1px solid rgba(239,68,68,0.6)' : 'none'};flex-shrink:0">
+                          ${navCounts[item.key]}
+                        </b>
+                      ` : `
+                        <span style="color:${adminTab === item.key ? '#ffb3c1' : '#71717a'};font-size:14px;font-weight:700;flex-shrink:0">›</span>
+                      `}
                     </button>
                   `).join('')}
                 </div>
