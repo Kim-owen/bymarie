@@ -4,7 +4,7 @@
 
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  const purgeKey = 'bymarie-clean-v10-fresh-db';
+  const purgeKey = 'bymarie-clean-v20-zero-all-mocked-images';
   if (!localStorage.getItem(purgeKey)) {
     localStorage.setItem('bymarie-products', JSON.stringify([]));
     localStorage.setItem('bymarie-orders', JSON.stringify([]));
@@ -5388,7 +5388,7 @@ function setMainModalImage(index) {
 function removeModalImage(index) {
   if (adminProductModal && adminProductModal.product.images) {
     adminProductModal.product.images.splice(index, 1);
-    adminProductModal.product.image = adminProductModal.product.images[0] || 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85';
+    adminProductModal.product.image = adminProductModal.product.images[0] || '';
     render();
     toast('Image removed', 'info');
   }
@@ -5401,16 +5401,16 @@ function openProductModal(mode, productId = null) {
     product: p ? JSON.parse(JSON.stringify(p)) : {
       id: `prod-${Date.now()}`,
       name: '',
-      category: 'Shoes',
-      price: 250,
+      category: 'Clothing',
+      price: 0,
       old: 0,
-      stock: 10,
+      stock: 1,
       tag: '',
-      image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85',
-      images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85'],
+      image: '',
+      images: [],
       desc: '',
-      details: ['High grade craftsmanship', 'Guaranteed authentic'],
-      colors: ['Standard'],
+      details: [],
+      colors: [],
       sizes: []
     }
   };
