@@ -3264,12 +3264,12 @@ function notificationsPage() {
   else if (notifFilter !== 'all') filtered = notifs.filter(n => n.type === notifFilter);
 
   return `
-    <main class="notifications-page-shell animate-fade-up">
+    <main class="notifications-page-shell animate-fade-up" style="padding-top:150px;min-height:80vh">
       <div class="notifications-container">
-        <div class="notifications-header">
+        <div class="notifications-header" style="margin-top:10px">
           <div>
-            <span class="eyebrow">UPDATES &amp; ALERTS</span>
-            <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:4px 0 6px;color:var(--ink)">Notifications</h1>
+            <span class="eyebrow" style="color:var(--gold-light);display:block;margin-bottom:6px">UPDATES &amp; ALERTS</span>
+            <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:0 0 6px;color:var(--ink)">Notifications</h1>
             <p style="color:var(--muted);font-size:13.5px;margin:0">Stay updated on exclusive member promos, order tracking, and atelier collection drops.</p>
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">

@@ -272,7 +272,7 @@ header {
 }
 
 main {
-  padding-top: 124px;
+  padding-top: 150px;
 }
 
 .brand {
@@ -2681,7 +2681,7 @@ h1, h2, h3, .serif {
 .account-shell {
   max-width: 1040px;
   margin: 0 auto 90px;
-  padding: 124px 18px 60px;
+  padding: 150px 18px 60px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -3508,7 +3508,7 @@ h1, h2, h3, .serif {
 .auth-page-shell {
   min-height: 100vh;
   background: linear-gradient(180deg, #fff2f5 0%, #ffeaf0 50%, #fff7f9 100%);
-  padding: 124px 20px 80px;
+  padding: 150px 20px 80px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -3768,7 +3768,7 @@ h1, h2, h3, .serif {
 .notifications-page-shell {
   max-width: 920px;
   margin: 0 auto;
-  padding: 124px 20px 80px;
+  padding: 150px 20px 80px;
 }
 
 .notifications-header {
