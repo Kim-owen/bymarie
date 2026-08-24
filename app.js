@@ -4,7 +4,27 @@
 
 (function autoHealStaleSettings() {
   if (typeof localStorage === 'undefined') return;
-  const purgeKey = 'bymarie-clean-v20-zero-all-mocked-images';
+  try {
+    const raw = localStorage.getItem('bymarie-products');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const clean = parsed.filter(p => {
+          if (!p || !p.id || !p.name) return false;
+          const id = String(p.id).toLowerCase();
+          if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
+          const nm = String(p.name).toLowerCase();
+          if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
+            return false;
+          }
+          return true;
+        });
+        localStorage.setItem('bymarie-products', JSON.stringify(clean));
+      }
+    }
+  } catch (e) {}
+
+  const purgeKey = 'bymarie-clean-v35-zero-all-mocked-images';
   if (!localStorage.getItem(purgeKey)) {
     localStorage.setItem('bymarie-products', JSON.stringify([]));
     localStorage.setItem('bymarie-orders', JSON.stringify([]));
@@ -619,11 +639,25 @@ if (typeof localStorage !== 'undefined' && localStorage.getItem('bymarie-v5-clea
 // State Helpers
 function getProducts() {
   const data = localStorage.getItem('bymarie-products');
-  if (data === null) {
-    localStorage.setItem('bymarie-products', JSON.stringify(INITIAL_PRODUCTS));
-    return INITIAL_PRODUCTS;
-  }
-  try { return JSON.parse(data); } catch { return []; }
+  if (!data) return [];
+  try {
+    const list = JSON.parse(data);
+    if (!Array.isArray(list)) return [];
+    const cleaned = list.filter(p => {
+      if (!p || !p.id || !p.name) return false;
+      const id = String(p.id).toLowerCase();
+      if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
+      const nm = String(p.name).toLowerCase();
+      if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
+        return false;
+      }
+      return true;
+    });
+    if (cleaned.length !== list.length) {
+      localStorage.setItem('bymarie-products', JSON.stringify(cleaned));
+    }
+    return cleaned;
+  } catch { return []; }
 }
 
 function saveProducts(products) {
@@ -4505,7 +4539,10 @@ function renderAdminProducts(products) {
         <span class="eyebrow" style="color:var(--gold-light)">HAUTE COUTURE CATALOG</span>
         <h1 style="font-size:32px;margin-top:4px">Product Collections (${products.length})</h1>
       </div>
-      <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Piece</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="secondary-btn" style="color:#fca5a5;border-color:rgba(239,68,68,0.3);font-size:12px;padding:8px 12px" onclick="if(confirm('Wipe any remaining sample catalog items and reset to 0?')){saveProducts([]);toast('Catalog wiped to 0 pieces!');render();}">🧹 Purge Sample Catalog</button>
+        <button class="primary" style="background:#c24d67" onclick="openProductModal('add')">${svgIcon('plus', 16)} Add New Piece</button>
+      </div>
     </div>
 
     <div class="admin-filter-bar">
