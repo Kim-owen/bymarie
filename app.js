@@ -1134,18 +1134,24 @@ function header() {
 
 function mobileDrawer() {
   const user = getUser();
+  const allProds = getProducts();
+  const getCatCount = (catName) => {
+    if (!catName || catName === 'All') return allProds.length;
+    return allProds.filter(p => (p.category || '').toLowerCase() === catName.toLowerCase()).length;
+  };
+
   const categories = [
-    { name: 'Shop All Collection', route: 'shop', icon: '✨', badge: `${getProducts().length} Items` },
-    { name: 'Clothing & Apparel', route: 'category/Clothing', icon: '👗', badge: '6 Items' },
-    { name: 'Shoes & Heels', route: 'category/Shoes', icon: '👠', badge: '4 Items' },
-    { name: 'Luxury Bags & Totes', route: 'category/Bags', icon: '👜', badge: '5 Items' },
-    { name: 'Raw Virgin & HD Wigs', route: 'category/Wigs', icon: '💇‍♀️', badge: '4 Items' },
-    { name: 'Skin Care & Glow', route: 'category/Skin Care', icon: '✨', badge: '4 Items' },
-    { name: 'Perfumes & Extraits', route: 'category/Perfumes', icon: '🌸', badge: '5 Items' },
-    { name: 'Lifestyle & Home', route: 'category/Lifestyle', icon: '🕯️', badge: '3 Items' },
-    { name: 'Nails & Lacquers', route: 'category/Nails', icon: '💅', badge: '3 Items' },
-    { name: 'Panties & Intimates', route: 'category/Panties', icon: '👙', badge: '3 Items' },
-    { name: 'Bath & Body', route: 'category/Toiletries', icon: '🛁', badge: '2 Items' }
+    { name: 'Shop All Collection', route: 'shop', icon: '✨', badge: `${allProds.length} Pieces` },
+    { name: 'Clothing & Apparel', route: 'category/Clothing', icon: '👗', badge: `${getCatCount('Clothing')} Pieces` },
+    { name: 'Shoes & Heels', route: 'category/Shoes', icon: '👠', badge: `${getCatCount('Shoes')} Pieces` },
+    { name: 'Luxury Bags & Totes', route: 'category/Bags', icon: '👜', badge: `${getCatCount('Bags')} Pieces` },
+    { name: 'Raw Virgin & HD Wigs', route: 'category/Wigs', icon: '💇‍♀️', badge: `${getCatCount('Wigs')} Pieces` },
+    { name: 'Skin Care & Glow', route: 'category/Skin Care', icon: '✨', badge: `${getCatCount('Skin Care')} Pieces` },
+    { name: 'Perfumes & Extraits', route: 'category/Perfumes', icon: '🌸', badge: `${getCatCount('Perfumes')} Pieces` },
+    { name: 'Lifestyle & Home', route: 'category/Lifestyle', icon: '🕯️', badge: `${getCatCount('Lifestyle')} Pieces` },
+    { name: 'Nails & Lacquers', route: 'category/Nails', icon: '💅', badge: `${getCatCount('Nails')} Pieces` },
+    { name: 'Panties & Intimates', route: 'category/Panties', icon: '👙', badge: `${getCatCount('Panties')} Pieces` },
+    { name: 'Bath & Body', route: 'category/Toiletries', icon: '🛁', badge: `${getCatCount('Toiletries')} Pieces` }
   ];
 
   return `
@@ -1222,6 +1228,10 @@ function mobileDrawer() {
               <span>👑 Member Account &amp; Atelier Hub</span>
               <small style="color:var(--muted)">Features</small>
             </a>
+            <a href="#admin" onclick="mobileMenuOpen=false;go('admin')" class="drawer-link-item" style="border-left:3px solid var(--gold)">
+              <span>⚡ Executive Admin Console</span>
+              <small style="background:#051916;color:var(--gold-light);padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">Admin Control</small>
+            </a>
           </div>
         </div>
 
@@ -1245,6 +1255,15 @@ function footer() {
     <footer>
       <div class="brand">BYMARIE</div>
       <p>Elevated, considered essentials for mindful modern living in Ghana and beyond.</p>
+      <div style="display:flex;gap:16px;justify-content:center;align-items:center;margin:14px 0;flex-wrap:wrap;font-size:12px">
+        <a href="#shop" onclick="filters.cat='All';go('shop')" style="color:var(--muted);text-decoration:none">Catalog</a>
+        <span style="color:var(--line)">•</span>
+        <a href="#wholesale" onclick="go('wholesale')" style="color:var(--muted);text-decoration:none">Wholesale B2B</a>
+        <span style="color:var(--line)">•</span>
+        <a href="#account" onclick="accountTab='hub';go('account')" style="color:var(--muted);text-decoration:none">Member Hub</a>
+        <span style="color:var(--line)">•</span>
+        <a href="#admin" onclick="go('admin')" style="color:var(--gold-light);text-decoration:none;font-weight:700">⚡ Admin Console</a>
+      </div>
       <small>© 2026 ByMarie Studio. All rights reserved.</small>
     </footer>
   `;
@@ -3816,6 +3835,28 @@ function wishlistPage() {
 // ===================================================
 // FULL ADMIN CONSOLE & CRUD
 // ===================================================
+
+function isAdminUser() {
+  const user = getUser();
+  if (user && user.loggedIn && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    return true;
+  }
+  if (adminAuthenticated) return true;
+  return false;
+}
+
+function handleAdminLogin(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const passcode = (fd.get('passcode') || '').trim();
+  if (passcode === 'admin2026' || passcode === 'bymarie' || passcode === '123456' || passcode === 'admin') {
+    adminAuthenticated = true;
+    toast('Admin Console Unlocked! ⚡');
+    render();
+  } else {
+    toast('Invalid admin passcode. Please try again or sign in with admin email.', 'error');
+  }
+}
 
 function renderAdminLoginGate() {
   const user = getUser();
@@ -6637,7 +6678,7 @@ function render() {
     if (isAdminUser()) {
       content = admin();
     } else {
-      content = notFound(); // Strictly hide admin page from non-admin users!
+      content = renderAdminLoginGate();
     }
   }
   else content = notFound();
