@@ -5605,18 +5605,6 @@ CREATE TABLE public.site_settings (
   `;
 }
 
-      <div style="display:flex;gap:14px;flex-wrap:wrap">
-        <button class="primary" onclick="syncCatalogToSupabase()">
-          ⬆️ Sync Local Catalog to Supabase
-        </button>
-        <button class="secondary-btn" onclick="fetchCatalogFromSupabase()">
-          ⬇️ Fetch Latest Catalog from Supabase
-        </button>
-      </div>
-    </div>
-  `;
-}
-
 function saveSupabaseConfigFromAdmin(event) {
   event.preventDefault();
   const fd = new FormData(event.target);
@@ -5743,7 +5731,6 @@ function openProductModal(mode, productId = null) {
   render();
 }
 
-function saveProductFromModal(event) {
 // ===================================================
 // DIRECT BACKEND API CONNECTIVITY & CONTROL
 // ===================================================
@@ -6090,9 +6077,6 @@ function exportOrdersCSV() {
   const a = document.createElement('a');
   a.href = url;
   a.download = `bymarie-orders-export-${Date.now()}.csv`;
-  a.click();
-  toast('Orders exported to CSV');
-}
   a.click();
   toast('Orders exported to CSV');
 }
