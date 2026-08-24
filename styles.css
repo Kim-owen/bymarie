@@ -2937,51 +2937,168 @@ h1, h2, h3, .serif {
   margin-top: 2px;
 }
 
-/* 3. Horizontal Scrollable Tab Bar */
-.account-tabs-bar {
-  display: flex;
-  overflow-x: auto;
-  white-space: nowrap;
-  gap: 8px;
-  padding: 4px 2px 14px;
-  margin-bottom: 20px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+/* 3. Luxury Atelier Hub Dashboard Grid */
+.account-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.account-tabs-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.account-tab-pill {
-  flex-shrink: 0;
-  padding: 10px 18px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--line);
+.hub-tile {
   background: #fff;
+  border: 1px solid #f2cfd8;
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(194, 77, 103, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.hub-tile:hover {
+  border-color: #c24d67;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(194, 77, 103, 0.12);
+}
+
+.hub-tile-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fff5f7;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.hub-tile-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hub-tile-body strong {
+  display: block;
+  font-size: 14.5px;
+  color: var(--ink);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hub-tile-body small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hub-tile-badge {
+  background: #fff0f3;
+  color: #c24d67;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.hub-tile-arrow {
+  color: #c24d67;
+  font-weight: 700;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hub-tile:hover .hub-tile-arrow {
+  transform: translateX(4px);
+}
+
+.hub-tile.admin-tile {
+  background: linear-gradient(135deg, #093c35 0%, #155d53 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+.hub-tile.admin-tile strong {
+  color: #fff;
+}
+
+.hub-tile.admin-tile small {
+  color: var(--gold-light);
+}
+
+.hub-tile.admin-tile .hub-tile-arrow {
+  color: var(--gold);
+}
+
+/* 4. Active Tab Navigation Toolbar */
+.tab-nav-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #fff;
+  border: 1px solid #f2cfd8;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(194, 77, 103, 0.04);
+  flex-wrap: wrap;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.tab-back-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c24d67;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.tab-back-btn:hover {
+  text-decoration: underline;
+  transform: translateX(-3px);
+}
+
+.tab-switcher-wrapper {
+  position: relative;
+}
+
+.tab-switcher-select {
+  background: #fff5f7;
+  border: 1px solid #f2cfd8;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--ink);
+  outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.account-tab-pill:hover {
-  color: var(--ink);
+.tab-switcher-select:focus,
+.tab-switcher-select:hover {
   border-color: #c24d67;
-}
-
-.account-tab-pill.active {
-  background: #c24d67;
-  color: #fff;
-  border-color: #c24d67;
-  box-shadow: 0 4px 14px rgba(194, 77, 103, 0.3);
-}
-
-.account-tab-pill.admin-pill {
-  background: var(--gold);
-  color: var(--ink);
-  border-color: var(--gold);
+  background: #ffeef2;
 }
 
 /* 4. Tab Content Card Shell */
@@ -6268,6 +6385,26 @@ html, body {
     justify-content: center !important;
     text-align: center !important;
     box-sizing: border-box !important;
+  }
+
+  .account-hub-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .hub-tile {
+    padding: 14px 16px !important;
+  }
+
+  .tab-nav-toolbar {
+    padding: 10px 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .tab-switcher-select {
+    width: 100% !important;
   }
 
   .privileges-grid {

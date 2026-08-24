@@ -3142,7 +3142,7 @@ function account() {
         </div>
       </div>
 
-      <!-- Quick 3-Metric Bento Grid -->
+      <!-- Quick 3-Metric Bento Grid (Clickable to Tabs) -->
       <div class="account-metrics-grid">
         <div class="account-metric-card ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">
           <span class="metric-icon">📦</span>
@@ -3167,22 +3167,117 @@ function account() {
         </div>
       </div>
 
-      <!-- Horizontal Smooth Tab Navigation Bar -->
-      <div class="account-tabs-bar">
-        <button type="button" class="account-tab-pill ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Rewards</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Saved Delivery &amp; Fit</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ VIP Wholesale</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security</button>
-        <button type="button" class="account-tab-pill ${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge</button>
-        ${isAdminUser() ? `<button type="button" class="account-tab-pill admin-pill" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
-      </div>
-
       <!-- Tab Content Area -->
       <div class="account-content-card">
-        ${isAdminUser() ? `
+        ${accountTab !== 'hub' ? `
+          <!-- Active Tab Navigation Toolbar -->
+          <div class="tab-nav-toolbar">
+            <button type="button" class="tab-back-btn" onclick="accountTab='hub';render()">
+              ← All Account Features
+            </button>
+            <div class="tab-switcher-wrapper">
+              <select class="tab-switcher-select" onchange="accountTab=this.value;render()">
+                <option value="orders" ${accountTab==='orders'?'selected':''}>📦 Orders &amp; Tracking (${orders.length})</option>
+                <option value="wallet" ${accountTab==='wallet'?'selected':''}>💳 Float Wallet (${money(user.walletBalance||0)})</option>
+                <option value="rewards" ${accountTab==='rewards'?'selected':''}>⭐ VIP Tier &amp; Rewards (${loyaltyPoints} pts)</option>
+                <option value="address" ${accountTab==='address'?'selected':''}>📍 Saved Delivery &amp; Fit</option>
+                <option value="wholesale" ${accountTab==='wholesale'?'selected':''}>⚡ VIP Wholesale (Bulk)</option>
+                <option value="wishlist" ${accountTab==='wishlist'?'selected':''}>♡ Saved Wishlist (${wishlist.length})</option>
+                <option value="security" ${accountTab==='security'?'selected':''}>🔒 Security &amp; Alerts</option>
+                <option value="support" ${accountTab==='support'?'selected':''}>💬 24/7 Concierge &amp; Help</option>
+                ${isAdminUser() ? `<option value="admin">⚙️ Admin Console ↗</option>` : ''}
+              </select>
+            </div>
+          </div>
+        ` : `
+          <!-- Main Atelier Hub Feature Grid -->
+          <div class="account-hub-grid">
+            <div class="hub-tile" onclick="accountTab='orders';render()">
+              <div class="hub-tile-icon">📦</div>
+              <div class="hub-tile-body">
+                <strong>Orders &amp; Tracking</strong>
+                <small>${orders.length} orders placed</small>
+              </div>
+              <span class="hub-tile-badge">${orders.length}</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='wallet';render()">
+              <div class="hub-tile-icon">💳</div>
+              <div class="hub-tile-body">
+                <strong>Float Wallet &amp; Ledger</strong>
+                <small>${money(user.walletBalance || 0)} available balance</small>
+              </div>
+              <span class="hub-tile-arrow">→</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='rewards';render()">
+              <div class="hub-tile-icon">⭐</div>
+              <div class="hub-tile-body">
+                <strong>VIP Rewards &amp; Tier</strong>
+                <small>${loyaltyPoints} points • ${tierName}</small>
+              </div>
+              <span class="hub-tile-arrow">→</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='address';render()">
+              <div class="hub-tile-icon">📍</div>
+              <div class="hub-tile-body">
+                <strong>Saved Delivery &amp; Fit</strong>
+                <small>${user.city || 'Accra'} • Store Pickup</small>
+              </div>
+              <span class="hub-tile-arrow">→</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='wholesale';render()">
+              <div class="hub-tile-icon">⚡</div>
+              <div class="hub-tile-body">
+                <strong>VIP Wholesale Portal</strong>
+                <small>Bulk discounts (15%–40% Off)</small>
+              </div>
+              <span class="badge" style="background:#c24d67;color:#fff;font-size:10px">BULK</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='wishlist';render()">
+              <div class="hub-tile-icon">♡</div>
+              <div class="hub-tile-body">
+                <strong>Saved Wishlist</strong>
+                <small>${wishlist.length} pieces bookmarked</small>
+              </div>
+              <span class="hub-tile-badge">${wishlist.length}</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='security';render()">
+              <div class="hub-tile-icon">🔒</div>
+              <div class="hub-tile-body">
+                <strong>Security &amp; Alerts</strong>
+                <small>Password, 2FA &amp; notifications</small>
+              </div>
+              <span class="hub-tile-arrow">→</span>
+            </div>
+
+            <div class="hub-tile" onclick="accountTab='support';render()">
+              <div class="hub-tile-icon">💬</div>
+              <div class="hub-tile-body">
+                <strong>24/7 Client Concierge</strong>
+                <small>WhatsApp &amp; fashion stylists</small>
+              </div>
+              <span class="hub-tile-arrow">→</span>
+            </div>
+
+            ${isAdminUser() ? `
+              <div class="hub-tile admin-tile" onclick="go('admin')">
+                <div class="hub-tile-icon">⚙️</div>
+                <div class="hub-tile-body">
+                  <strong>Store Admin Console</strong>
+                  <small>Manage products, inventory &amp; CMS</small>
+                </div>
+                <span class="hub-tile-arrow">↗</span>
+              </div>
+            ` : ''}
+          </div>
+        `}
+
+        ${isAdminUser() && accountTab !== 'hub' ? `
           <div class="admin-quick-banner">
             <div style="display:flex;align-items:center;gap:10px;min-width:0">
               <span style="font-size:20px;flex-shrink:0">⚙️</span>
