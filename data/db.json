@@ -6,6 +6,49 @@
       "category": "Clothing",
       "price": 245,
       "old": 290,
+      "stock": 10,
+      "tag": "15% off",
+      "image": "https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&w=1000&q=85",
+      "images": [
+        "https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&w=1000&q=85",
+        "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=1000&q=85",
+        "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85"
+      ],
+      "desc": "A relaxed, breathable linen shirt cut for easy tropical days and polished evenings. Tailored with French seams and mother-of-pearl buttons.",
+      "details": [
+        "100% Normandy certified linen",
+        "Breathable weave",
+        "Mother-of-pearl buttons",
+        "Machine washable cold"
+      ],
+      "colors": [
+        "Ivory",
+        "Sea",
+        "Oat"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "rating": 4.9,
+      "reviews": [
+        {
+          "author": "Kofi Mensah",
+          "rating": 5,
+          "date": "18 Aug 2026",
+          "title": "Exceptional texture & fit",
+          "comment": "The linen is remarkably soft right out of the box. Kept me cool during Accra heat yet looks very sharp."
+        }
+      ]
+    },
+    {
+      "id": "linen-shirt",
+      "name": "Linen Edit Shirt",
+      "category": "Clothing",
+      "price": 245,
+      "old": 290,
       "rating": 4.9,
       "stock": 18,
       "tag": "15% off",
@@ -16,11 +59,31 @@
         "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85"
       ],
       "desc": "A relaxed, breathable linen shirt cut for easy tropical days and polished evenings. Tailored with French seams and mother-of-pearl buttons.",
-      "details": ["100% Normandy certified linen", "Breathable weave", "Mother-of-pearl buttons", "Machine washable cold"],
-      "colors": ["Ivory", "Sea", "Oat"],
-      "sizes": ["S", "M", "L", "XL"],
+      "details": [
+        "100% Normandy certified linen",
+        "Breathable weave",
+        "Mother-of-pearl buttons",
+        "Machine washable cold"
+      ],
+      "colors": [
+        "Ivory",
+        "Sea",
+        "Oat"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
       "reviews": [
-        { "author": "Kofi Mensah", "rating": 5, "date": "18 Aug 2026", "title": "Exceptional texture & fit", "comment": "The linen is remarkably soft right out of the box. Kept me cool during Accra heat yet looks very sharp." }
+        {
+          "author": "Kofi Mensah",
+          "rating": 5,
+          "date": "18 Aug 2026",
+          "title": "Exceptional texture & fit",
+          "comment": "The linen is remarkably soft right out of the box. Kept me cool during Accra heat yet looks very sharp."
+        }
       ]
     },
     {
@@ -35,9 +98,21 @@
         "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85"
       ],
       "desc": "Fluid wide-leg tailoring in a softly structured weave. Features discreet elasticated rear waistband and clean pleating.",
-      "details": ["Lightweight wool-viscose blend", "Deep side pockets", "Dry clean recommended"],
-      "colors": ["Ink", "Stone", "Charcoal"],
-      "sizes": ["S", "M", "L"],
+      "details": [
+        "Lightweight wool-viscose blend",
+        "Deep side pockets",
+        "Dry clean recommended"
+      ],
+      "colors": [
+        "Ink",
+        "Stone",
+        "Charcoal"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
       "reviews": []
     },
     {
@@ -54,9 +129,23 @@
         "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85"
       ],
       "desc": "Sculptural kitten heel slingback mules handcrafted in supple Italian suede with memory foam padded insole.",
-      "details": ["100% Genuine Italian Suede", "55mm Sculptural Kitten Heel", "Cushioned leather lining"],
-      "colors": ["Nude Blush", "Mocha", "Noir"],
-      "sizes": ["37", "38", "39", "40", "41"],
+      "details": [
+        "100% Genuine Italian Suede",
+        "55mm Sculptural Kitten Heel",
+        "Cushioned leather lining"
+      ],
+      "colors": [
+        "Nude Blush",
+        "Mocha",
+        "Noir"
+      ],
+      "sizes": [
+        "37",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
       "reviews": []
     },
     {
@@ -73,9 +162,19 @@
         "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=85"
       ],
       "desc": "Architectural curved crescent silhouette cut from full-grain vegetable-tanned leather with bonded suede lining.",
-      "details": ["100% Full-grain calf leather", "Magnetic bridge closure", "Protective dust bag included"],
-      "colors": ["Cognac", "Blush Rose", "Noir"],
-      "sizes": ["Medium Tote"],
+      "details": [
+        "100% Full-grain calf leather",
+        "Magnetic bridge closure",
+        "Protective dust bag included"
+      ],
+      "colors": [
+        "Cognac",
+        "Blush Rose",
+        "Noir"
+      ],
+      "sizes": [
+        "Medium Tote"
+      ],
       "reviews": []
     },
     {
@@ -92,19 +191,55 @@
         "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85"
       ],
       "desc": "Potent 15% THD ascorbate, cold-pressed marula oil, and ferulic acid to fade hyperpigmentation.",
-      "details": ["15% Lipid-soluble Vitamin C (THD)", "Antioxidant ferulic acid", "Non-comedogenic formula"],
-      "colors": ["30ml Dropper"],
+      "details": [
+        "15% Lipid-soluble Vitamin C (THD)",
+        "Antioxidant ferulic acid",
+        "Non-comedogenic formula"
+      ],
+      "colors": [
+        "30ml Dropper"
+      ],
       "sizes": [],
       "reviews": []
     }
   ],
   "coupons": [
-    { "code": "WELCOME10", "discount": 10, "type": "percent", "label": "10% Welcome Discount" },
-    { "code": "BYMARIE20", "discount": 20, "type": "percent", "label": "20% Summer Promo" },
-    { "code": "FREESHIP", "discount": 100, "type": "shipping", "label": "Free Delivery" },
-    { "code": "WHOLESALE20", "discount": 20, "type": "percent", "label": "Wholesale Tier 1 (20% OFF)" },
-    { "code": "WHOLESALE30", "discount": 30, "type": "percent", "label": "Wholesale Tier 2 (30% OFF)" },
-    { "code": "WHOLESALE40", "discount": 40, "type": "percent", "label": "Wholesale Tier 3 (40% OFF)" }
+    {
+      "code": "WELCOME10",
+      "discount": 10,
+      "type": "percent",
+      "label": "10% Welcome Discount"
+    },
+    {
+      "code": "BYMARIE20",
+      "discount": 20,
+      "type": "percent",
+      "label": "20% Summer Promo"
+    },
+    {
+      "code": "FREESHIP",
+      "discount": 100,
+      "type": "shipping",
+      "label": "Free Delivery"
+    },
+    {
+      "code": "WHOLESALE20",
+      "discount": 20,
+      "type": "percent",
+      "label": "Wholesale Tier 1 (20% OFF)"
+    },
+    {
+      "code": "WHOLESALE30",
+      "discount": 30,
+      "type": "percent",
+      "label": "Wholesale Tier 2 (30% OFF)"
+    },
+    {
+      "code": "WHOLESALE40",
+      "discount": 40,
+      "type": "percent",
+      "label": "Wholesale Tier 3 (40% OFF)"
+    }
   ],
   "orders": [
     {
@@ -120,8 +255,18 @@
       "payment": "Mobile Money (MTN)",
       "status": "Processing",
       "items": [
-        { "id": "linen-shirt", "qty": 1, "variant": "Sea", "size": "M" },
-        { "id": "crescent-leather-tote", "qty": 1, "variant": "Blush Rose", "size": "Medium Tote" }
+        {
+          "id": "linen-shirt",
+          "qty": 1,
+          "variant": "Sea",
+          "size": "M"
+        },
+        {
+          "id": "crescent-leather-tote",
+          "qty": 1,
+          "variant": "Blush Rose",
+          "size": "Medium Tote"
+        }
       ],
       "subtotal": 735,
       "discountAmount": 0,
@@ -139,5 +284,66 @@
     "contactEmail": "concierge@bymarie.com",
     "contactPhone": "+233 24 000 0000",
     "accraAddress": "18 Ring Road Central, Cantonments, Accra, Ghana"
-  }
+  },
+  "users": [
+    {
+      "id": "usr-101",
+      "name": "Ifeoma Adichie",
+      "email": "adichieifeoma@gmail.com",
+      "phone": "+233 24 555 7890",
+      "address": "Penthouse Suite 4A, Cantonments, Accra",
+      "walletBalance": 1250,
+      "joinedDate": "14 Aug 2026",
+      "ordersCount": 12,
+      "loggedIn": true
+    },
+    {
+      "id": "usr-102",
+      "name": "Akosua Mensah",
+      "email": "akosua.m@gmail.com",
+      "phone": "024 112 3344",
+      "address": "18 Ring Road Central, Kokomlemle, Accra",
+      "walletBalance": 450,
+      "joinedDate": "21 Aug 2026",
+      "ordersCount": 4,
+      "loggedIn": false
+    },
+    {
+      "id": "usr-103",
+      "name": "Nana Yaw Osei",
+      "email": "nanayaw.osei@outlook.com",
+      "phone": "050 889 9001",
+      "address": "Airport Residential Area, Accra",
+      "walletBalance": 80,
+      "joinedDate": "23 Aug 2026",
+      "ordersCount": 2,
+      "loggedIn": false
+    }
+  ],
+  "wholesale_inquiries": [
+    {
+      "id": "WS-9041",
+      "date": "23 Aug 2026",
+      "company": "Bella Luxe Beauty Lounge",
+      "contact": "Akua Frimpong",
+      "phone": "+233 24 888 1234",
+      "email": "wholesale@bellaluxe.com",
+      "city": "East Legon, Accra",
+      "volume": "100 – 250 units",
+      "notes": "Interested in Virgin Raw bundles and Botanical Vitamin C serums for quarterly salon stocking.",
+      "status": "In Review"
+    },
+    {
+      "id": "WS-8120",
+      "date": "24 Aug 2026",
+      "company": "Kempinski Luxury Spa Boutique",
+      "contact": "Esi Quaye",
+      "phone": "+233 50 123 9988",
+      "email": "boutique@kempinski-accra.com",
+      "city": "Ministries, Accra",
+      "volume": "250 – 500 units",
+      "notes": "Custom branded body creams, body washes, and silk lounge robes.",
+      "status": "New"
+    }
+  ]
 }

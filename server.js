@@ -300,6 +300,92 @@ app.delete('/api/coupons/:code', (req, res) => {
   res.json({ success: true, code: req.params.code });
 });
 
+// --- USERS & WALLETS API ---
+
+app.get('/api/users', (req, res) => {
+  const db = readDB();
+  res.json(db.users || []);
+});
+
+app.post('/api/users', (req, res) => {
+  const db = readDB();
+  if (!db.users) db.users = [];
+  const newUser = {
+    id: req.body.id || `usr-${Date.now()}`,
+    name: req.body.name || 'New Customer',
+    email: req.body.email || '',
+    phone: req.body.phone || '',
+    address: req.body.address || 'Accra, Ghana',
+    walletBalance: Number(req.body.walletBalance || 0),
+    joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    ordersCount: 0,
+    loggedIn: true
+  };
+  db.users.unshift(newUser);
+  writeDB(db);
+  res.status(201).json(newUser);
+});
+
+app.patch('/api/users/:id/wallet', (req, res) => {
+  const { delta, reason } = req.body;
+  const db = readDB();
+  if (!db.users) db.users = [];
+  const user = db.users.find(u => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  user.walletBalance = Math.max(0, (Number(user.walletBalance) || 0) + Number(delta));
+  writeDB(db);
+
+  res.json({ success: true, user, newBalance: user.walletBalance, reason });
+});
+
+// --- WHOLESALE & B2B INQUIRIES API ---
+
+app.get('/api/wholesale', (req, res) => {
+  const db = readDB();
+  res.json(db.wholesale_inquiries || []);
+});
+
+app.post('/api/wholesale', (req, res) => {
+  const db = readDB();
+  if (!db.wholesale_inquiries) db.wholesale_inquiries = [];
+  const newInquiry = {
+    id: req.body.id || `WS-${Math.floor(1000 + Math.random() * 9000)}`,
+    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    company: req.body.company || 'Direct Wholesale Client',
+    contact: req.body.contact || 'Store Buyer',
+    phone: req.body.phone || '',
+    email: req.body.email || '',
+    city: req.body.city || 'Accra, Ghana',
+    volume: req.body.volume || '50 – 100 units',
+    notes: req.body.notes || 'Standard bulk purchase inquiry',
+    status: 'New'
+  };
+  db.wholesale_inquiries.unshift(newInquiry);
+  writeDB(db);
+  res.status(201).json(newInquiry);
+});
+
+app.patch('/api/wholesale/:id/status', (req, res) => {
+  const { status } = req.body;
+  const db = readDB();
+  if (!db.wholesale_inquiries) db.wholesale_inquiries = [];
+  const item = db.wholesale_inquiries.find(w => w.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Wholesale inquiry not found' });
+
+  item.status = status || item.status;
+  writeDB(db);
+  res.json(item);
+});
+
+app.delete('/api/wholesale/:id', (req, res) => {
+  const db = readDB();
+  if (!db.wholesale_inquiries) db.wholesale_inquiries = [];
+  db.wholesale_inquiries = db.wholesale_inquiries.filter(w => w.id !== req.params.id);
+  writeDB(db);
+  res.json({ success: true, id: req.params.id });
+});
+
 // --- SITE SETTINGS CMS API ---
 
 app.get('/api/settings', (req, res) => {
@@ -312,6 +398,15 @@ app.post('/api/settings', (req, res) => {
   db.site_settings = { ...db.site_settings, ...req.body };
   writeDB(db);
   res.json(db.site_settings);
+});
+
+// --- DATABASE BACKUP API ---
+
+app.get('/api/database/backup', (req, res) => {
+  const db = readDB();
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename="bymarie_db_backup.json"');
+  res.send(JSON.stringify(db, null, 2));
 });
 
 // --- FILE UPLOAD API ---
@@ -423,8 +518,8 @@ app.post('/api/paystack/initialize', async (req, res) => {
   const reference = `pstk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
   try {
-    const fetch = (await import('node-fetch')).default || global.fetch;
-    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -465,8 +560,8 @@ app.post('/api/paystack/initialize', async (req, res) => {
 app.get('/api/paystack/verify/:reference', async (req, res) => {
   const { reference } = req.params;
   try {
-    const fetch = (await import('node-fetch')).default || global.fetch;
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn(`https://api.paystack.co/transaction/verify/${reference}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
@@ -501,8 +596,8 @@ app.get('/api/paystack/verify/:reference', async (req, res) => {
 // 3. List Paystack Transactions
 app.get('/api/paystack/transactions', async (req, res) => {
   try {
-    const fetch = (await import('node-fetch')).default || global.fetch;
-    const response = await fetch('https://api.paystack.co/transaction', {
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn('https://api.paystack.co/transaction', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
