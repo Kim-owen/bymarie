@@ -1726,12 +1726,6 @@ function mobileDrawer() {
               <span>📦 Orders &amp; Delivery Tracking</span>
               <small style="color:var(--muted)">Account</small>
             </a>
-            ${isAdminUser() ? `
-              <a href="#admin" onclick="mobileMenuOpen=false;go('admin')" class="drawer-link-item admin-link">
-                <span>⚙️ Executive Admin Console</span>
-                <small style="color:var(--emerald)">Authorized</small>
-              </a>
-            ` : ''}
           </div>
         </div>
 
@@ -1755,7 +1749,7 @@ function footer() {
     <footer>
       <div class="brand">BYMARIE</div>
       <p>Elevated, considered essentials for mindful modern living in Ghana and beyond.</p>
-      <small>© 2026 ByMarie Studio. All rights reserved. <a href="#admin" style="text-decoration:underline;margin-left:8px">Admin</a></small>
+      <small>© 2026 ByMarie Studio. All rights reserved.</small>
     </footer>
   `;
 }
@@ -3277,17 +3271,6 @@ function account() {
                       </div>
                       <span class="opt-arrow">→</span>
                     </div>
-
-                    ${isAdminUser() ? `
-                      <div class="custom-dropdown-option admin-option" onclick="accountMenuOpen=false;go('admin')">
-                        <span class="opt-icon">⚙️</span>
-                        <div class="opt-text">
-                          <strong style="color:var(--emerald)">Store Admin Console</strong>
-                          <small style="color:var(--muted)">Manage products &amp; orders</small>
-                        </div>
-                        <span class="opt-arrow" style="color:var(--gold)">↗</span>
-                      </div>
-                    ` : ''}
                   </div>
                 </div>
               ` : ''}
@@ -3367,34 +3350,8 @@ function account() {
               </div>
               <span class="hub-tile-arrow">→</span>
             </div>
-
-            ${isAdminUser() ? `
-              <div class="hub-tile admin-tile" onclick="go('admin')">
-                <div class="hub-tile-icon">⚙️</div>
-                <div class="hub-tile-body">
-                  <strong>Store Admin Console</strong>
-                  <small>Manage products, inventory &amp; CMS</small>
-                </div>
-                <span class="hub-tile-arrow">↗</span>
-              </div>
-            ` : ''}
           </div>
         `}
-
-        ${isAdminUser() && accountTab !== 'hub' ? `
-          <div class="admin-quick-banner">
-            <div style="display:flex;align-items:center;gap:10px;min-width:0">
-              <span style="font-size:20px;flex-shrink:0">⚙️</span>
-              <div style="min-width:0">
-                <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Store Administrator Console</strong>
-                <small style="color:var(--gold-light);font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Manage products, orders, inventory &amp; CMS</small>
-              </div>
-            </div>
-            <button class="primary admin-banner-btn" onclick="go('admin')">
-              Open ↗
-            </button>
-          </div>
-        ` : ''}
 
         <!-- ================= TAB: ORDERS ================= -->
         ${accountTab === 'orders' ? `
@@ -6611,7 +6568,13 @@ function render() {
   }
   else if (page === 'wishlist') content = wishlistPage();
   else if (page === 'notifications') content = notificationsPage();
-  else if (page === 'admin') content = admin();
+  else if (page === 'admin') {
+    if (isAdminUser()) {
+      content = admin();
+    } else {
+      content = notFound(); // Strictly hide admin page from non-admin users!
+    }
+  }
   else content = notFound();
 
   const isPlainLayout = (page === 'admin');
