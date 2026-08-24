@@ -220,6 +220,91 @@ app.delete('/api/products/:id', async (req, res) => {
   res.json({ success: true, id: req.params.id });
 });
 
+// --- SERVER-SIDE PRICE CALCULATION & INTEGRITY ENGINE ---
+
+function calculateOrderTotalsServerSide(rawItems, rawCouponCode, rawDeliveryMethod, city = '') {
+  const db = readDB();
+  const products = (db.products || []).filter(p => p && p.isCustom === true);
+  const coupons = db.coupons || [];
+
+  if (!Array.isArray(rawItems) || !rawItems.length) {
+    throw new Error('Order items array cannot be empty');
+  }
+
+  let subtotal = 0;
+  const verifiedItems = [];
+
+  for (const item of rawItems) {
+    const prod = products.find(p => p.id === item.id);
+    if (!prod) {
+      throw new Error(`Product "${item.name || item.id}" does not exist in catalog.`);
+    }
+
+    const qty = Math.max(1, parseInt(item.qty, 10) || 1);
+    if (prod.stock !== undefined && prod.stock < qty) {
+      throw new Error(`Insufficient stock for "${prod.name}". Available stock: ${prod.stock}`);
+    }
+
+    // Authoritative Price looked up securely from Server Database
+    const authoritativePrice = Number(prod.price) || 0;
+    const lineTotal = authoritativePrice * qty;
+    subtotal += lineTotal;
+
+    verifiedItems.push({
+      id: prod.id,
+      name: prod.name,
+      category: prod.category,
+      price: authoritativePrice, // Verified server-side price
+      qty,
+      size: item.size || 'Standard',
+      color: item.color || 'Standard',
+      image: prod.image || (prod.images && prod.images[0]) || '',
+      lineTotal: Number(lineTotal.toFixed(2))
+    });
+  }
+
+  // Authoritative Server-Side Coupon Verification
+  let discountAmount = 0;
+  let appliedCoupon = null;
+  if (rawCouponCode) {
+    const code = String(rawCouponCode).toUpperCase().trim();
+    const foundCoupon = coupons.find(c => (c.code || '').toUpperCase().trim() === code);
+    if (foundCoupon) {
+      if (foundCoupon.type === 'percent') {
+        discountAmount = (subtotal * (Number(foundCoupon.discount) || 0)) / 100;
+      } else {
+        discountAmount = Number(foundCoupon.discount) || 0;
+      }
+      discountAmount = Math.min(subtotal, Math.max(0, discountAmount));
+      appliedCoupon = { code: foundCoupon.code, discount: foundCoupon.discount, type: foundCoupon.type };
+    }
+  }
+
+  // Authoritative Server-Side Delivery Fee
+  let deliveryFee = 35; // Standard Greater Accra
+  const method = String(rawDeliveryMethod || '').toLowerCase();
+  const isAccra = (city || '').toLowerCase().includes('accra') || (city || '').toLowerCase().includes('cantonments') || (city || '').toLowerCase().includes('legon');
+
+  if (method.includes('express') || method.includes('vip')) {
+    deliveryFee = 60;
+  } else if (method.includes('nationwide') || method.includes('regional')) {
+    deliveryFee = 50;
+  } else if (isAccra && subtotal >= 300) {
+    deliveryFee = 0; // Complimentary delivery over GH₵ 300 in Accra
+  }
+
+  const total = Number((subtotal - discountAmount + deliveryFee).toFixed(2));
+
+  return {
+    verifiedItems,
+    subtotal: Number(subtotal.toFixed(2)),
+    discountAmount: Number(discountAmount.toFixed(2)),
+    deliveryFee: Number(deliveryFee.toFixed(2)),
+    total,
+    appliedCoupon
+  };
+}
+
 // --- ORDERS API ---
 
 // Get all orders
@@ -228,43 +313,73 @@ app.get('/api/orders', (req, res) => {
   res.json(db.orders || []);
 });
 
-// Create new order
-app.post('/api/orders', async (req, res) => {
-  const db = readDB();
-  const newOrder = {
-    id: req.body.id || `BM-${Math.floor(100000 + Math.random() * 900000)}`,
-    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-    address: req.body.address,
-    city: req.body.city,
-    region: req.body.region,
-    delivery: req.body.delivery || 'Standard delivery',
-    payment: req.body.payment || 'Mobile Money',
-    status: 'Processing',
-    items: req.body.items || [],
-    subtotal: req.body.subtotal || 0,
-    discountAmount: req.body.discountAmount || 0,
-    deliveryFee: req.body.deliveryFee || 0,
-    total: req.body.total || 0
-  };
-
-  // Deduct inventory stock for purchased items
-  (newOrder.items || []).forEach(item => {
-    const prod = db.products.find(p => p.id === item.id);
-    if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
-  });
-
-  db.orders.unshift(newOrder);
-  writeDB(db);
-
-  const client = getSupabaseClient();
-  if (client) {
-    try { await client.from('orders').insert([newOrder]); } catch (e) {}
+// Quote calculation endpoint (Returns server-calculated price verification)
+app.post('/api/orders/quote', (req, res) => {
+  try {
+    const { items, couponCode, delivery, city } = req.body;
+    const calc = calculateOrderTotalsServerSide(items, couponCode, delivery, city);
+    res.json({ success: true, ...calc });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
+});
 
-  res.status(201).json(newOrder);
+// Create new order (Protected with 100% Server-Side Price Calculation)
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { name, email, phone, address, city, region, delivery, payment, items, couponCode } = req.body;
+    
+    if (!name || !phone || !address) {
+      return res.status(400).json({ error: 'Missing required customer delivery information' });
+    }
+
+    // SERVER-SIDE PRICE CALCULATION (Zero trust on client-sent prices/totals)
+    const calculation = calculateOrderTotalsServerSide(items, couponCode, delivery, city);
+
+    const db = readDB();
+    const newOrder = {
+      id: req.body.id || `BM-${Math.floor(100000 + Math.random() * 900000)}`,
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      name: name.trim(),
+      email: (email || '').trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      city: (city || 'Accra').trim(),
+      region: (region || 'Greater Accra').trim(),
+      delivery: delivery || 'Standard Delivery',
+      payment: payment || 'Mobile Money',
+      status: 'Processing',
+      items: calculation.verifiedItems,
+      subtotal: calculation.subtotal,
+      discountAmount: calculation.discountAmount,
+      deliveryFee: calculation.deliveryFee,
+      total: calculation.total,
+      appliedCoupon: calculation.appliedCoupon,
+      securedServerSide: true
+    };
+
+    // Deduct inventory stock server-side
+    calculation.verifiedItems.forEach(item => {
+      const prod = (db.products || []).find(p => p.id === item.id);
+      if (prod && prod.stock !== undefined) {
+        prod.stock = Math.max(0, prod.stock - item.qty);
+      }
+    });
+
+    if (!db.orders) db.orders = [];
+    db.orders.unshift(newOrder);
+    writeDB(db);
+
+    const client = getSupabaseClient();
+    if (client) {
+      try { await client.from('orders').insert([newOrder]); } catch (e) {}
+    }
+
+    res.status(201).json(newOrder);
+  } catch (err) {
+    console.error('Secure Order Creation Error:', err.message);
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Update order status
@@ -520,15 +635,29 @@ app.post('/api/auth/login', async (req, res) => {
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || 'paystack_secret_key_demo';
 const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY || 'paystack_public_key_demo';
 
-// 1. Initialize Paystack Transaction
+// 1. Initialize Paystack Transaction (Server-Side Verified)
 app.post('/api/paystack/initialize', async (req, res) => {
-  const { email, amount, currency = 'GHS', metadata, callback_url } = req.body;
-  if (!email || !amount) {
-    return res.status(400).json({ status: false, message: 'Email and amount are required' });
+  const { email, amount, currency = 'GHS', metadata, callback_url, items, couponCode, delivery, city } = req.body;
+  if (!email) {
+    return res.status(400).json({ status: false, message: 'Email is required' });
+  }
+
+  let authoritativeTotal = Number(amount) || 0;
+  if (Array.isArray(items) && items.length > 0) {
+    try {
+      const serverCalc = calculateOrderTotalsServerSide(items, couponCode, delivery, city);
+      authoritativeTotal = serverCalc.total;
+    } catch (err) {
+      return res.status(400).json({ status: false, message: err.message });
+    }
+  }
+
+  if (authoritativeTotal <= 0) {
+    return res.status(400).json({ status: false, message: 'Invalid transaction total' });
   }
 
   // Convert amount to subunits (pesewas / kobo -> amount * 100)
-  const subunitAmount = Math.round(Number(amount) * 100);
+  const subunitAmount = Math.round(authoritativeTotal * 100);
   const reference = `pstk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
   try {

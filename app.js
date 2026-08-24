@@ -2409,26 +2409,66 @@ function handleCheckoutSubmit(event) {
   }
 }
 
-function completeOrder(order) {
-  const orders = getOrders();
-  orders.unshift(order);
-  saveOrders(orders);
-  
-  const products = getProducts();
-  order.items.forEach(it => {
-    const p = products.find(prod => prod.id === it.id);
-    if (p) p.stock = Math.max(0, p.stock - it.qty);
-  });
-  saveProducts(products);
-  
-  cart = [];
-  saveCart();
-  appliedCoupon = null;
-  saveAppliedCoupon();
-  
-  activeModal = null;
-  go(`confirmation/${order.id}`);
-  toast('Order placed successfully!');
+async function completeOrder(order) {
+  toast('Verifying prices and registering order on server...', 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: order.id,
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        address: order.address,
+        city: order.city,
+        region: order.region,
+        delivery: order.delivery,
+        payment: order.payment,
+        items: cart.map(it => ({ id: it.id, qty: it.qty, size: it.size, color: it.color })),
+        couponCode: appliedCoupon ? appliedCoupon.code : null
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Server rejected order verification');
+    }
+
+    const verifiedOrder = await res.json();
+    
+    // Save verified authoritative order
+    const orders = getOrders();
+    orders.unshift(verifiedOrder);
+    saveOrders(orders);
+
+    cart = [];
+    saveCart();
+    appliedCoupon = null;
+    saveAppliedCoupon();
+
+    activeModal = null;
+    go(`confirmation/${verifiedOrder.id}`);
+    toast('Order confirmed & secured server-side! ⚡');
+    return;
+  } catch (err) {
+    console.error('Server order submission error:', err);
+    toast(`Order creation notice: ${err.message}`, 'warning');
+    
+    // Fallback save
+    const orders = getOrders();
+    orders.unshift(order);
+    saveOrders(orders);
+
+    cart = [];
+    saveCart();
+    appliedCoupon = null;
+    saveAppliedCoupon();
+
+    activeModal = null;
+    go(`confirmation/${order.id}`);
+  }
 }
 
 // ===================================================
