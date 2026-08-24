@@ -4094,16 +4094,22 @@ function admin() {
             </div>
           </div>
 
-          <nav class="admin-nav" style="overflow-y:auto;padding-bottom:16px;flex:1">
+          <nav class="admin-drawer-nav">
             ${ADMIN_NAV.map(group => `
-              <span class="admin-nav-label">${group.section}</span>
-              ${group.items.map(item => `
-                <button class="${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';adminMobileDrawerOpen=false;render()">
-                  ${svgIcon(item.icon, 17)}
-                  <span>${item.label}</span>
-                  ${navCounts[item.key] ? `<b class="nav-count ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : ''}
-                </button>
-              `).join('')}
+              <div class="admin-drawer-group">
+                <span class="admin-drawer-group-title">${group.section}</span>
+                <div class="admin-drawer-group-items">
+                  ${group.items.map(item => `
+                    <button type="button" class="admin-drawer-btn ${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';adminMobileDrawerOpen=false;render()">
+                      <div class="admin-drawer-btn-left">
+                        <span class="admin-drawer-btn-icon">${svgIcon(item.icon, 18)}</span>
+                        <span class="admin-drawer-btn-text">${item.label}</span>
+                      </div>
+                      ${navCounts[item.key] ? `<b class="admin-drawer-badge ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : `<span class="admin-drawer-arrow">›</span>`}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
             `).join('')}
           </nav>
 
