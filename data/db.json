@@ -16,16 +16,16 @@
     "contactPhone": "+233 24 000 0000",
     "accraAddress": "18 Ring Road Central, Cantonments, Accra, Ghana",
     "categoryCovers": {
-      "Clothing": "",
-      "Shoes": "",
-      "Bags": "",
-      "Wigs": "",
-      "Skin Care": "",
-      "Perfumes": "",
-      "Lifestyle": "",
-      "Nails": "",
-      "Panties": "",
-      "Toiletries": ""
+      "Clothing": [],
+      "Shoes": [],
+      "Bags": [],
+      "Wigs": [],
+      "Skin Care": [],
+      "Perfumes": [],
+      "Lifestyle": [],
+      "Nails": [],
+      "Panties": [],
+      "Toiletries": []
     }
   },
   "users": [

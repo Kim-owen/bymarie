@@ -428,18 +428,29 @@ const INITIAL_SITE_SETTINGS = {
   contactPhone: '+233 24 000 0000',
   accraAddress: '18 Ring Road Central, Cantonments, Accra, Ghana',
   categoryCovers: {
-    'Clothing': '',
-    'Shoes': '',
-    'Bags': '',
-    'Wigs': '',
-    'Skin Care': '',
-    'Perfumes': '',
-    'Lifestyle': '',
-    'Nails': '',
-    'Panties': '',
-    'Toiletries': ''
+    'Clothing': [],
+    'Shoes': [],
+    'Bags': [],
+    'Wigs': [],
+    'Skin Care': [],
+    'Perfumes': [],
+    'Lifestyle': [],
+    'Nails': [],
+    'Panties': [],
+    'Toiletries': []
   }
 };
+
+function getCategoryCoverList(catName) {
+  const settings = getSiteSettings();
+  if (!settings.categoryCovers || !settings.categoryCovers[catName]) return [];
+  const val = settings.categoryCovers[catName];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  if (typeof val === 'string' && val.trim()) {
+    return val.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+}
 
 function getSiteSettings() {
   const data = localStorage.getItem('bymarie-site-settings');
@@ -1267,7 +1278,7 @@ function initCategorySliders() {
   if (categorySlideInterval) clearInterval(categorySlideInterval);
   
   categorySlideInterval = setInterval(() => {
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 15; i++) {
       const slider = document.getElementById(`cat-slider-${i}`);
       if (!slider) continue;
       const slides = slider.querySelectorAll('.category-slide-img');
@@ -1325,7 +1336,7 @@ function home() {
         </div>
       </section>
 
-      <!-- Collections Grid (Dynamic Covers Managed via Admin CMS) -->
+      <!-- Collections Grid (Dynamic Multi-Covers Managed via Admin CMS) -->
       <section id="collections" class="section">
         <div class="section-head animate-fade-up">
           <div>
@@ -1347,11 +1358,22 @@ function home() {
             { name: 'Panties', subtitle: 'Second-skin seamless briefs and delicate French lace intimates.', code: '09 // PANTIES', icon: '👙' },
             { name: 'Toiletries', subtitle: 'Gentle oat lipid cleansers and nourishing botanical daily care.', code: '10 // BATH & BODY', icon: '🛁' }
           ].map((cat, i) => {
-            const coverUrl = (settings.categoryCovers && settings.categoryCovers[cat.name]) ? settings.categoryCovers[cat.name] : '';
+            const covers = getCategoryCoverList(cat.name);
             return `
-              <div class="category-card animate-fade-up delay-${(i % 3) + 1}" onclick="go('category/${encodeURIComponent(cat.name)}')">
-                ${coverUrl ? `
-                  <img src="${coverUrl}" alt="${cat.name}" style="width:100%;height:100%;object-fit:cover">
+              <div class="category-card animate-fade-up delay-${(i % 3) + 1}" onclick="go('category/${encodeURIComponent(cat.name)}')" id="cat-card-${i}">
+                ${covers.length > 1 ? `
+                  <div class="category-slider" id="cat-slider-${i}">
+                    ${covers.map((img, sIdx) => `
+                      <img class="category-slide-img ${sIdx === 0 ? 'active' : ''}" src="${img}" alt="${cat.name} cover ${sIdx + 1}">
+                    `).join('')}
+                  </div>
+                  <div class="category-slider-dots">
+                    ${covers.map((_, sIdx) => `
+                      <span class="category-slider-dot ${sIdx === 0 ? 'active' : ''}" id="cat-dot-${i}-${sIdx}"></span>
+                    `).join('')}
+                  </div>
+                ` : covers.length === 1 ? `
+                  <img src="${covers[0]}" alt="${cat.name}" style="width:100%;height:100%;object-fit:cover">
                 ` : `
                   <div class="category-card-placeholder">
                     <span class="category-card-placeholder-icon">${cat.icon}</span>
@@ -4836,11 +4858,14 @@ function renderAdminSiteCMS() {
         </div>
       </div>
 
-      <!-- Category Collection Covers & Brand Imagery Section -->
+      <!-- Category Collection Covers & Brand Imagery Section (Supports Multiple Images per Collection) -->
       <div class="cms-card animate-fade-up delay-4">
-        <h3 style="color:#fff">🖼️ Category Collection Covers &amp; Brand Imagery</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="color:#fff">🖼️ Category Collection Covers (Multi-Image Slider Support)</h3>
+          <span style="font-size:11.5px;color:var(--gold-light);font-weight:700">Auto-Sliding Active When 2+ Photos</span>
+        </div>
         <p style="color:#a1a1aa;font-size:13px;margin-bottom:18px">
-          Upload covers for each boutique collection or paste high-resolution image URLs. These covers dynamically appear on the homepage collections grid.
+          Upload 2, 3, 4, or more cover photos per boutique collection. When more than one photo is uploaded, the homepage collection card automatically smoothly cross-fades between the images with interactive indicators.
         </p>
 
         <div class="form-grid">
@@ -4871,21 +4896,42 @@ function renderAdminSiteCMS() {
             ['Panties', 'Panties & Intimates'],
             ['Toiletries', 'Bath & Toiletries']
           ].map(([catKey, catTitle]) => {
-            const currentCover = (settings.categoryCovers && settings.categoryCovers[catKey]) || '';
+            const covers = getCategoryCoverList(catKey);
             return `
-              <div class="form-group">
-                <label>${catTitle} Cover</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input name="catCover_${catKey}" value="${currentCover}" placeholder="URL / Upload file" style="flex:1;font-size:12px">
-                  <label class="secondary-btn" style="cursor:pointer;padding:6px 10px;font-size:11px;display:flex;align-items:center">
-                    📁 <input type="file" accept="image/*" style="display:none" onchange="handleAdminCoverUpload(event, '${catKey}')">
-                  </label>
-                </div>
-                ${currentCover ? `
-                  <div style="margin-top:6px;width:60px;height:40px;border-radius:4px;overflow:hidden;border:1px solid #3f3f46">
-                    <img src="${currentCover}" style="width:100%;height:100%;object-fit:cover">
+              <div class="form-group full">
+                <div class="admin-category-cover-card">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <strong style="color:#fff;font-size:14.5px">${catTitle}</strong>
+                    <span class="badge" style="background:#051916;color:var(--gold-light);border:1px solid rgba(197,151,55,0.3);font-size:11px">
+                      ${covers.length} Photo${covers.length === 1 ? '' : 's'} ${covers.length > 1 ? '✨ (Active Slideshow)' : ''}
+                    </span>
                   </div>
-                ` : ''}
+                  
+                  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <label class="primary" style="cursor:pointer;padding:7px 14px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:#c24d67">
+                      📁 Select &amp; Upload Multiple Photos
+                      <input type="file" multiple accept="image/*" style="display:none" onchange="handleAdminCoverUpload(event, '${catKey}')">
+                    </label>
+                    
+                    <div style="display:flex;gap:6px;flex:1;min-width:220px">
+                      <input id="new-cover-url-${catKey}" placeholder="Or paste high-res image URL..." style="font-size:12px;padding:7px 10px;flex:1">
+                      <button type="button" class="secondary-btn" style="padding:7px 12px;font-size:11.5px" onclick="addAdminCoverUrl('${catKey}')">+ Add URL</button>
+                    </div>
+                  </div>
+
+                  ${covers.length ? `
+                    <div class="admin-cover-thumbs">
+                      ${covers.map((img, idx) => `
+                        <div class="admin-cover-thumb" title="Cover Photo #${idx + 1} for ${catKey}">
+                          <img src="${img}" alt="Cover ${idx + 1}">
+                          <button type="button" class="admin-cover-thumb-delete" onclick="removeAdminCategoryCover('${catKey}', ${idx})" title="Remove this photo">✕</button>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <small style="color:#71717a;font-style:italic">No cover photos uploaded yet (default Haute Couture atelier card displayed on storefront).</small>
+                  `}
+                </div>
               </div>
             `;
           }).join('')}
@@ -5423,15 +5469,6 @@ async function saveCMSFromAdmin(event) {
   event.preventDefault();
   const fd = new FormData(event.target);
   const cur = getSiteSettings();
-  const updatedCovers = { ...(cur.categoryCovers || {}) };
-
-  [
-    'Clothing', 'Shoes', 'Bags', 'Wigs', 'Skin Care',
-    'Perfumes', 'Lifestyle', 'Nails', 'Panties', 'Toiletries'
-  ].forEach(cat => {
-    const val = fd.get(`catCover_${cat}`);
-    if (val !== null) updatedCovers[cat] = (val || '').trim();
-  });
 
   const updatedSettings = {
     ...cur,
@@ -5443,7 +5480,6 @@ async function saveCMSFromAdmin(event) {
     brandEthosTitle: fd.get('brandEthosTitle') || '',
     brandEthosText: fd.get('brandEthosText') || '',
     ethosImageUrl: (fd.get('ethosImageUrl') || '').trim(),
-    categoryCovers: updatedCovers,
     contactEmail: fd.get('contactEmail') || '',
     contactPhone: fd.get('contactPhone') || '',
     accraAddress: fd.get('accraAddress') || ''
@@ -5462,34 +5498,86 @@ async function saveCMSFromAdmin(event) {
   } catch (e) {}
 }
 
-function handleAdminCoverUpload(event, target) {
-  const file = event.target.files[0];
-  if (!file) return;
+async function handleAdminCoverUpload(event, target) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
 
-  toast(`Processing cover photo: ${file.name}...`, 'info');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    const settings = getSiteSettings();
-    if (target === 'ethos') {
-      settings.ethosImageUrl = dataUrl;
-    } else {
-      if (!settings.categoryCovers) settings.categoryCovers = {};
-      settings.categoryCovers[target] = dataUrl;
-    }
-    saveSiteSettings(settings);
-    toast(`Cover updated for ${target}! ⚡`);
-    render();
+  toast(`Processing ${files.length} cover image${files.length > 1 ? 's' : ''}...`, 'info');
+  
+  const readPromises = files.map(file => {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  });
 
-    try {
-      fetch(`${API_BASE}/settings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      }).catch(() => {});
-    } catch (err) {}
-  };
-  reader.readAsDataURL(file);
+  const base64List = (await Promise.all(readPromises)).filter(Boolean);
+  if (!base64List.length) return;
+
+  const settings = getSiteSettings();
+  if (target === 'ethos') {
+    settings.ethosImageUrl = base64List[0];
+  } else {
+    if (!settings.categoryCovers) settings.categoryCovers = {};
+    const existing = getCategoryCoverList(target);
+    settings.categoryCovers[target] = [...existing, ...base64List];
+  }
+  
+  saveSiteSettings(settings);
+  toast(`Updated ${target} with ${base64List.length} cover photo${base64List.length > 1 ? 's' : ''}! ⚡`);
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function addAdminCoverUrl(target) {
+  const input = document.getElementById(`new-cover-url-${target}`);
+  if (!input) return;
+  const url = (input.value || '').trim();
+  if (!url) return toast('Please enter an image URL', 'warning');
+  
+  const settings = getSiteSettings();
+  if (!settings.categoryCovers) settings.categoryCovers = {};
+  const existing = getCategoryCoverList(target);
+  settings.categoryCovers[target] = [...existing, url];
+  saveSiteSettings(settings);
+  toast(`Added cover image to ${target}! ⚡`);
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function removeAdminCategoryCover(target, index) {
+  const settings = getSiteSettings();
+  if (!settings.categoryCovers || !settings.categoryCovers[target]) return;
+  const list = getCategoryCoverList(target);
+  list.splice(index, 1);
+  settings.categoryCovers[target] = list;
+  saveSiteSettings(settings);
+  toast(`Removed cover photo from ${target}`);
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
 }
 
 function handleHeroVideoUpload(event) {
