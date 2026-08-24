@@ -12,6 +12,7 @@ const API_BASE = (typeof window !== 'undefined' && window.location.origin.includ
 
 let authMode = 'signin';
 let adminAuthenticated = false;
+let adminMobileDrawerOpen = false;
 const ADMIN_EMAIL = 'adichieifeoma@gmail.com';
 
 const INITIAL_USERS = [
@@ -3922,8 +3923,8 @@ function admin() {
 
   return `
     <main class="admin-shell">
-      <!-- Million-Dollar Haute Couture Sidebar -->
-      <aside class="admin-sidebar">
+      <!-- Million-Dollar Haute Couture Desktop Sidebar -->
+      <aside class="admin-sidebar desktop-only">
         <div class="admin-brand-header">
           <a class="brand admin-brand" href="#home" onclick="go('home')">BYMARIE</a>
           <div class="admin-executive-tag">
@@ -3957,10 +3958,52 @@ function admin() {
         </div>
       </aside>
 
+      <!-- Mobile Slide-out Drawer (Offcanvas Menu) -->
+      ${adminMobileDrawerOpen ? `
+        <div class="admin-mobile-backdrop" onclick="adminMobileDrawerOpen=false;render()"></div>
+        <aside class="admin-mobile-drawer animate-fade-in">
+          <div class="admin-mobile-drawer-header">
+            <div>
+              <a class="brand admin-brand" href="#home" onclick="adminMobileDrawerOpen=false;go('home')">BYMARIE</a>
+              <div class="admin-executive-tag">
+                <span class="pulse-dot"></span>
+                EXECUTIVE ATELIER
+              </div>
+            </div>
+            <button class="admin-mobile-drawer-close" onclick="adminMobileDrawerOpen=false;render()" aria-label="Close Navigation Menu">✕</button>
+          </div>
+
+          <div class="admin-user-chip" style="margin:12px 0 16px;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.08);padding:10px 12px">
+            <span class="avatar" style="background:#c24d67;color:#fff">I</span>
+            <div style="min-width:0">
+              <strong style="color:#fff;font-size:13px">Ifeoma Adichie</strong>
+              <small style="color:var(--gold-light);font-size:11px">Super Administrator</small>
+            </div>
+          </div>
+
+          <nav class="admin-nav" style="overflow-y:auto;padding-bottom:16px;flex:1">
+            ${ADMIN_NAV.map(group => `
+              <span class="admin-nav-label">${group.section}</span>
+              ${group.items.map(item => `
+                <button class="${adminTab === item.key ? 'active' : ''}" onclick="adminTab='${item.key}';adminMobileDrawerOpen=false;render()">
+                  ${svgIcon(item.icon, 17)}
+                  <span>${item.label}</span>
+                  ${navCounts[item.key] ? `<b class="nav-count ${item.key === 'inventory' && alertCount ? 'warn' : ''}">${navCounts[item.key]}</b>` : ''}
+                </button>
+              `).join('')}
+            `).join('')}
+          </nav>
+
+          <div class="admin-sidebar-footer" style="margin-top:auto;padding-top:14px">
+            <button class="admin-exit" onclick="adminMobileDrawerOpen=false;go('home')">${svgIcon('arrowLeft', 16)} Return to Storefront</button>
+          </div>
+        </aside>
+      ` : ''}
+
       <!-- Main Executive Viewport -->
       <div class="admin-main">
-        <!-- Million-Dollar Topbar -->
-        <div class="admin-topbar">
+        <!-- Million-Dollar Desktop Topbar -->
+        <div class="admin-topbar desktop-only">
           <div class="admin-breadcrumb">
             <span style="color:#a1a1aa">Executive Suite</span> <span style="color:#52525b">/</span> <b style="color:#fff">${ADMIN_TAB_TITLES[adminTab] || 'Dashboard'}</b>
           </div>
@@ -3968,10 +4011,6 @@ function admin() {
           <button class="command-palette-trigger" onclick="commandPaletteOpen=true;commandPaletteQuery='';render()">
             ${svgIcon('search', 14)} <span>Search or command palette...</span> <kbd>⌘K</kbd>
           </button>
-
-          <select class="admin-mobile-tab-select" aria-label="Admin section" onchange="adminTab=this.value;render()">
-            ${ADMIN_NAV.flatMap(g => g.items).map(item => `<option value="${item.key}" ${adminTab === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}
-          </select>
 
           <div class="admin-topbar-actions">
             <div class="admin-kpi-pill">
@@ -3989,6 +4028,32 @@ function admin() {
           </div>
         </div>
 
+        <!-- Mobile Top Navigation Header -->
+        <div class="admin-mobile-header mobile-only">
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="admin-mobile-menu-btn" onclick="adminMobileDrawerOpen=true;render()" aria-label="Open Navigation Menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="admin-mobile-brand">
+              <span class="admin-mobile-title">BYMARIE</span>
+              <span class="admin-mobile-badge">${ADMIN_TAB_TITLES[adminTab] ? ADMIN_TAB_TITLES[adminTab].split(' ')[0] : 'Admin'}</span>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="admin-kpi-pill compact">
+              <span style="font-size:8.5px;color:#a1a1aa">REVENUE</span>
+              <strong style="color:var(--gold-light);font-size:11.5px">${money(totalRevenue)}</strong>
+            </div>
+            <button class="admin-mobile-icon-btn" onclick="syncAdminWithBackend()" title="Sync Database">
+              ⚡
+            </button>
+            <button class="admin-mobile-icon-btn" onclick="commandPaletteOpen=true;commandPaletteQuery='';render()" title="Search & Actions">
+              ${svgIcon('search', 15)}
+            </button>
+          </div>
+        </div>
+
         <section class="admin-body">
           ${adminTab === 'dashboard' ? renderAdminDashboard(products, orders, totalRevenue, lowStockProducts, outOfStockProducts, users) : ''}
           ${adminTab === 'orders' ? renderAdminOrders(orders) : ''}
@@ -4000,6 +4065,41 @@ function admin() {
           ${adminTab === 'cms' ? renderAdminSiteCMS() : ''}
           ${adminTab === 'supabase' ? renderAdminSupabaseConfig() : ''}
         </section>
+
+        <!-- Mobile Fixed Bottom App Navigation Bar (Luxury App Dock) -->
+        <nav class="admin-mobile-bottom-bar mobile-only">
+          <button class="admin-mobile-nav-item ${adminTab === 'dashboard' ? 'active' : ''}" onclick="adminTab='dashboard';render()">
+            ${svgIcon('grid', 20)}
+            <span>Overview</span>
+          </button>
+
+          <button class="admin-mobile-nav-item ${adminTab === 'orders' ? 'active' : ''}" onclick="adminTab='orders';render()">
+            <div style="position:relative;display:inline-block">
+              ${svgIcon('bag', 20)}
+              ${pendingOrders ? `<span class="nav-badge-dot">${pendingOrders}</span>` : ''}
+            </div>
+            <span>Orders</span>
+          </button>
+
+          <button class="admin-mobile-nav-add" onclick="openProductModal('add')" title="Add New Luxury Piece">
+            <span>+</span>
+          </button>
+
+          <button class="admin-mobile-nav-item ${adminTab === 'inventory' ? 'active' : ''}" onclick="adminTab='inventory';render()">
+            <div style="position:relative;display:inline-block">
+              ${svgIcon('layers', 20)}
+              ${alertCount ? `<span class="nav-badge-dot warn">${alertCount}</span>` : ''}
+            </div>
+            <span>Stock</span>
+          </button>
+
+          <button class="admin-mobile-nav-item ${(adminTab !== 'dashboard' && adminTab !== 'orders' && adminTab !== 'inventory') ? 'active' : ''}" onclick="adminMobileDrawerOpen=true;render()">
+            <div style="position:relative;display:inline-block">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </div>
+            <span>Menu</span>
+          </button>
+        </nav>
       </div>
     </main>
   `;
