@@ -2,538 +2,11 @@
 // BYMARIE LUXURY E-COMMERCE - APPLICATION ENGINE
 // ===================================================
 
-const INITIAL_PRODUCTS = [
-  // --- CLOTHING ---
-  {
-    id: 'linen-shirt',
-    name: 'Linen Edit Shirt',
-    category: 'Clothing',
-    price: 245,
-    old: 290,
-    rating: 4.9,
-    stock: 18,
-    tag: '15% off',
-    image: 'https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'A relaxed, breathable linen shirt cut for easy tropical days and polished evenings. Tailored with French seams and mother-of-pearl buttons.',
-    details: ['100% Normandy certified linen', 'Breathable weave', 'Mother-of-pearl buttons', 'Machine washable cold'],
-    colors: ['Ivory', 'Sea', 'Oat'],
-    sizes: ['S', 'M', 'L', 'XL'],
-    reviews: [
-      { author: 'Kofi Mensah', rating: 5, date: '18 Aug 2026', title: 'Exceptional texture & fit', comment: 'The linen is remarkably soft right out of the box. Kept me cool during Accra heat yet looks very sharp.' },
-      { author: 'Esi Annan', rating: 5, date: '12 Aug 2026', title: 'My new staple', comment: 'Great quality seams and the Sea colorway is stunning in person.' }
-    ]
-  },
-  {
-    id: 'tailored-trouser',
-    name: 'Tailored Ease Trouser',
-    category: 'Clothing',
-    price: 280,
-    rating: 4.8,
-    stock: 9,
-    image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Fluid wide-leg tailoring in a softly structured weave. Features discreet elasticated rear waistband and clean pleating.',
-    details: ['Lightweight wool-viscose blend', 'Deep side pockets', 'Adjustable inner tab', 'Dry clean recommended'],
-    colors: ['Ink', 'Stone', 'Charcoal'],
-    sizes: ['S', 'M', 'L'],
-    reviews: [
-      { author: 'Nana Yaw', rating: 5, date: '15 Aug 2026', title: 'Drapes beautifully', comment: 'Very comfortable while looking like high-end designer tailoring.' }
-    ]
-  },
-  {
-    id: 'atelier-blazer',
-    name: 'Atelier Blazer',
-    category: 'Clothing',
-    price: 420,
-    old: 480,
-    rating: 4.9,
-    stock: 5,
-    tag: 'Limited',
-    image: 'https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'An impeccably relaxed blazer for modern executive and evening occasions. Unlined construction allows natural drape.',
-    details: ['Tropical weight Italian wool', 'Double rear vent', 'Horn buttons', 'Internal passport pocket'],
-    colors: ['Mocha', 'Midnight'],
-    sizes: ['S', 'M', 'L'],
-    reviews: [
-      { author: 'Kwame B.', rating: 5, date: '04 Aug 2026', title: 'Top tier craftsmanship', comment: 'Looks tailored specifically for me. Worth every cedi.' }
-    ]
-  },
+const INITIAL_PRODUCTS = [];
 
-  // --- SHOES ---
-  {
-    id: 'suede-mule-heels',
-    name: 'Atelier Suede Slingback Mules',
-    category: 'Shoes',
-    price: 340,
-    old: 390,
-    rating: 4.9,
-    stock: 12,
-    tag: 'Bestseller',
-    image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Sculptural kitten heel slingback mules handcrafted in supple Italian suede with memory foam padded insole for effortless daytime-to-evening polish.',
-    details: ['100% Genuine Italian Suede', '55mm Sculptural Kitten Heel', 'Cushioned leather lining', 'Handcrafted in Italy'],
-    colors: ['Nude Blush', 'Mocha', 'Noir'],
-    sizes: ['37', '38', '39', '40', '41'],
-    reviews: [
-      { author: 'Serwaa Appiah', rating: 5, date: '21 Aug 2026', title: 'The most comfortable heels ever', comment: 'Wore them all evening at an Accra gala without any foot pain. Impeccable craftsmanship.' }
-    ]
-  },
-  {
-    id: 'woven-leather-slides',
-    name: 'Palma Woven Leather Slides',
-    category: 'Shoes',
-    price: 220,
-    rating: 4.8,
-    stock: 18,
-    tag: 'Handcrafted',
-    image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Artisanal hand-braided calfskin leather slides with contoured ergonomic footbed, designed for chic everyday ease and resort relaxation.',
-    details: ['Supple braided calfskin upper', 'Molded leather footbed', 'Anti-slip rubber outsole'],
-    colors: ['Champagne', 'Caramel', 'Ivory'],
-    sizes: ['37', '38', '39', '40', '41'],
-    reviews: [
-      { author: 'Naa Dromo', rating: 5, date: '16 Aug 2026', title: 'Pure tropical chic', comment: 'Looks so classy with linen trousers and silk maxi dresses.' }
-    ]
-  },
-  {
-    id: 'strappy-stiletto-sandal',
-    name: 'Aura Minimalist Strappy Stilettos',
-    category: 'Shoes',
-    price: 380,
-    rating: 4.9,
-    stock: 7,
-    tag: 'New',
-    image: 'https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Ultra-slender asymmetric straps and 85mm stiletto heel designed to elongate the silhouette for gala, dinner, and red carpet occasions.',
-    details: ['85mm Stiletto heel', 'Adjustable ankle buckle', 'Metallic finish leather', 'Reinforced arch support'],
-    colors: ['Rose Gold', 'Noir', 'Gold'],
-    sizes: ['37', '38', '39', '40'],
-    reviews: [
-      { author: 'Akosua B.', rating: 5, date: '19 Aug 2026', title: 'Stops traffic!', comment: 'Dainty yet surprisingly sturdy. The rose gold catches the light magically.' }
-    ]
-  },
+const INITIAL_COUPONS = [];
 
-  // --- BAGS ---
-  {
-    id: 'crescent-leather-tote',
-    name: 'Luna Sculptural Crescent Tote',
-    category: 'Bags',
-    price: 490,
-    old: 550,
-    rating: 4.9,
-    stock: 9,
-    tag: 'Signature',
-    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Architectural curved crescent silhouette cut from full-grain vegetable-tanned leather with bonded suede lining and detachable crossbody strap.',
-    details: ['100% Full-grain calf leather', 'Magnetic bridge closure', 'Interior zippered card compartment', 'Protective dust bag included'],
-    colors: ['Cognac', 'Blush Rose', 'Noir'],
-    sizes: ['Medium Tote'],
-    reviews: [
-      { author: 'Delali K.', rating: 5, date: '17 Aug 2026', title: 'Luxury designer quality', comment: 'The leather smells heavenly and the crescent silhouette is so modern and chic.' }
-    ]
-  },
-  {
-    id: 'woven-raffia-crossbody',
-    name: 'Saint-Tropez Woven Raffia Box Bag',
-    category: 'Bags',
-    price: 320,
-    rating: 4.8,
-    stock: 14,
-    tag: 'Summer Edit',
-    image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Natural Madagascar woven raffia structured box with gilded hardware clasp and Italian leather trim, perfect for weekend brunches.',
-    details: ['Handwoven natural raffia palm', 'Gilded turn-lock closure', 'Leather top handle & shoulder strap'],
-    colors: ['Natural Tan', 'Black Trim'],
-    sizes: ['Crossbody Box'],
-    reviews: [
-      { author: 'Wendy M.', rating: 5, date: '11 Aug 2026', title: 'Adored by everyone', comment: 'Received countless compliments at polo club brunch!' }
-    ]
-  },
-  {
-    id: 'pleated-cloud-clutch',
-    name: 'The Pleated Silk Cloud Clutch',
-    category: 'Bags',
-    price: 290,
-    rating: 4.9,
-    stock: 11,
-    tag: 'Luxury',
-    image: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Pillow-soft magnetic frame pouch enveloped in ruched silk-satin with concealed gold serpentine chain strap for hand or shoulder wear.',
-    details: ['Heavyweight pleated silk satin', 'Hidden magnetic frame', 'Concealable gold chain'],
-    colors: ['Champagne', 'Petal Pink', 'Noir'],
-    sizes: ['One Size'],
-    reviews: [
-      { author: 'Maame Esi', rating: 5, date: '15 Aug 2026', title: 'Pure opulence', comment: 'Feels buttery soft and fits my phone, lip gloss, and cards easily.' }
-    ]
-  },
-
-  // --- WIGS ---
-  {
-    id: 'hd-lace-bone-straight',
-    name: 'Virgin Bone Straight HD Lace Wig (26")',
-    category: 'Wigs',
-    price: 1250,
-    old: 1450,
-    rating: 5.0,
-    stock: 6,
-    tag: 'Raw Virgin',
-    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: '100% Raw single-donor unprocessed human hair with 13x6 invisible melt HD frontal. Full 250% density silky bone straight that bleaches and dyes like dream.',
-    details: ['100% Raw Single Donor Human Hair', '13x6 Ultra-Thin Invisible HD Swiss Lace', 'Full 250% Density', 'Pre-plucked natural hairline with baby hairs'],
-    colors: ['Natural 1B', 'Chestnut Brown', 'Honey Highlight'],
-    sizes: ['22 Inch', '26 Inch', '30 Inch'],
-    reviews: [
-      { author: 'Dr. Gifty Mensah', rating: 5, date: '21 Aug 2026', title: 'Lace literally melted into scalp', comment: 'The HD lace is completely undetectable on dark skin! Zero shedding and silk press holds for days.' },
-      { author: 'Chantal O.', rating: 5, date: '14 Aug 2026', title: 'Best hair purchase of the year', comment: 'True to length and density is super full right down to the ends.' }
-    ]
-  },
-  {
-    id: 'body-wave-melt-wig',
-    name: 'Glueless Body Wave HD Frontal (24")',
-    category: 'Wigs',
-    price: 980,
-    rating: 4.9,
-    stock: 8,
-    tag: 'Glueless 3D Cap',
-    image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Pre-plucked hairline with pre-bleached micro knots and piano elastic band for 100% glueless 2-minute wear. Features bouncy lustrous virgin body waves.',
-    details: ['Glueless 3D dome cap with secure grip band', '100% Virgin cuticle aligned hair', 'Pre-cut clean lace option', '200% Volume Density'],
-    colors: ['Natural Black', 'Chocolate Brown'],
-    sizes: ['20 Inch', '24 Inch', '28 Inch'],
-    reviews: [
-      { author: 'Nana Yaa', rating: 5, date: '18 Aug 2026', title: 'Literally takes 2 minutes to put on', comment: 'No glue or freeze spray needed! Looks like my own natural hairline.' }
-    ]
-  },
-  {
-    id: 'luxury-bob-hd',
-    name: 'Blunt Cut Silk Bob Wig (12")',
-    category: 'Wigs',
-    price: 650,
-    rating: 4.8,
-    stock: 15,
-    tag: 'Ready to Wear',
-    image: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Precision razor-sharp blunt bob cut on undetectable Swiss HD lace. Pre-cut, pre-styled, and effortless for corporate and cocktail glamour.',
-    details: ['Pre-styled razor sharp cut', '5x5 HD Lace Closure', '180% Natural fullness', 'Heat-resistant up to 230°C'],
-    colors: ['Jet Black', 'Caramel Balayage', 'Rose Gold Tint'],
-    sizes: ['10 Inch', '12 Inch'],
-    reviews: [
-      { author: 'Abena Darko', rating: 5, date: '10 Aug 2026', title: 'Sleek executive look', comment: 'Razor sharp cut framing the jawline. Extremely sleek!' }
-    ]
-  },
-
-  // --- PERFUMES ---
-  {
-    id: 'santal-noir',
-    name: 'Santal Noir Extrait',
-    category: 'Perfumes',
-    price: 165,
-    rating: 4.9,
-    stock: 14,
-    tag: 'Bestseller',
-    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Warm Australian sandalwood, smoked amber, cardamom and a whisper of pink pepper. 30% concentration extrait de parfum with 12+ hour longevity.',
-    details: ['Top: Cardamom, Bergamot', 'Heart: Iris, Violet Leaf', 'Base: Sandalwood, Smoked Cedar, Amber', 'Hand-poured in small batches'],
-    colors: ['50ml Extrait', '100ml Extrait'],
-    sizes: [],
-    reviews: [
-      { author: 'Akua Osei', rating: 5, date: '19 Aug 2026', title: 'Addictive scent trail', comment: 'Everyone in the office asked what fragrance I was wearing. Warm, woody, and luxurious.' }
-    ]
-  },
-  {
-    id: 'fig-archive',
-    name: 'Fig Archive Eau de Parfum',
-    category: 'Perfumes',
-    price: 145,
-    old: 170,
-    rating: 4.8,
-    stock: 10,
-    tag: '15% off',
-    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Sunlit Mediterranean fig leaf, cedarwood and white musk in a bright, green, grounded composition.',
-    details: ['Top: Green Fig Leaf, Clementine', 'Heart: Cyclamen, Coconut Milk', 'Base: Cedar, Clean White Musk', '22% Eau de Parfum concentration'],
-    colors: ['50ml', '100ml'],
-    sizes: [],
-    reviews: [
-      { author: 'Maya D.', rating: 5, date: '11 Aug 2026', title: 'Crisp and uplifting', comment: 'Crisp green freshness that transitions into milky woody comfort.' }
-    ]
-  },
-
-  // --- SKIN CARE ---
-  {
-    id: 'glow-serum',
-    name: 'Glow Nectar Vitamin C Serum',
-    category: 'Skin Care',
-    price: 185,
-    old: 220,
-    rating: 4.9,
-    stock: 15,
-    tag: 'Bestseller',
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Potent 15% THD ascorbate, cold-pressed marula oil, and ferulic acid to fade hyperpigmentation, brighten dark spots, and protect skin barrier.',
-    details: ['15% Lipid-soluble Vitamin C (THD)', 'Antioxidant ferulic acid', 'Suitable for sensitive & melanated skin', 'Non-comedogenic formula'],
-    colors: ['30ml Dropper'],
-    sizes: [],
-    reviews: [
-      { author: 'Ama Serwaa', rating: 5, date: '20 Aug 2026', title: 'Faded my acne spots in weeks', comment: 'Gentle, does not tingle or oxidize, and gives the most luminous healthy glow!' }
-    ]
-  },
-  {
-    id: 'barrier-cream',
-    name: 'Ceramide Barrier Dew Cream',
-    category: 'Skin Care',
-    price: 145,
-    rating: 4.8,
-    stock: 20,
-    image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Ultra-nourishing daily emulsion with multi-molecular hyaluronic acid, biomimetic ceramides, and Centella Asiatica for locked-in 48H hydration.',
-    details: ['Triple ceramide complex (NP, AP, EOP)', 'Multi-depth Hyaluronic Acid', 'Velvet matte finish', 'Fragrance-free'],
-    colors: ['50ml Jar'],
-    sizes: [],
-    reviews: [
-      { author: 'Jessica K.', rating: 5, date: '16 Aug 2026', title: 'Deeply hydrating without heaviness', comment: 'Perfect under makeup or on bare skin during dry harmattan days.' }
-    ]
-  },
-
-  // --- LIFESTYLE ---
-  {
-    id: 'amber-candle',
-    name: 'Santal & Amber Botanical Candle',
-    category: 'Lifestyle',
-    price: 95,
-    rating: 4.9,
-    stock: 25,
-    tag: 'Hand-poured',
-    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: '100% natural soy wax hand-poured with crackling FSC-certified wooden wick, smoked cedarwood, golden amber, and toasted vanilla.',
-    details: ['55+ Hours clean burn time', 'Reusable amber glass vessel', 'Zero petroleum or paraffin', 'Hand-poured in Accra'],
-    colors: ['300g Amber Glass'],
-    sizes: [],
-    reviews: [
-      { author: 'Derrick O.', rating: 5, date: '19 Aug 2026', title: 'Fills the whole apartment', comment: 'The wooden wick crackle is super soothing and the scent throw is incredible.' }
-    ]
-  },
-  {
-    id: 'linen-robe',
-    name: 'Stonewashed Waffle Linen Robe',
-    category: 'Lifestyle',
-    price: 260,
-    rating: 4.8,
-    stock: 11,
-    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Relaxed European flax waffle robe with wide kimono sleeves, waist belt, and deep patch pockets for tranquil mornings and spa evenings.',
-    details: ['100% French stonewashed flax', 'Highly absorbent waffle texture', 'Generous unisex relaxed fit', 'Pre-washed for instant softness'],
-    colors: ['Oat', 'Clay', 'Sage'],
-    sizes: ['S/M', 'L/XL'],
-    reviews: [
-      { author: 'Naa Adjeley', rating: 5, date: '15 Aug 2026', title: 'Pure sanctuary luxury', comment: 'Heavy enough to feel luxurious yet light and breathable for the climate.' }
-    ]
-  },
-
-  // --- NAILS ---
-  {
-    id: 'nude-lacquer-trio',
-    name: 'Velvet Nude Gel Lacquer Trio',
-    category: 'Nails',
-    price: 75,
-    rating: 4.8,
-    stock: 18,
-    tag: '7-Free',
-    image: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Non-toxic, ultra-glossy 7-free mineral nail lacquer set curated in 3 complementary warm nude shades formulated for chip-free 10-day wear.',
-    details: ['7-Free non-toxic clean formula', 'Breathable oxygen-permeable', 'High-shine plumping gel finish', 'Wide contour application brush'],
-    colors: ['Trio Set (3x15ml)'],
-    sizes: [],
-    reviews: [
-      { author: 'Priscilla T.', rating: 5, date: '17 Aug 2026', title: 'Flattering on dark skin tones', comment: 'All 3 nude shades look impeccably chic on brown and melanated hands.' }
-    ]
-  },
-  {
-    id: 'press-on-almond',
-    name: 'Artisan Glazed Almond Nails',
-    category: 'Nails',
-    price: 85,
-    rating: 4.9,
-    stock: 16,
-    tag: 'Reusable',
-    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Handcrafted salon-quality reusable gel press-on nails in medium almond shape with high-gloss glazed finish. Includes prep pad and adhesive tabs.',
-    details: ['24 Nails in 12 universal sizes', 'Reusable up to 5 times', 'High durability gel finish', 'Complete prep kit included'],
-    colors: ['Glazed Donut', 'Milk Glass', 'Espresso'],
-    sizes: ['XS', 'S', 'M', 'L'],
-    reviews: [
-      { author: 'Chantelle A.', rating: 5, date: '18 Aug 2026', title: 'Look like a 300 Cedi salon set', comment: 'Applied in 5 minutes and lasted over 2 weeks without a single pop-off.' }
-    ]
-  },
-
-  // --- PANTIES ---
-  {
-    id: 'seamless-brief-pack',
-    name: 'Silk-Touch Seamless Briefs (3-Pack)',
-    category: 'Panties',
-    price: 110,
-    old: 135,
-    rating: 4.9,
-    stock: 22,
-    tag: 'Best Value',
-    image: 'https://images.unsplash.com/photo-1583846783214-7229a91b20ed?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1583846783214-7229a91b20ed?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Second-skin laser-cut seamless microfiber panties that disappear completely under fitted trousers, silk dresses, and workout tights.',
-    details: ['100% Pure cotton gusset lining', 'Zero panty lines (laser-cut)', 'Moisture-wicking micro-mesh', 'Pack of 3 neutral tones'],
-    colors: ['Nude Trio', 'Monochrome (Black/White/Nude)'],
-    sizes: ['S', 'M', 'L', 'XL'],
-    reviews: [
-      { author: 'Yvette D.', rating: 5, date: '19 Aug 2026', title: 'Truly 100% invisible', comment: 'The best seamless panties I have ever worn. Zero riding up and no lines under white trousers.' }
-    ]
-  },
-  {
-    id: 'french-lace-brief',
-    name: 'High-Waist French Lace Panty',
-    category: 'Panties',
-    price: 125,
-    rating: 4.9,
-    stock: 14,
-    tag: 'Luxury',
-    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'Ultra-flattering high-waisted briefs crafted with delicate French floral eyelash lace and breathable micro-modal panels.',
-    details: ['French eyelash stretch lace', '100% Breathable cotton inner gusset', 'High-waisted shaping silhouette', 'Hand wash cold'],
-    colors: ['Noir', 'Champagne'],
-    sizes: ['S', 'M', 'L'],
-    reviews: [
-      { author: 'Eunice K.', rating: 5, date: '08 Aug 2026', title: 'Stunning and sensual', comment: 'Lace is soft and never scratches. Looks and feels like European luxury.' }
-    ]
-  },
-
-  // --- TOILETRIES ---
-  {
-    id: 'ritual-cleanser',
-    name: 'Ritual Cream Cleanser',
-    category: 'Toiletries',
-    price: 38,
-    rating: 4.8,
-    stock: 36,
-    image: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=1000&q=85',
-    images: [
-      'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=1000&q=85',
-      'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=1000&q=85'
-    ],
-    desc: 'A cushiony daily cleanser infused with oat lipids and chamomile that leaves skin calm, balanced, and deeply hydrated.',
-    details: ['pH balanced (5.5)', 'Soap-free and sulfate-free', 'Suitable for sensitive skin', 'Formulated with cold-pressed botanical oils'],
-    colors: ['150ml Pump'],
-    sizes: [],
-    reviews: [
-      { author: 'Farida A.', rating: 5, date: '16 Aug 2026', title: 'Gentle on sensitive skin', comment: 'Does not strip moisture and melts away sunscreen effortlessly.' }
-    ]
-  }
-];
-
-const INITIAL_COUPONS = [
-  { code: 'WELCOME10', discount: 10, type: 'percent', label: '10% Welcome Discount' },
-  { code: 'BYMARIE20', discount: 20, type: 'percent', label: '20% Summer Promo' },
-  { code: 'FREESHIP', discount: 100, type: 'shipping', label: 'Free Delivery' },
-  { code: 'NEWSLETTER10', discount: 10, type: 'percent', label: 'Newsletter 10% Off' },
-  { code: 'WHOLESALE20', discount: 20, type: 'percent', label: 'Wholesale Tier 1 (20% OFF)' },
-  { code: 'WHOLESALE30', discount: 30, type: 'percent', label: 'Wholesale Tier 2 (30% OFF)' },
-  { code: 'WHOLESALE40', discount: 40, type: 'percent', label: 'Wholesale Tier 3 (40% OFF)' }
-];
-
-const INITIAL_ORDERS = [
-  {
-    id: 'BM-863921',
-    date: '21 Aug 2026',
-    name: 'Akosua Mensah',
-    email: 'akosua.m@gmail.com',
-    phone: '024 112 3344',
-    address: '18 Ring Road Central, Kokomlemle',
-    city: 'Accra',
-    region: 'Greater Accra',
-    delivery: 'Standard delivery',
-    payment: 'Mobile Money (MTN)',
-    status: 'Processing',
-    items: [
-      { id: 'hd-lace-bone-straight', qty: 1, variant: 'Natural 1B', size: '26 Inch' },
-      { id: 'crescent-leather-tote', qty: 1, variant: 'Blush Rose', size: 'Medium Tote' }
-    ],
-    subtotal: 1740,
-    discountAmount: 0,
-    deliveryFee: 0,
-    total: 1740
-  }
-];
+const INITIAL_ORDERS = [];
 
 const API_BASE = (typeof window !== 'undefined' && window.location.origin.includes('localhost:3000')) ? 'http://localhost:5000/api' : '/api';
 
@@ -550,52 +23,8 @@ const INITIAL_USERS = [
     address: 'Executive Suite, Cantonments, Accra',
     walletBalance: 0.00,
     joinedDate: '01 Jan 2026',
-    ordersCount: 12,
+    ordersCount: 0,
     status: 'Super Admin'
-  },
-  {
-    id: 'usr-101',
-    name: 'Ama Owusu',
-    email: 'ama.owusu@example.com',
-    phone: '+233 24 555 0192',
-    address: 'House 14, East Legon, Accra',
-    walletBalance: 0.00,
-    joinedDate: '12 Aug 2026',
-    ordersCount: 3,
-    status: 'Active'
-  },
-  {
-    id: 'usr-102',
-    name: 'Kofi Mensah',
-    email: 'kofi.m@example.com',
-    phone: '+233 20 888 1234',
-    address: 'Plot 8, Airport Residential, Accra',
-    walletBalance: 0.00,
-    joinedDate: '15 Aug 2026',
-    ordersCount: 5,
-    status: 'Active'
-  },
-  {
-    id: 'usr-103',
-    name: 'Abena Siriboe',
-    email: 'abena.s@example.com',
-    phone: '+233 55 123 9876',
-    address: 'Block C, Cantonments, Accra',
-    walletBalance: 0.00,
-    joinedDate: '18 Aug 2026',
-    ordersCount: 2,
-    status: 'Active'
-  },
-  {
-    id: 'usr-104',
-    name: 'Kwame Asante',
-    email: 'kwame.asante@example.com',
-    phone: '+233 27 999 4321',
-    address: 'Abelemkpe, Accra',
-    walletBalance: 0.00,
-    joinedDate: '20 Aug 2026',
-    ordersCount: 1,
-    status: 'Active'
   }
 ];
 
@@ -603,7 +32,7 @@ const INITIAL_USER = INITIAL_USERS[0];
 
 function getUsers() {
   const data = localStorage.getItem('bymarie-users');
-  if (!data) {
+  if (data === null) {
     localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
     return INITIAL_USERS;
   }
@@ -614,52 +43,7 @@ function saveUsers(users) {
   localStorage.setItem('bymarie-users', JSON.stringify(users));
 }
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 'notif-1',
-    title: '🎉 10% Welcome Discount Active',
-    desc: 'Use promo code WELCOME10 at checkout to receive 10% off your entire order across all luxury categories.',
-    date: 'Today',
-    type: 'promo',
-    icon: '🏷️',
-    read: false,
-    actionText: 'Shop Now & Save →',
-    actionRoute: 'shop'
-  },
-  {
-    id: 'notif-2',
-    title: '🚚 Complimentary Greater Accra Delivery',
-    desc: 'Free doorstep delivery is automatically applied on all orders over GH₵ 300 across Accra.',
-    date: 'Yesterday',
-    type: 'shipping',
-    icon: '📦',
-    read: false,
-    actionText: 'Explore Collections →',
-    actionRoute: 'shop'
-  },
-  {
-    id: 'notif-3',
-    title: '💳 Float Wallet Paystack Top-Up Live',
-    desc: 'You can now top up your store Float Wallet balance instantly using MTN Mobile Money, Telecel Cash, or Card.',
-    date: '2 days ago',
-    type: 'wallet',
-    icon: '💳',
-    read: false,
-    actionText: 'View Float Wallet →',
-    actionRoute: 'account'
-  },
-  {
-    id: 'notif-4',
-    title: '👑 New Collection Drop — The Luxury Edit',
-    desc: 'Discover our newest Italian suede slingback mules, sculpted leather crescent bags, and raw virgin HD lace crowns.',
-    date: '3 days ago',
-    type: 'drop',
-    icon: '✨',
-    read: true,
-    actionText: 'Discover The Edit →',
-    actionRoute: 'shop'
-  }
-];
+const INITIAL_NOTIFICATIONS = [];
 
 function getNotifications() {
   const data = localStorage.getItem('bymarie-notifications');
@@ -1119,28 +503,25 @@ async function fetchCatalogFromSupabase() {
   }
 }
 
+// Clean one-time purge of legacy mock data
+if (typeof localStorage !== 'undefined' && localStorage.getItem('bymarie-v3-clean-db') !== 'true') {
+  localStorage.setItem('bymarie-products', JSON.stringify([]));
+  localStorage.setItem('bymarie-orders', JSON.stringify([]));
+  localStorage.setItem('bymarie-coupons', JSON.stringify([]));
+  localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
+  localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
+  localStorage.setItem('bymarie-cart', JSON.stringify([]));
+  localStorage.setItem('bymarie-v3-clean-db', 'true');
+}
+
 // State Helpers
 function getProducts() {
   const data = localStorage.getItem('bymarie-products');
-  if (!data) {
+  if (data === null) {
     localStorage.setItem('bymarie-products', JSON.stringify(INITIAL_PRODUCTS));
     return INITIAL_PRODUCTS;
   }
-  try {
-    let prods = JSON.parse(data);
-    const existingIds = new Set(prods.map(p => p.id));
-    let hasNew = false;
-    INITIAL_PRODUCTS.forEach(ip => {
-      if (!existingIds.has(ip.id)) {
-        prods.push(ip);
-        hasNew = true;
-      }
-    });
-    if (hasNew) localStorage.setItem('bymarie-products', JSON.stringify(prods));
-    return prods;
-  } catch {
-    return INITIAL_PRODUCTS;
-  }
+  try { return JSON.parse(data); } catch { return []; }
 }
 
 function saveProducts(products) {
@@ -1149,11 +530,11 @@ function saveProducts(products) {
 
 function getCoupons() {
   const data = localStorage.getItem('bymarie-coupons');
-  if (!data) {
+  if (data === null) {
     localStorage.setItem('bymarie-coupons', JSON.stringify(INITIAL_COUPONS));
     return INITIAL_COUPONS;
   }
-  try { return JSON.parse(data); } catch { return INITIAL_COUPONS; }
+  try { return JSON.parse(data); } catch { return []; }
 }
 
 function saveCoupons(coupons) {
@@ -1162,11 +543,11 @@ function saveCoupons(coupons) {
 
 function getOrders() {
   const data = localStorage.getItem('bymarie-orders');
-  if (!data) {
+  if (data === null) {
     localStorage.setItem('bymarie-orders', JSON.stringify(INITIAL_ORDERS));
     return INITIAL_ORDERS;
   }
-  try { return JSON.parse(data); } catch { return INITIAL_ORDERS; }
+  try { return JSON.parse(data); } catch { return []; }
 }
 
 function saveOrders(orders) {
@@ -2080,7 +1461,14 @@ function home() {
           <button class="text-btn" onclick="go('shop')">Shop entire catalog ${icon('arrow')}</button>
         </div>
         <div class="product-grid">
-          ${trending.map((p, idx) => productCard(p, `delay-${(idx % 4) + 1}`)).join('')}
+          ${trending.length ? trending.map((p, idx) => productCard(p, `delay-${(idx % 4) + 1}`)).join('') : `
+            <div style="grid-column:1/-1;text-align:center;padding:48px 24px;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--line)">
+              <span style="font-size:32px;display:block;margin-bottom:10px">✨</span>
+              <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);margin-bottom:6px">New Season Arrivals Dropping Soon</h3>
+              <p style="color:var(--muted);font-size:13.5px;max-width:480px;margin:0 auto 16px">Our ateliers are currently curating and uploading the newest pieces to the boutique.</p>
+              <button class="primary" onclick="go('shop')">Explore Shop</button>
+            </div>
+          `}
         </div>
       </section>
 
@@ -4666,11 +4054,12 @@ function admin() {
 }
 
 function trendSpark(current, direction = 'up') {
-  const base = Math.max(current, 1);
-  const upRatios = [0.62, 0.74, 0.68, 0.82, 0.78, 0.9];
-  const downRatios = [1.5, 1.3, 1.4, 1.1, 1.15, 0.7];
+  if (!current || current <= 0) return [0, 0, 0, 0, 0, 0, 0];
+  const base = current;
+  const upRatios = [0.4, 0.55, 0.5, 0.7, 0.8, 0.9];
+  const downRatios = [1.5, 1.4, 1.3, 1.2, 1.1, 1.05];
   const ratios = direction === 'up' ? upRatios : downRatios;
-  return [...ratios.map(r => base * r), current];
+  return [...ratios.map(r => Number((base * r).toFixed(1))), current];
 }
 
 function sparklineSvg(values, color = 'var(--emerald)', width = 72, height = 28) {
@@ -4683,9 +4072,9 @@ function sparklineSvg(values, color = 'var(--emerald)', width = 72, height = 28)
 }
 
 function areaChartSvg(values, labels, width = 640, height = 200) {
-  const max = Math.max(...values);
-  const min = Math.min(...values) * 0.82;
-  const range = (max - min) || 1;
+  const max = Math.max(...values, 1);
+  const min = 0;
+  const range = max - min || 1;
   const stepX = width / (values.length - 1);
   const pts = values.map((v, i) => [i * stepX, height - ((v - min) / range) * height]);
   const linePath = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
@@ -4717,18 +4106,18 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
   const categoryBreakdown = Object.entries(
     products.reduce((acc, p) => { acc[p.category] = (acc[p.category] || 0) + 1; return acc; }, {})
   ).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-  const catTotal = categoryBreakdown.reduce((s, c) => s + c.count, 0) || 1;
+  const catTotal = categoryBreakdown.reduce((s, c) => s + c.count, 0);
   const catPalette = ['#c24d67', '#c59737', '#1b638a', '#791b34', '#70428e', '#155d53', '#d45b7e', '#4a7c59', '#8a6b74', '#e4a253'];
 
   let cumPct = 0;
-  const gradientStops = categoryBreakdown.map((c, i) => {
+  const gradientStops = catTotal > 0 ? categoryBreakdown.map((c, i) => {
     const pct = (c.count / catTotal) * 100;
     const start = cumPct;
     cumPct += pct;
     return `${catPalette[i % catPalette.length]} ${start}% ${cumPct}%`;
-  }).join(', ');
+  }).join(', ') : '#27272a 0% 100%';
 
-  const weekly = [5400, 6800, 6100, 8900, 7800, 10200, Math.max(totalRevenue, 11500)];
+  const weekly = [0, 0, 0, 0, 0, 0, totalRevenue];
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const ordersSpark = trendSpark(orders.length, 'up');
   const catalogSpark = trendSpark(products.length, 'up');
@@ -4756,7 +4145,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(trendSpark(totalRevenue, 'up'), '#c24d67')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} +18.4% WoW</span>
+          <span class="stat-trend ${totalRevenue > 0 ? 'up' : 'neutral'}">${svgIcon('trendUp', 12)} Live Revenue</span>
         </div>
       </div>
 
@@ -4768,7 +4157,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(trendSpark(aov, 'up'), 'var(--blue)')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} High Ticket</span>
+          <span class="stat-trend ${orders.length > 0 ? 'up' : 'neutral'}">${svgIcon('trendUp', 12)} Order Value</span>
         </div>
       </div>
 
@@ -4790,7 +4179,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
       <div class="bento-hero-card">
         <div class="stat-card-top">
           <span class="stat-icon rose">${svgIcon('tag', 18)}</span>
-          <span class="stat-trend up">${svgIcon('trendUp', 13)} +24.2% Growth</span>
+          <span class="stat-trend ${totalRevenue > 0 ? 'up' : 'neutral'}">${svgIcon('trendUp', 13)} Live Sales</span>
         </div>
         <strong class="bento-hero-value" style="color:#fff">${money(totalRevenue)}</strong>
         <span style="color:#a1a1aa">7-Day Real-Time Revenue Velocity (Cedis)</span>
@@ -4807,13 +4196,15 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
           </div>
         </div>
         <div class="donut-legend">
-          ${categoryBreakdown.map((c, i) => `
+          ${products.length > 0 ? categoryBreakdown.map((c, i) => `
             <div class="donut-legend-row">
               <span class="dot" style="background:${catPalette[i % catPalette.length]}"></span>
               <span style="color:#e4e4e7">${c.name}</span>
-              <b style="color:#fff">${Math.round((c.count / catTotal) * 100)}%</b>
+              <b style="color:#fff">${Math.round((c.count / (catTotal || 1)) * 100)}%</b>
             </div>
-          `).join('')}
+          `).join('') : `
+            <div style="color:#71717a;font-size:12px;text-align:center;padding:10px 0">No products in catalog yet</div>
+          `}
         </div>
       </div>
     </div>
@@ -4828,7 +4219,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(ordersSpark, 'var(--blue)')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} Active Dispatch</span>
+          <span class="stat-trend ${orders.length ? 'up' : 'neutral'}">${svgIcon('trendUp', 12)} Order Queue</span>
         </div>
       </div>
 
@@ -4840,7 +4231,7 @@ function renderAdminDashboard(products, orders, totalRevenue, lowStock, outOfSto
         </div>
         <div class="sparkline-wrap">
           ${sparklineSvg(catalogSpark, 'var(--gold)')}
-          <span class="stat-trend up">${svgIcon('trendUp', 12)} ${categoryBreakdown.length} Categories</span>
+          <span class="stat-trend ${products.length ? 'up' : 'neutral'}">${svgIcon('trendUp', 12)} ${categoryBreakdown.length} Categories</span>
         </div>
       </div>
 
