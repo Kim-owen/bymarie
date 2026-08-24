@@ -3061,12 +3061,12 @@ function renderOrderStatusTimeline(status) {
 function account() {
   const user = getUser();
 
-  if (!user.loggedIn) {
+  if (!user || !user.loggedIn) {
     return `
-      <main class="account-shell animate-fade-up" style="max-width:540px;margin:50px auto;padding:0 16px">
-        <div style="background:#fff;padding:40px 24px;border-radius:var(--radius-lg);border:1px solid #f2cfd8;text-align:center;box-shadow:0 10px 30px rgba(194,77,103,0.06)">
-          <div style="width:60px;height:60px;background:#fff5f7;border-radius:50%;display:grid;place-items:center;margin:0 auto 16px;font-size:28px">👤</div>
-          <span class="eyebrow" style="color:#c24d67;justify-content:center">BYMARIE MEMBERSHIP</span>
+      <main class="account-shell animate-fade-up">
+        <div style="max-width:480px;margin:40px auto;padding:32px 24px;background:#fff;border:1px solid #f2cfd8;border-radius:var(--radius-lg);box-shadow:var(--shadow-subtle);text-align:center">
+          <div style="width:60px;height:60px;border-radius:50%;background:#fff5f7;color:#c24d67;display:grid;place-items:center;font-size:28px;margin:0 auto 16px">👑</div>
+          <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#c24d67;text-transform:uppercase">Haute Couture Atelier</span>
           <h2 style="font-size:26px;margin:8px 0 12px;font-family:'Playfair Display',serif">Welcome to ByMarie</h2>
           <p style="color:var(--muted);font-size:13.5px;margin-bottom:24px;line-height:1.6">Sign in or create an account to track your orders in real time, access your digital Float Wallet, and manage your private fitting profile.</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
@@ -3176,17 +3176,105 @@ function account() {
               ← All Account Features
             </button>
             <div class="tab-switcher-wrapper">
-              <select class="tab-switcher-select" onchange="accountTab=this.value;render()">
-                <option value="orders" ${accountTab==='orders'?'selected':''}>📦 Orders &amp; Tracking (${orders.length})</option>
-                <option value="wallet" ${accountTab==='wallet'?'selected':''}>💳 Float Wallet (${money(user.walletBalance||0)})</option>
-                <option value="rewards" ${accountTab==='rewards'?'selected':''}>⭐ VIP Tier &amp; Rewards (${loyaltyPoints} pts)</option>
-                <option value="address" ${accountTab==='address'?'selected':''}>📍 Saved Delivery &amp; Fit</option>
-                <option value="wholesale" ${accountTab==='wholesale'?'selected':''}>⚡ VIP Wholesale (Bulk)</option>
-                <option value="wishlist" ${accountTab==='wishlist'?'selected':''}>♡ Saved Wishlist (${wishlist.length})</option>
-                <option value="security" ${accountTab==='security'?'selected':''}>🔒 Security &amp; Alerts</option>
-                <option value="support" ${accountTab==='support'?'selected':''}>💬 24/7 Concierge &amp; Help</option>
-                ${isAdminUser() ? `<option value="admin">⚙️ Admin Console ↗</option>` : ''}
-              </select>
+              <button type="button" class="tab-switcher-btn" onclick="accountMenuOpen = !accountMenuOpen; render()">
+                <span>${getAccountTabLabel(accountTab, orders.length, user.walletBalance, loyaltyPoints, wishlist.length)}</span>
+                <span class="switcher-arrow">${accountMenuOpen ? '▲' : '▼'}</span>
+              </button>
+
+              ${accountMenuOpen ? `
+                <div class="account-menu-backdrop" onclick="accountMenuOpen=false;render()"></div>
+                <div class="account-custom-dropdown animate-scale-up">
+                  <div class="account-dropdown-head">
+                    <span class="dropdown-eyebrow">ATELIER DIRECTORY</span>
+                    <button type="button" class="dropdown-close-btn" onclick="accountMenuOpen=false;render()">✕</button>
+                  </div>
+
+                  <div class="account-dropdown-items">
+                    <div class="custom-dropdown-option ${accountTab==='orders'?'active':''}" onclick="accountTab='orders';accountMenuOpen=false;render()">
+                      <span class="opt-icon">📦</span>
+                      <div class="opt-text">
+                        <strong>Orders &amp; Tracking</strong>
+                        <small>${orders.length} orders placed</small>
+                      </div>
+                      <span class="opt-badge">${orders.length}</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='wallet'?'active':''}" onclick="accountTab='wallet';accountMenuOpen=false;render()">
+                      <span class="opt-icon">💳</span>
+                      <div class="opt-text">
+                        <strong>Float Wallet &amp; Ledger</strong>
+                        <small>${money(user.walletBalance||0)} available</small>
+                      </div>
+                      <span class="opt-arrow">→</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='rewards'?'active':''}" onclick="accountTab='rewards';accountMenuOpen=false;render()">
+                      <span class="opt-icon">⭐</span>
+                      <div class="opt-text">
+                        <strong>VIP Rewards &amp; Tier</strong>
+                        <small>${loyaltyPoints} points • ${tierName}</small>
+                      </div>
+                      <span class="opt-arrow">→</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='address'?'active':''}" onclick="accountTab='address';accountMenuOpen=false;render()">
+                      <span class="opt-icon">📍</span>
+                      <div class="opt-text">
+                        <strong>Saved Delivery &amp; Fit</strong>
+                        <small>${user.city || 'Accra'} • Store Pickup</small>
+                      </div>
+                      <span class="opt-arrow">→</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='wholesale'?'active':''}" onclick="accountTab='wholesale';accountMenuOpen=false;render()">
+                      <span class="opt-icon">⚡</span>
+                      <div class="opt-text">
+                        <strong>VIP Wholesale Portal</strong>
+                        <small>Bulk discounts (15%–40% Off)</small>
+                      </div>
+                      <span class="badge" style="background:#c24d67;color:#fff;font-size:9.5px;padding:2px 6px">BULK</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='wishlist'?'active':''}" onclick="accountTab='wishlist';accountMenuOpen=false;render()">
+                      <span class="opt-icon">♡</span>
+                      <div class="opt-text">
+                        <strong>Saved Wishlist</strong>
+                        <small>${wishlist.length} pieces bookmarked</small>
+                      </div>
+                      <span class="opt-badge">${wishlist.length}</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='security'?'active':''}" onclick="accountTab='security';accountMenuOpen=false;render()">
+                      <span class="opt-icon">🔒</span>
+                      <div class="opt-text">
+                        <strong>Security &amp; Alerts</strong>
+                        <small>Password &amp; notifications</small>
+                      </div>
+                      <span class="opt-arrow">→</span>
+                    </div>
+
+                    <div class="custom-dropdown-option ${accountTab==='support'?'active':''}" onclick="accountTab='support';accountMenuOpen=false;render()">
+                      <span class="opt-icon">💬</span>
+                      <div class="opt-text">
+                        <strong>24/7 Client Concierge</strong>
+                        <small>WhatsApp &amp; stylists</small>
+                      </div>
+                      <span class="opt-arrow">→</span>
+                    </div>
+
+                    ${isAdminUser() ? `
+                      <div class="custom-dropdown-option admin-option" onclick="accountMenuOpen=false;go('admin')">
+                        <span class="opt-icon">⚙️</span>
+                        <div class="opt-text">
+                          <strong style="color:var(--emerald)">Store Admin Console</strong>
+                          <small style="color:var(--muted)">Manage products &amp; orders</small>
+                        </div>
+                        <span class="opt-arrow" style="color:var(--gold)">↗</span>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              ` : ''}
             </div>
           </div>
         ` : `
