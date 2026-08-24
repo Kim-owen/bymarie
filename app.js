@@ -3063,15 +3063,15 @@ function account() {
 
   if (!user.loggedIn) {
     return `
-      <main class="account-layout animate-fade-up" style="grid-template-columns:1fr;max-width:540px;margin:60px auto">
-        <div style="background:#fff;padding:40px;border-radius:var(--radius-md);border:1px solid var(--line);text-align:center">
-          <div style="font-size:48px;margin-bottom:12px">👤</div>
-          <span class="eyebrow">BYMARIE MEMBERSHIP</span>
-          <h2 style="font-size:28px;margin:8px 0 12px">Welcome to ByMarie</h2>
-          <p style="color:var(--muted);margin-bottom:24px">Sign in or create an account to view your order history, track deliveries, and manage saved luxury addresses.</p>
-          <div style="display:flex;gap:12px;justify-content:center">
-            <button class="primary" onclick="authMode='signin';go('auth')">Sign In</button>
-            <button class="secondary-btn" onclick="authMode='signup';go('auth')">Create Account</button>
+      <main class="account-shell animate-fade-up" style="max-width:540px;margin:50px auto;padding:0 16px">
+        <div style="background:#fff;padding:40px 24px;border-radius:var(--radius-lg);border:1px solid #f2cfd8;text-align:center;box-shadow:0 10px 30px rgba(194,77,103,0.06)">
+          <div style="width:60px;height:60px;background:#fff5f7;border-radius:50%;display:grid;place-items:center;margin:0 auto 16px;font-size:28px">👤</div>
+          <span class="eyebrow" style="color:#c24d67;justify-content:center">BYMARIE MEMBERSHIP</span>
+          <h2 style="font-size:26px;margin:8px 0 12px;font-family:'Playfair Display',serif">Welcome to ByMarie</h2>
+          <p style="color:var(--muted);font-size:13.5px;margin-bottom:24px;line-height:1.6">Sign in or create an account to track your orders in real time, access your digital Float Wallet, and manage your private fitting profile.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="primary" style="background:#c24d67;padding:12px 28px;border-radius:var(--radius-sm);font-weight:700" onclick="authMode='signin';go('auth')">Sign In</button>
+            <button class="secondary-btn" style="padding:12px 24px;border-radius:var(--radius-sm);font-weight:700" onclick="authMode='signup';go('auth')">Create Account</button>
           </div>
         </div>
       </main>
@@ -3084,7 +3084,7 @@ function account() {
 
   // VIP Points & Tier Calculator
   const loyaltyPoints = Math.floor(totalSpend / 10);
-  let tierName = 'Silver Member';
+  let tierName = 'Silver Connoisseur';
   let tierProgress = Math.min(100, Math.round((loyaltyPoints / 100) * 100));
   let nextTierGoal = 100;
   if (loyaltyPoints >= 250) {
@@ -3102,57 +3102,68 @@ function account() {
   ];
 
   return `
-    <main class="account-layout animate-fade-up">
-      <aside class="account-nav">
-        <div class="account-profile-header-desktop" style="margin-bottom:16px">
-          <span class="eyebrow">${tierName.toUpperCase()}</span>
-          <h2 style="font-size:24px;margin-top:4px">${user.name || 'Member'}</h2>
-          <small style="color:var(--muted);display:block;margin-bottom:8px">${user.email}</small>
-          <span class="wallet-pill" onclick="accountTab='wallet';render()" style="cursor:pointer">
-            ${svgIcon('wallet', 13)} ${money(user.walletBalance || 0)}
-          </span>
-        </div>
-        <button class="${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders &amp; Tracking (${orders.length})</button>
-        <button class="${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet &amp; Ledger</button>
-        <button class="${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Tier &amp; Rewards (${loyaltyPoints} pts)</button>
-        <button class="${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
-        <button class="${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ Wholesale &amp; Bulk</button>
-        <button class="${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address &amp; Fit Profile</button>
-        <button class="${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security &amp; Alerts</button>
-        <button class="${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge &amp; Help</button>
-        ${isAdminUser() ? `<button class="${accountTab === 'admin' ? 'active' : ''}" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
-        <button class="secondary-btn" onclick="clearUser()">Sign Out</button>
-      </aside>
-
-      <section>
-        <!-- Mobile Profile & Wallet Card -->
-        <div class="account-user-card">
-          <div style="display:flex;align-items:center;gap:12px">
-            <span class="account-user-avatar">${(user.name || 'M').charAt(0)}</span>
-            <div>
-              <strong style="font-size:15px;display:block">${user.name || 'Member'}</strong>
-              <small style="color:var(--muted);font-size:12px">${user.email}</small>
-            </div>
+    <main class="account-shell animate-fade-up">
+      <!-- Top Luxury Atelier Member Card -->
+      <div class="account-hero-card">
+        <div class="account-hero-profile">
+          <div class="account-hero-avatar">${(user.name || 'M').charAt(0).toUpperCase()}</div>
+          <div class="account-hero-info">
+            <span class="account-tier-tag">✨ ${tierName.toUpperCase()}</span>
+            <h1 class="account-user-title">${user.name || 'Valued Member'}</h1>
+            <p class="account-user-email">${user.email}</p>
           </div>
-          <button type="button" class="account-wallet-chip" onclick="accountTab='wallet';render()" title="Click to view float wallet">
-            💳 ${money(user.walletBalance || 0)}
-          </button>
         </div>
-
-        <!-- Mobile Scrollable Tab Bar -->
-        <div class="account-mobile-tab-bar">
-          <button class="account-mobile-tab-btn ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Rewards</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ Wholesale</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Address &amp; Fit</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security</button>
-          <button class="account-mobile-tab-btn ${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge</button>
-          ${isAdminUser() ? `<button class="account-mobile-tab-btn" style="background:var(--gold);color:var(--ink);border-color:var(--gold)" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
-          <button class="account-mobile-tab-btn" style="color:var(--red)" onclick="clearUser()">Sign Out</button>
+        
+        <div class="account-hero-actions">
+          <div class="account-wallet-pill" onclick="accountTab='wallet';render()">
+            <span class="wallet-pill-label">Float Balance</span>
+            <strong class="wallet-pill-val">${money(user.walletBalance || 0)}</strong>
+            <button type="button" class="wallet-pill-btn" onclick="event.stopPropagation();activeModal='topup_wallet';render()">+ Top Up</button>
+          </div>
+          <button type="button" class="account-signout-btn" onclick="clearUser()">Sign Out</button>
         </div>
+      </div>
 
+      <!-- Quick 3-Metric Bento Grid -->
+      <div class="account-metrics-grid">
+        <div class="account-metric-card ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">
+          <span class="metric-icon">📦</span>
+          <div class="metric-text">
+            <span class="metric-label">Total Orders</span>
+            <strong class="metric-val">${orders.length}</strong>
+          </div>
+        </div>
+        <div class="account-metric-card ${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">
+          <span class="metric-icon">💳</span>
+          <div class="metric-text">
+            <span class="metric-label">Float Wallet</span>
+            <strong class="metric-val">${money(user.walletBalance || 0)}</strong>
+          </div>
+        </div>
+        <div class="account-metric-card ${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">
+          <span class="metric-icon">⭐</span>
+          <div class="metric-text">
+            <span class="metric-label">VIP Points</span>
+            <strong class="metric-val">${loyaltyPoints} <small>pts</small></strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal Smooth Tab Navigation Bar -->
+      <div class="account-tabs-bar">
+        <button type="button" class="account-tab-pill ${accountTab === 'orders' ? 'active' : ''}" onclick="accountTab='orders';render()">📦 Orders (${orders.length})</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'wallet' ? 'active' : ''}" onclick="accountTab='wallet';render()">💳 Float Wallet</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'rewards' ? 'active' : ''}" onclick="accountTab='rewards';render()">⭐ VIP Rewards</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'address' ? 'active' : ''}" onclick="accountTab='address';render()">📍 Saved Delivery &amp; Fit</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'wholesale' ? 'active' : ''}" onclick="accountTab='wholesale';render()">⚡ VIP Wholesale</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'wishlist' ? 'active' : ''}" onclick="accountTab='wishlist';render()">♡ Wishlist (${wishlist.length})</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'security' ? 'active' : ''}" onclick="accountTab='security';render()">🔒 Security</button>
+        <button type="button" class="account-tab-pill ${accountTab === 'support' ? 'active' : ''}" onclick="accountTab='support';render()">💬 Concierge</button>
+        ${isAdminUser() ? `<button type="button" class="account-tab-pill admin-pill" onclick="go('admin')">⚙️ Admin Console ↗</button>` : ''}
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="account-content-card">
         ${isAdminUser() ? `
           <div class="admin-quick-banner">
             <div style="display:flex;align-items:center;gap:10px;min-width:0">
@@ -3168,96 +3179,68 @@ function account() {
           </div>
         ` : ''}
 
-        <div class="stats-row">
-          <div class="stat-box">
-            <span>Total Orders</span>
-            <strong>${orders.length}</strong>
-          </div>
-          <div class="stat-box">
-            <span>VIP Loyalty Points</span>
-            <strong>${loyaltyPoints} <small style="font-size:13px;color:var(--gold)">pts</small></strong>
-          </div>
-          <div class="stat-box">
-            <span>Spend</span>
-            <strong>${money(totalSpend)}</strong>
-          </div>
-        </div>
-
+        <!-- ================= TAB: ORDERS ================= -->
         ${accountTab === 'orders' ? `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-            <h3 style="font-size:20px;margin:0">Orders &amp; Tracking</h3>
-            <div style="display:flex;gap:8px;align-items:center;width:100%;max-width:320px">
-              <input id="order-lookup-input" placeholder="Order ID (e.g. BM-863921)" style="flex-grow:1;border:1px solid var(--line);border-radius:var(--radius-full);padding:8px 14px;font-size:12px;outline:none">
-              <button class="primary" style="padding:8px 16px;font-size:12px" onclick="const val=(document.getElementById('order-lookup-input').value||'').trim(); if(val){openOrderModal(val)} else {toast('Please enter an order ID', 'warning')}">Track</button>
+          <div class="tab-header-row">
+            <div>
+              <h2 class="tab-title">Orders &amp; Tracking</h2>
+              <p class="tab-subtitle">Real-time status updates and order history</p>
+            </div>
+            <div class="order-search-box">
+              <input id="order-lookup-input" placeholder="Order ID (e.g. BM-863921)" />
+              <button type="button" class="primary" style="background:#c24d67;padding:8px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:700" onclick="const val=(document.getElementById('order-lookup-input').value||'').trim(); if(val){openOrderModal(val)} else {toast('Please enter an order ID', 'warning')}">Track</button>
             </div>
           </div>
 
           ${orders.length ? `
-            <!-- Desktop Data Table View -->
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${orders.map(o => `
-                  <tr>
-                    <td><b style="font-family:'DM Mono'">${o.id}</b></td>
-                    <td>${o.date}</td>
-                    <td><b>${money(o.total)}</b></td>
-                    <td><span class="badge ${o.status.toLowerCase()}">${o.status}</span></td>
-                    <td>
-                      <div style="display:flex;gap:6px">
-                        <button class="secondary-btn" style="padding:6px 12px;font-size:11px" onclick="openOrderModal('${o.id}')">
-                          Track Details
-                        </button>
-                        <button class="secondary-btn" style="padding:6px 10px;font-size:11px" onclick="openInvoiceModal('${o.id}')">
-                          Invoice
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-
-            <!-- Mobile Responsive Cards View -->
-            <div class="mobile-order-cards">
+            <!-- Mobile Responsive Order Cards -->
+            <div class="mobile-order-cards" style="display:flex">
               ${orders.map(o => `
                 <div class="mobile-order-card">
                   <div class="mobile-order-card-header">
                     <div>
-                      <b style="font-family:'DM Mono';font-size:14px">${o.id}</b>
-                      <small style="display:block;color:var(--muted);font-size:11px">${o.date}</small>
+                      <b style="font-family:'DM Mono';font-size:14px;color:var(--ink)">#${o.id}</b>
+                      <small style="display:block;color:var(--muted);font-size:11.5px;margin-top:2px">${o.date}</small>
                     </div>
                     <span class="badge ${o.status.toLowerCase()}">${o.status}</span>
                   </div>
                   <div class="mobile-order-card-body">
-                    <div>Total Amount: <strong>${money(o.total)}</strong></div>
-                    <div>Payment Method: <small>${o.payment || 'Verified'}</small></div>
-                    <div>Delivery: <small>${o.city || 'Accra'} (${o.delivery || 'Standard'})</small></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                      <span style="color:var(--muted);font-size:12.5px">Total Amount</span>
+                      <strong style="font-size:14px;color:#c24d67">${money(o.total)}</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                      <span style="color:var(--muted);font-size:12.5px">Payment</span>
+                      <small style="font-weight:600">${o.payment || 'Verified'}</small>
+                    </div>
+                    <div style="display:flex;justify-content:space-between">
+                      <span style="color:var(--muted);font-size:12.5px">Delivery</span>
+                      <small style="font-weight:600">${o.city || 'Accra'} (${o.delivery || 'Standard'})</small>
+                    </div>
                   </div>
                   <div class="mobile-order-card-actions">
-                    <button class="primary" style="flex-grow:1;padding:8px;font-size:12px" onclick="openOrderModal('${o.id}')">Track Progress</button>
-                    <button class="secondary-btn" style="padding:8px 12px;font-size:12px" onclick="openInvoiceModal('${o.id}')">Invoice</button>
+                    <button type="button" class="primary" style="flex:1;background:#c24d67;padding:10px;font-size:12px;font-weight:700" onclick="openOrderModal('${o.id}')">Track Progress</button>
+                    <button type="button" class="secondary-btn" style="padding:10px 16px;font-size:12px;font-weight:700" onclick="openInvoiceModal('${o.id}')">Invoice</button>
                   </div>
                 </div>
               `).join('')}
             </div>
-          ` : '<p style="color:var(--muted)">No orders placed yet.</p>'}
+          ` : `
+            <div style="text-align:center;padding:48px 20px;background:#fafafa;border:1px dashed #e4e4e7;border-radius:var(--radius-md)">
+              <span style="font-size:36px;display:block;margin-bottom:10px">🛍️</span>
+              <h3 style="font-size:18px;margin:0 0 6px;font-family:'Playfair Display',serif">No orders yet</h3>
+              <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Your shopping journey begins in our curated luxury collections.</p>
+              <button type="button" class="primary" style="background:#c24d67;padding:10px 24px;border-radius:var(--radius-sm);font-weight:700" onclick="filters.cat='All';go('shop')">Explore Shop</button>
+            </div>
+          `}
         ` : ''}
 
+        <!-- ================= TAB: FLOAT WALLET ================= -->
         ${accountTab === 'wallet' ? `
-          <!-- Digital Float Wallet Card -->
           <div class="account-digital-wallet-card">
             <div class="wallet-card-header">
               <div>
-                <span class="eyebrow" style="color:var(--gold-light)">BYMARIE MEMBER FLOAT WALLET</span>
+                <span class="eyebrow" style="color:var(--gold-light);font-size:10px">BYMARIE MEMBER FLOAT WALLET</span>
                 <h3 style="margin:2px 0 0;font-size:18px;color:#fff">${user.name || 'Member'}</h3>
               </div>
               <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:11px;font-weight:700">⚡ ACTIVE</span>
@@ -3268,20 +3251,19 @@ function account() {
 
             <div class="wallet-card-foot">
               <div>
-                <small style="color:rgba(255,255,255,0.6);display:block">Account Reference</small>
-                <b style="font-family:'DM Mono';letter-spacing:0.5px">${user.id || 'BM-VIP-2026'}</b>
+                <small style="color:rgba(255,255,255,0.6);display:block;font-size:11px">Account Reference</small>
+                <b style="font-family:'DM Mono';letter-spacing:0.5px;color:#fff">${user.id || 'BM-VIP-2026'}</b>
               </div>
-              <button class="primary" style="background:var(--gold);color:var(--ink);border:0;padding:8px 18px;font-weight:800" onclick="activeModal='topup_wallet';render()">
+              <button type="button" class="primary" style="background:var(--gold);color:var(--ink);border:0;padding:10px 20px;font-weight:800;font-size:12.5px" onclick="activeModal='topup_wallet';render()">
                 + Top Up Wallet Funds
               </button>
             </div>
           </div>
 
-          <!-- Quick Top Up Presets -->
           <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
-            <h4 style="margin:0 0 8px;font-size:15px">⚡ Quick Top-Up via Paystack</h4>
+            <h4 style="margin:0 0 6px;font-size:15px">⚡ Quick Top-Up via Paystack</h4>
             <p style="color:var(--muted);font-size:12.5px;margin-bottom:14px">Instantly load your balance using MTN Mobile Money, Telecel Cash, or Visa / Mastercard.</p>
-            <div class="topup-amount-chips" style="margin-bottom:0">
+            <div class="topup-amount-chips">
               ${[100, 250, 500, 1000].map(amt => `
                 <button type="button" class="topup-chip" onclick="activeModal='topup_wallet';render();setTimeout(()=>{const inp=document.getElementById('topup-amt-input');if(inp)inp.value=${amt}},50)">
                   + GH₵ ${amt}
@@ -3290,50 +3272,12 @@ function account() {
             </div>
           </div>
 
-          <!-- Wallet Transaction Ledger -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <h4 style="margin:0;font-size:17px">Transaction Ledger &amp; History</h4>
+            <h4 style="margin:0;font-size:16px">Transaction Ledger &amp; History</h4>
             <span style="font-size:12px;color:var(--muted)">Showing recent activity</span>
           </div>
 
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Transaction</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${transactions.map(t => `
-                  <tr>
-                    <td>
-                      <strong>${t.note || 'Wallet Activity'}</strong>
-                      <small style="display:block;color:var(--muted);font-family:'DM Mono'">${t.id || 'TXN'}</small>
-                    </td>
-                    <td>
-                      <span class="badge ${t.type === 'Credit' ? 'delivered' : 'pending'}" style="font-size:11px">
-                        ${t.type === 'Credit' ? '↓ Credit (+)' : '↑ Debit (−)'}
-                      </span>
-                    </td>
-                    <td>
-                      <b style="color:${t.type === 'Credit' ? 'var(--emerald)' : 'var(--ink)'}">
-                        ${t.type === 'Credit' ? '+' : '−'}${money(t.amount || 0)}
-                      </b>
-                    </td>
-                    <td><small>${t.date || 'Recent'}</small></td>
-                    <td><span class="badge delivered" style="font-size:10px">✓ Verified</span></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Mobile Responsive Transaction Cards -->
-          <div class="mobile-transaction-cards">
+          <div class="mobile-transaction-cards" style="display:flex">
             ${transactions.map(t => `
               <div class="mobile-transaction-card">
                 <div class="mobile-transaction-header">
@@ -3356,17 +3300,18 @@ function account() {
           </div>
         ` : ''}
 
+        <!-- ================= TAB: VIP REWARDS ================= -->
         ${accountTab === 'rewards' ? `
           <div class="tier-progress-card">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
                 <span class="eyebrow" style="color:var(--emerald)">LOYALTY STATUS</span>
-                <h3 style="font-size:24px;margin:2px 0 4px">${tierName}</h3>
+                <h3 style="font-size:22px;margin:2px 0 4px">${tierName}</h3>
                 <small style="color:var(--muted)">Earn 10 points for every GH₵ 100 spent across all collections.</small>
               </div>
               <div style="text-align:right">
-                <strong style="font-size:28px;color:var(--gold)">${loyaltyPoints}</strong>
-                <small style="display:block;color:var(--muted);font-weight:700">VIP POINTS</small>
+                <strong style="font-size:26px;color:var(--gold)">${loyaltyPoints}</strong>
+                <small style="display:block;color:var(--muted);font-weight:700;font-size:11px">VIP POINTS</small>
               </div>
             </div>
 
@@ -3379,112 +3324,64 @@ function account() {
             </div>
           </div>
 
-          <h4 style="font-size:17px;margin:24px 0 12px">Unlocked VIP Member Privileges</h4>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:24px">
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+          <h4 style="font-size:16px;margin:24px 0 12px">Unlocked VIP Member Privileges</h4>
+          <div class="privileges-grid">
+            <div class="privilege-card">
               <span style="font-size:24px">🎁</span>
-              <strong style="display:block;margin:6px 0 2px;font-size:14px">Complimentary Gift Packaging</strong>
+              <strong style="display:block;margin:6px 0 2px;font-size:13.5px">Complimentary Gift Packaging</strong>
               <small style="color:var(--muted)">Signature satin ribbons &amp; embossed gift boxes on request.</small>
             </div>
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+            <div class="privilege-card">
               <span style="font-size:24px">⚡</span>
-              <strong style="display:block;margin:6px 0 2px;font-size:14px">Priority Same-Day Dispatch</strong>
+              <strong style="display:block;margin:6px 0 2px;font-size:13.5px">Priority Same-Day Dispatch</strong>
               <small style="color:var(--muted)">Orders placed before 2:00 PM dispatched first.</small>
             </div>
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px">
+            <div class="privilege-card">
               <span style="font-size:24px">👑</span>
-              <strong style="display:block;margin:6px 0 2px;font-size:14px">Private Drops Early Access</strong>
+              <strong style="display:block;margin:6px 0 2px;font-size:13.5px">Private Drops Early Access</strong>
               <small style="color:var(--muted)">Preview limited edition silk &amp; hair drops 24h early.</small>
             </div>
           </div>
         ` : ''}
 
-        ${accountTab === 'wishlist' ? `
-          <h3 style="font-size:20px;margin-bottom:18px">Saved Favourites</h3>
-          ${wishlist.length ? `
-            <div class="product-grid" style="grid-template-columns:repeat(auto-fill, minmax(150px, 1fr))">
-              ${wishlist.map(id => {
-                const p = byId(id);
-                return p ? productCard(p) : '';
-              }).join('')}
-            </div>
-          ` : '<p style="color:var(--muted)">Your wishlist is currently empty.</p>'}
-        ` : ''}
-
-        ${accountTab === 'wholesale' ? `
-          <div class="wholesale-box">
-            <div class="wholesale-header-tag">
-              <span class="badge" style="background:#c24d67;color:#fff;font-weight:800;padding:4px 10px;font-size:11px">⚡ VIP WHOLESALE PORTAL</span>
-              <small style="color:var(--muted);font-weight:700">Direct Factory Tier Discounts</small>
-            </div>
-            <h3 class="wholesale-title">Wholesale &amp; Bulk Purchasing (Up to 40% Off)</h3>
-            <p class="wholesale-desc">
-              Registered ByMarie VIP Members get access to exclusive bulk tier pricing across raw virgin wigs, luxury designer handbags, perfumes, and apparel. Minimum order quantity starts at 5 items.
-            </p>
-
-            <div class="wholesale-tiers-grid">
-              <div class="stat-box">
-                <span>Tier 1 (5–10 items)</span>
-                <strong style="color:#c24d67">15% OFF</strong>
-              </div>
-              <div class="stat-box">
-                <span>Tier 2 (11–25 items)</span>
-                <strong style="color:#c24d67">25% OFF</strong>
-              </div>
-              <div class="stat-box">
-                <span>VIP Master (25+ items)</span>
-                <strong style="color:#c24d67">40% OFF</strong>
-              </div>
-            </div>
-
-            <div class="wholesale-actions-row">
-              <a href="https://wa.me/233241002000?text=Hello%20ByMarie,%20I%20am%20interested%20in%20a%20Wholesale/Bulk%20Order" target="_blank" class="primary wholesale-primary-btn">
-                💬 Contact Wholesale Concierge
-              </a>
-              <button type="button" class="secondary-btn wholesale-secondary-btn" onclick="filters.cat='All';go('shop')">Explore Catalog for Bulk</button>
-            </div>
-          </div>
-        ` : ''}
-
+        <!-- ================= TAB: ADDRESS & FIT ================= -->
         ${accountTab === 'address' ? `
-          <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:0 0 24px;color:var(--ink);font-weight:600">My Account</h1>
-          
           <!-- Profile Card -->
-          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
-            <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin:0 0 20px;color:var(--ink)">Profile</h3>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:20px;box-shadow:var(--shadow-subtle)">
+            <h3 style="font-family:'Playfair Display',serif;font-size:19px;margin:0 0 16px;color:var(--ink)">Profile Details</h3>
             <form onsubmit="saveUserProfile(event)">
-              <div class="form-group" style="margin-bottom:18px">
+              <div class="form-group" style="margin-bottom:14px">
                 <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">FULL NAME</label>
-                <input required name="name" value="${user.name || ''}" placeholder="Enter full name" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
+                <input required name="name" value="${user.name || ''}" placeholder="Enter full name" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
+              </div>
+              <div class="form-group" style="margin-bottom:14px">
+                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">PHONE NUMBER</label>
+                <input required name="phone" value="${user.phone || ''}" placeholder="054 XXX XXXX" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
               <div class="form-group" style="margin-bottom:18px">
-                <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">PHONE NUMBER</label>
-                <input required name="phone" value="${user.phone || ''}" placeholder="054 XXX XXXX" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
-              </div>
-              <div class="form-group" style="margin-bottom:22px">
                 <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">EMAIL</label>
-                <div style="display:flex;align-items:center;gap:10px;background:#f4f4f5;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px">
+                <div style="display:flex;align-items:center;gap:10px;background:#f4f4f5;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px">
                   <span style="font-size:13px;color:var(--muted)">🔒</span>
                   <input readonly disabled value="${user.email || ''}" style="border:none;background:transparent;width:100%;outline:none;font-size:13.5px;color:var(--muted)">
                 </div>
               </div>
-              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer">Save Profile</button>
+              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:12px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer;width:100%">Save Profile</button>
             </form>
           </div>
 
           <!-- Saved Delivery Card -->
-          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:26px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
-            <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin:0 0 4px;color:var(--ink)">Saved Delivery</h3>
-            <p style="color:var(--muted);font-size:12px;margin:0 0 20px">This will pre-fill your address at checkout</p>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:20px;box-shadow:var(--shadow-subtle)">
+            <h3 style="font-family:'Playfair Display',serif;font-size:19px;margin:0 0 4px;color:var(--ink)">Saved Delivery</h3>
+            <p style="color:var(--muted);font-size:12px;margin:0 0 18px">This will pre-fill your address at checkout</p>
             
             <form onsubmit="saveUserProfile(event)">
               <!-- Store Pickup Toggle -->
-              <div style="display:flex;justify-content:space-between;align-items:center;background:#fafafa;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px">
+              <div style="display:flex;justify-content:space-between;align-items:center;background:#fafafa;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
                 <div>
-                  <strong style="font-size:13.5px;color:var(--ink);display:block">Prefer Store Pickup</strong>
-                  <small style="color:var(--muted);font-size:11.5px">Pick up for free at ByMarie Atelier, Cantonments, Accra</small>
+                  <strong style="font-size:13px;color:var(--ink);display:block">Prefer Store Pickup</strong>
+                  <small style="color:var(--muted);font-size:11px">Pick up for free at ByMarie Atelier, Cantonments, Accra</small>
                 </div>
-                <label style="position:relative;display:inline-block;width:44px;height:24px;margin:0;cursor:pointer">
+                <label style="position:relative;display:inline-block;width:44px;height:24px;margin:0;cursor:pointer;flex-shrink:0">
                   <input type="checkbox" name="preferPickup" ${user.preferPickup ? 'checked' : ''} onchange="user.preferPickup=this.checked;saveUser(user);render()" style="opacity:0;width:0;height:0">
                   <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:${user.preferPickup ? '#c24d67' : '#e4e4e7'};border-radius:24px;transition:0.3s">
                     <span style="position:absolute;height:18px;width:18px;left:${user.preferPickup ? '22px' : '3px'};bottom:3px;background:white;border-radius:50%;transition:0.3s;display:block"></span>
@@ -3492,30 +3389,31 @@ function account() {
                 </label>
               </div>
 
-              <div class="form-group" style="margin-bottom:18px">
+              <div class="form-group" style="margin-bottom:14px">
                 <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">STREET ADDRESS</label>
-                <input required name="address" value="${user.address || ''}" placeholder="e.g. 18 Ring Road Central" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
+                <input required name="address" value="${user.address || ''}" placeholder="e.g. 18 Ring Road Central" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
               </div>
-              <div class="form-grid" style="margin-bottom:22px">
+              <div class="form-grid" style="margin-bottom:18px">
                 <div class="form-group">
                   <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">CITY</label>
-                  <input required name="city" value="${user.city || 'Accra'}" placeholder="Accra" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
+                  <input required name="city" value="${user.city || 'Accra'}" placeholder="Accra" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink)">
                 </div>
                 <div class="form-group">
                   <label style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px">REGION</label>
-                  <select name="region" style="width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink);background:#fff">
+                  <select name="region" style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--ink);background:#fff">
                     ${['Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 'Volta', 'Northern'].map(r => `
                       <option ${(user.region || 'Greater Accra') === r ? 'selected' : ''}>${r}</option>
                     `).join('')}
                   </select>
                 </div>
               </div>
-              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer">Save Delivery Address</button>
+              <button type="submit" class="primary" style="background:#c24d67;color:#fff;border:none;padding:12px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;cursor:pointer;width:100%">Save Delivery Address</button>
             </form>
           </div>
 
+          <!-- Fit & Luxury Scent Preferences -->
           <form class="review-form-card" onsubmit="saveUserPreferences(event)">
-            <h4 style="margin:0 0 16px;font-size:16px">✨ My Fit &amp; Luxury Scent Preferences</h4>
+            <h4 style="margin:0 0 8px;font-size:16px">✨ My Fit &amp; Luxury Scent Preferences</h4>
             <p style="color:var(--muted);font-size:12.5px;margin-bottom:16px">Personalize your luxury curation so our stylists pre-filter your favorite fits and fragrance notes.</p>
             
             <div class="form-grid">
@@ -3552,15 +3450,82 @@ function account() {
                 </select>
               </div>
             </div>
-            <button class="primary" type="submit" style="margin-top:14px">Save Style Preferences</button>
+            <button class="primary" type="submit" style="margin-top:14px;background:#c24d67;width:100%">Save Style Preferences</button>
           </form>
         ` : ''}
 
+        <!-- ================= TAB: WHOLESALE ================= -->
+        ${accountTab === 'wholesale' ? `
+          <div class="wholesale-box">
+            <div class="wholesale-header-tag">
+              <span class="badge" style="background:#c24d67;color:#fff;font-weight:800;padding:4px 10px;font-size:11px">⚡ VIP WHOLESALE PORTAL</span>
+              <small style="color:var(--muted);font-weight:700">Direct Factory Tier Discounts</small>
+            </div>
+            <h3 class="wholesale-title">Wholesale &amp; Bulk Purchasing (Up to 40% Off)</h3>
+            <p class="wholesale-desc">
+              Registered ByMarie VIP Members get access to exclusive bulk tier pricing across raw virgin wigs, luxury designer handbags, perfumes, and apparel. Minimum order quantity starts at 5 items.
+            </p>
+
+            <div class="wholesale-tiers-grid">
+              <div class="stat-box">
+                <span>Tier 1 (5–10 items)</span>
+                <strong style="color:#c24d67">15% OFF</strong>
+              </div>
+              <div class="stat-box">
+                <span>Tier 2 (11–25 items)</span>
+                <strong style="color:#c24d67">25% OFF</strong>
+              </div>
+              <div class="stat-box">
+                <span>VIP Master (25+ items)</span>
+                <strong style="color:#c24d67">40% OFF</strong>
+              </div>
+            </div>
+
+            <div class="wholesale-actions-row">
+              <a href="https://wa.me/233241002000?text=Hello%20ByMarie,%20I%20am%20interested%20in%20a%20Wholesale/Bulk%20Order" target="_blank" class="primary wholesale-primary-btn">
+                💬 Contact Wholesale Concierge
+              </a>
+              <button type="button" class="secondary-btn wholesale-secondary-btn" onclick="filters.cat='All';go('shop')">Explore Catalog for Bulk</button>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- ================= TAB: WISHLIST ================= -->
+        ${accountTab === 'wishlist' ? `
+          <div class="tab-header-row">
+            <div>
+              <h2 class="tab-title">Saved Favourites</h2>
+              <p class="tab-subtitle">Items you have bookmarked for later</p>
+            </div>
+          </div>
+          ${wishlist.length ? `
+            <div class="product-grid">
+              ${wishlist.map(id => {
+                const p = byId(id);
+                return p ? productCard(p) : '';
+              }).join('')}
+            </div>
+          ` : `
+            <div style="text-align:center;padding:48px 20px;background:#fafafa;border:1px dashed #e4e4e7;border-radius:var(--radius-md)">
+              <span style="font-size:36px;display:block;margin-bottom:10px">♡</span>
+              <h3 style="font-size:18px;margin:0 0 6px;font-family:'Playfair Display',serif">Your Wishlist is Empty</h3>
+              <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Tap the heart icon on any piece to save it to your private collection.</p>
+              <button type="button" class="primary" style="background:#c24d67;padding:10px 24px;border-radius:var(--radius-sm);font-weight:700" onclick="filters.cat='All';go('shop')">Explore Catalog</button>
+            </div>
+          `}
+        ` : ''}
+
+        <!-- ================= TAB: SECURITY ================= -->
         ${accountTab === 'security' ? `
-          <h3 style="font-size:22px;margin-bottom:18px">Security &amp; Account Preferences</h3>
+          <div class="tab-header-row">
+            <div>
+              <h2 class="tab-title">Security &amp; Account Preferences</h2>
+              <p class="tab-subtitle">Manage your password and security settings</p>
+            </div>
+          </div>
           
-          <form class="review-form-card" onsubmit="saveUserSecurity(event)" style="margin-bottom:24px">
-            <h4 style="margin:0 0 16px;font-size:16px">Password &amp; Security Passcode</h4>
+          <form class="review-form-card" onsubmit="saveUserSecurity(event)" style="margin-bottom:20px">
+            <h4 style="margin:0 0 14px;font-size:15px">Password &amp; Security Passcode</h4>
             <div class="form-grid">
               <div class="form-group">
                 <label>Current Password</label>
@@ -3572,8 +3537,8 @@ function account() {
               </div>
             </div>
 
-            <div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px">
-              <h4 style="margin:0 0 12px;font-size:15px">Notification Preferences</h4>
+            <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
+              <h4 style="margin:0 0 12px;font-size:14px">Notification Preferences</h4>
               <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-size:13px">
                 <input type="checkbox" name="notifyWhatsApp" ${user.notifyWhatsApp !== false ? 'checked' : ''}>
                 <span>Receive instant order tracking &amp; courier dispatch alerts on WhatsApp</span>
@@ -3584,28 +3549,34 @@ function account() {
               </label>
             </div>
 
-            <button class="primary" type="submit" style="margin-top:18px">Update Security Settings</button>
+            <button class="primary" type="submit" style="margin-top:18px;background:#c24d67;width:100%">Update Security Settings</button>
           </form>
 
-          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;display:flex;justify-content:space-between;align-items:center">
+          <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
             <div>
-              <strong style="display:block;font-size:14px;color:var(--ink)">🔒 256-Bit Encrypted Member Session</strong>
-              <small style="color:var(--muted)">Signed in via verified local credentials.</small>
+              <strong style="display:block;font-size:13.5px;color:var(--ink)">🔒 256-Bit Encrypted Member Session</strong>
+              <small style="color:var(--muted);font-size:12px">Signed in via verified local credentials.</small>
             </div>
-            <button class="secondary-btn" onclick="clearUser()">Sign Out of All Devices</button>
+            <button class="secondary-btn" style="padding:8px 16px;font-size:12px;font-weight:700" onclick="clearUser()">Sign Out of All Devices</button>
           </div>
         ` : ''}
 
+        <!-- ================= TAB: CONCIERGE ================= -->
         ${accountTab === 'support' ? `
-          <h3 style="font-size:22px;margin-bottom:18px">Concierge &amp; Help Center</h3>
-          
-          <div style="background:linear-gradient(135deg, var(--sage-light) 0%, #fff 100%);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+          <div class="tab-header-row">
             <div>
-              <span class="badge" style="background:var(--emerald);color:#fff;font-weight:800;padding:3px 8px;font-size:10.5px">24/7 DEDICATED ASSISTANCE</span>
-              <h4 style="margin:6px 0 2px;font-size:18px">Connect with ByMarie Concierge</h4>
+              <h2 class="tab-title">Concierge &amp; Help Center</h2>
+              <p class="tab-subtitle">Dedicated 24/7 client care assistance</p>
+            </div>
+          </div>
+          
+          <div style="background:linear-gradient(135deg, #fff7fa 0%, #fff 100%);border:1px solid #f2cfd8;border-radius:var(--radius-md);padding:22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+            <div>
+              <span class="badge" style="background:#c24d67;color:#fff;font-weight:800;padding:3px 8px;font-size:10.5px">24/7 DEDICATED ASSISTANCE</span>
+              <h4 style="margin:6px 0 2px;font-size:17px">Connect with ByMarie Concierge</h4>
               <small style="color:var(--muted)">Speak directly with our fashion consultants, fragrance specialists &amp; courier coordinators.</small>
             </div>
-            <a href="https://wa.me/233240000000?text=Hello%20ByMarie%20Concierge,%20my%20name%20is%20${encodeURIComponent(user.name||'Member')}" target="_blank" class="primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+            <a href="https://wa.me/233240000000?text=Hello%20ByMarie%20Concierge,%20my%20name%20is%20${encodeURIComponent(user.name||'Member')}" target="_blank" class="primary" style="background:#c24d67;text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-weight:700">
               💬 Chat on WhatsApp
             </a>
           </div>
@@ -3613,27 +3584,27 @@ function account() {
           <h4 style="font-size:16px;margin:20px 0 12px">Frequently Asked Questions</h4>
           
           <div class="support-faq-card">
-            <strong style="font-size:14px;display:block;margin-bottom:4px">📦 How does Greater Accra doorstep delivery work?</strong>
+            <strong style="font-size:13.5px;display:block;margin-bottom:4px">📦 How does Greater Accra doorstep delivery work?</strong>
             <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
               Complimentary on all orders over GH₵ 300. Orders placed before 2:00 PM are dispatched same-day with live rider tracking.
             </p>
           </div>
 
           <div class="support-faq-card">
-            <strong style="font-size:14px;display:block;margin-bottom:4px">💳 How do I fund my Float Wallet?</strong>
+            <strong style="font-size:13.5px;display:block;margin-bottom:4px">💳 How do I fund my Float Wallet?</strong>
             <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
               Navigate to the Float Wallet tab and click Top Up Funds. You can pay via MTN MoMo, Telecel Cash, or Card with instant automated verification.
             </p>
           </div>
 
           <div class="support-faq-card">
-            <strong style="font-size:14px;display:block;margin-bottom:4px">🔄 What is the return / exchange policy?</strong>
+            <strong style="font-size:13.5px;display:block;margin-bottom:4px">🔄 What is the return / exchange policy?</strong>
             <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.5">
               Unworn items with tags intact may be exchanged within 7 days of delivery. Custom virgin wigs and opened fragrance bottles are final sale.
             </p>
           </div>
         ` : ''}
-      </section>
+      </div>
     </main>
   `;
 }
