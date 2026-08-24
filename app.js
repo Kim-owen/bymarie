@@ -4877,11 +4877,11 @@ function renderAdminUsers(users) {
           <thead>
             <tr>
               <th>Client Profile</th>
-              <th>Phone</th>
-              <th>Primary Address</th>
-              <th>Registered</th>
-              <th>Lifetime Orders</th>
-              <th>Float Wallet Balance</th>
+              <th>Phone / WhatsApp</th>
+              <th>Primary Address &amp; City</th>
+              <th>Status &amp; Last Login</th>
+              <th>Orders</th>
+              <th>Float Wallet</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -4890,26 +4890,43 @@ function renderAdminUsers(users) {
               <tr>
                 <td>
                   <div class="table-avatar-row">
-                    <span class="table-avatar" style="background:#c24d67;color:#fff">${u.name.charAt(0)}</span>
+                    <span class="table-avatar" style="background:#c24d67;color:#fff">${(u.name || 'C').charAt(0).toUpperCase()}</span>
                     <div>
-                      <strong style="color:#fff">${u.name}</strong>
+                      <strong style="color:#fff">${u.name || 'Anonymous Client'}</strong>
                       <small style="display:block;color:#a1a1aa">${u.email}</small>
                     </div>
                   </div>
                 </td>
-                <td>${u.phone || 'N/A'}</td>
-                <td><small style="color:#e4e4e7">${u.address || 'Accra, Ghana'}</small></td>
-                <td><small style="color:#a1a1aa">${u.joinedDate || 'Recent'}</small></td>
-                <td><b style="color:#fff">${u.ordersCount || 0}</b></td>
                 <td>
-                  <span class="badge ${(u.walletBalance || 0) > 0 ? 'delivered' : 'pending'}" style="font-size:13px;padding:6px 12px">
+                  ${u.phone ? `
+                    <a href="https://wa.me/${u.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#34d399;font-weight:700;font-size:12px;text-decoration:underline">
+                      ${u.phone} 💬
+                    </a>
+                  ` : '<span style="color:#71717a">N/A</span>'}
+                </td>
+                <td>
+                  <strong style="color:#fff;display:block;font-size:12.5px">${u.city || 'Accra'}</strong>
+                  <small style="color:#a1a1aa">${u.address || 'Address on file'}</small>
+                </td>
+                <td>
+                  <span class="badge" style="background:${u.status === 'Super Admin' ? '#8b5cf6' : (u.loggedIn ? '#10b981' : '#64748b')};color:#fff;font-size:10.5px">
+                    ${u.status === 'Super Admin' ? '👑 Super Admin' : (u.loggedIn ? '● Signed In' : 'Active')}
+                  </span>
+                  <small style="display:block;color:#a1a1aa;margin-top:3px">${u.lastLogin || u.joinedDate || 'Recent'}</small>
+                </td>
+                <td><b style="color:#fff;font-size:14px">${u.ordersCount || 0}</b></td>
+                <td>
+                  <span class="badge ${(u.walletBalance || 0) > 0 ? 'delivered' : 'pending'}" style="font-size:13px;padding:5px 10px">
                     💳 ${money(u.walletBalance || 0)}
                   </span>
                 </td>
                 <td>
                   <div class="table-actions">
-                    <button class="secondary-btn" style="padding:5px 10px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
-                    <button class="secondary-btn" style="padding:5px 10px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
+                    <button class="icon-action-btn" title="View Complete Client Dossier" onclick="openUserDossierModal('${u.id}')" style="background:rgba(255,255,255,0.1);color:#fff">
+                      ${svgIcon('eye', 14)} Dossier
+                    </button>
+                    <button class="secondary-btn" style="padding:4px 8px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
+                    <button class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
                   </div>
                 </td>
               </tr>
@@ -4926,6 +4943,192 @@ function renderAdminUsers(users) {
       </div>
     `}
   `;
+}
+
+function openUserDossierModal(userId) {
+  const users = getUsers();
+  const u = users.find(x => x.id === userId || x.email === userId);
+  if (!u) return toast('Client profile not found', 'warning');
+  
+  const allOrders = getOrders();
+  const userOrders = allOrders.filter(o => o.email && u.email && o.email.toLowerCase() === u.email.toLowerCase());
+  
+  modalData = { user: u, orders: userOrders };
+  activeModal = 'admin_user_dossier';
+  render();
+}
+
+async function handleAdminAddUser(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const name = (fd.get('name') || '').trim();
+  const email = (fd.get('email') || '').trim().toLowerCase();
+  const phone = (fd.get('phone') || '').trim();
+  const address = (fd.get('address') || '').trim();
+  const walletBalance = Number(fd.get('walletBalance') || 0);
+
+  if (!email || !name) return toast('Name and email are required', 'warning');
+
+  const users = getUsers();
+  let existing = users.find(u => u.email && u.email.toLowerCase() === email);
+
+  if (existing) {
+    existing.name = name;
+    existing.phone = phone || existing.phone;
+    existing.address = address || existing.address;
+    existing.walletBalance = walletBalance;
+  } else {
+    existing = {
+      id: `usr-${Date.now()}`,
+      name,
+      email,
+      phone,
+      address,
+      city: 'Accra',
+      region: 'Greater Accra',
+      walletBalance,
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      lastLogin: 'Never (Admin Created)',
+      ordersCount: 0,
+      status: 'Active'
+    };
+    users.unshift(existing);
+  }
+
+  saveUsers(users);
+  activeModal = null;
+  toast(`VIP Client Account "${existing.name}" registered with ${money(walletBalance)} balance! 💳`);
+  render();
+
+  try {
+    await fetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(existing)
+    });
+  } catch (e) {}
+}
+
+async function handleCustomerSignIn(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const email = (fd.get('email') || '').trim().toLowerCase();
+  const password = fd.get('password');
+
+  if (!email) return toast('Please enter your email', 'warning');
+
+  toast(`Signing into ByMarie account...`, 'info');
+
+  const users = getUsers();
+  let u = users.find(x => x.email && x.email.toLowerCase() === email);
+
+  if (!u) {
+    u = {
+      id: `usr-${Date.now()}`,
+      email,
+      name: email.split('@')[0],
+      phone: '',
+      address: '',
+      city: 'Accra',
+      region: 'Greater Accra',
+      walletBalance: 0.00,
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      lastLogin: new Date().toLocaleString(),
+      ordersCount: 0,
+      status: email === ADMIN_EMAIL ? 'Super Admin' : 'Active',
+      loggedIn: true
+    };
+    users.push(u);
+  } else {
+    u.lastLogin = new Date().toLocaleString();
+    u.loggedIn = true;
+  }
+
+  saveUser(u);
+  saveUsers(users);
+
+  try {
+    await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+  } catch (e) {}
+
+  toast(`Welcome back, ${u.name}! 👑`);
+  activeModal = null;
+  go('account');
+}
+
+async function handleCustomerSignUp(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const name = (fd.get('name') || '').trim();
+  const email = (fd.get('email') || '').trim().toLowerCase();
+  const phone = (fd.get('phone') || '').trim();
+  const password = fd.get('password');
+
+  if (!email || !name) return toast('Please enter name and email', 'warning');
+
+  toast(`Registering luxury membership...`, 'info');
+
+  const users = getUsers();
+  let u = users.find(x => x.email && x.email.toLowerCase() === email);
+
+  if (u) {
+    u.name = name;
+    u.phone = phone || u.phone;
+    u.lastLogin = new Date().toLocaleString();
+    u.loggedIn = true;
+  } else {
+    u = {
+      id: `usr-${Date.now()}`,
+      name,
+      email,
+      phone,
+      address: '',
+      city: 'Accra',
+      region: 'Greater Accra',
+      walletBalance: 0.00,
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      lastLogin: new Date().toLocaleString(),
+      ordersCount: 0,
+      status: email === ADMIN_EMAIL ? 'Super Admin' : 'Active',
+      loggedIn: true
+    };
+    users.push(u);
+  }
+
+  saveUser(u);
+  saveUsers(users);
+
+  try {
+    await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, password })
+    });
+  } catch (e) {}
+
+  toast(`Welcome to ByMarie, ${u.name}! 👑`);
+  activeModal = null;
+  go('account');
+}
+
+function handleCustomerSignOut() {
+  const user = getUser();
+  user.loggedIn = false;
+  saveUser(user);
+
+  const users = getUsers();
+  const u = users.find(x => x.email === user.email || x.id === user.id);
+  if (u) {
+    u.loggedIn = false;
+    saveUsers(users);
+  }
+
+  toast('Signed out of ByMarie profile');
+  go('home');
 }
 
 function renderAdminWholesale(inquiries) {
@@ -6626,6 +6829,96 @@ function renderModals() {
               <button class="secondary-btn" type="button" onclick="activeModal=null;render()">Cancel</button>
             </div>
           </form>
+        </div>
+      </div>
+    `;
+  }
+
+  // VIP Client Complete Dossier Modal
+  if (activeModal === 'admin_user_dossier') {
+    const { user: u, orders: userOrders } = modalData;
+    const totalSpent = (userOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
+
+    return `
+      <div class="modal-backdrop" onclick="if(event.target===this){activeModal=null;render()}">
+        <div class="modal-card" style="max-width:720px;max-height:90vh;overflow-y:auto">
+          <button class="modal-close" onclick="activeModal=null;render()">✕</button>
+          
+          <div style="display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:20px">
+            <div style="width:64px;height:64px;border-radius:50%;background:#c24d67;color:#fff;display:grid;place-items:center;font-size:26px;font-weight:800">
+              ${(u.name || 'C').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2 style="font-size:24px;margin:0">${u.name}</h2>
+                <span class="badge" style="background:${u.status === 'Super Admin' ? '#8b5cf6' : '#10b981'};color:#fff;font-size:11px">
+                  ${u.status === 'Super Admin' ? '👑 Super Admin' : (u.status || 'Active Client')}
+                </span>
+                ${u.loggedIn ? '<span style="color:#10b981;font-size:12px;font-weight:700">● Signed In Now</span>' : ''}
+              </div>
+              <p style="color:var(--muted);font-size:13px;margin:4px 0 0">User ID: <code>${u.id}</code> • Registered on ${u.joinedDate || '2026'}</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div style="background:var(--cashmere);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px">
+              <span class="eyebrow" style="color:var(--gold-light);font-size:10px">CONTACT &amp; DELIVERY LOGISTICS</span>
+              <div style="margin-top:10px;font-size:13px;line-height:1.7">
+                <div><strong>Email:</strong> <a href="mailto:${u.email}" style="color:#c24d67;text-decoration:underline">${u.email}</a></div>
+                <div><strong>Phone / WhatsApp:</strong> ${u.phone ? `<a href="https://wa.me/${u.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#10b981;font-weight:700">${u.phone} 💬 (Direct WhatsApp)</a>` : '<span style="color:#a1a1aa">Not provided</span>'}</div>
+                <div><strong>Delivery Address:</strong> ${u.address || 'Address on file'}</div>
+                <div><strong>City / Region:</strong> ${u.city || 'Accra'}, ${u.region || 'Greater Accra'}</div>
+              </div>
+            </div>
+
+            <div style="background:var(--cashmere);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px">
+              <span class="eyebrow" style="color:var(--gold-light);font-size:10px">COMMERCE &amp; FLOAT WALLET METRICS</span>
+              <div style="margin-top:10px;font-size:13px;line-height:1.7">
+                <div><strong>Float Balance:</strong> <b style="color:var(--emerald);font-size:16px">${money(u.walletBalance || 0)}</b></div>
+                <div><strong>Lifetime Orders:</strong> ${userOrders ? userOrders.length : (u.ordersCount || 0)} orders</div>
+                <div><strong>Total Lifetime Spend:</strong> <b style="color:var(--gold-light)">${money(totalSpent)}</b></div>
+                <div><strong>Last Login:</strong> <small style="color:var(--muted)">${u.lastLogin || 'Recent'}</small></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="primary" style="padding:6px 14px;font-size:11px;background:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit Float</button>
+                <button class="secondary-btn" style="padding:6px 14px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit Float</button>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="font-size:16px;margin:20px 0 10px">Order History (${(userOrders || []).length} orders)</h3>
+          ${(userOrders && userOrders.length) ? `
+            <div style="max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius-sm)">
+              <table class="data-table" style="font-size:12px">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${userOrders.map(o => `
+                    <tr>
+                      <td><b>${o.id}</b></td>
+                      <td>${o.date}</td>
+                      <td><b>${money(o.total)}</b></td>
+                      <td><span class="badge ${o.status.toLowerCase()}">${o.status}</span></td>
+                      <td><button class="icon-action-btn" onclick="openOrderModal('${o.id}')">${svgIcon('eye', 13)}</button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <p style="color:var(--muted);font-size:13px;padding:12px;background:var(--sand);border-radius:var(--radius-sm)">No orders placed yet by this client.</p>
+          `}
+
+          <div style="display:flex;justify-content:flex-end;margin-top:20px">
+            <button class="secondary-btn" onclick="activeModal=null;render()">Close Dossier</button>
+          </div>
         </div>
       </div>
     `;

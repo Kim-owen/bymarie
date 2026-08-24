@@ -573,60 +573,150 @@ app.post('/api/payments/momo/callback', (req, res) => {
   });
 });
 
-// --- AUTHENTICATION API ---
+// --- AUTHENTICATION & USER CRM API ---
 
-app.post('/api/auth/register', async (req, res) => {
-  const { email, password, name, phone } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
-
-  const client = getSupabaseClient();
-  if (client) {
-    try {
-      const { data, error } = await client.auth.signUp({
-        email,
-        password,
-        options: { data: { name, phone } }
-      });
-      if (error) throw error;
-      return res.status(201).json({ success: true, user: data.user, session: data.session });
-    } catch (err) {
-      // Fallback local registration
-    }
-  }
-
-  // Local fallback registration
-  const user = {
-    id: `usr-${Date.now()}`,
-    email,
-    name: name || email.split('@')[0],
-    phone: phone || '',
-    loggedIn: true
-  };
-  res.status(201).json({ success: true, user });
+// Get all registered users for Admin CRM
+app.get('/api/users', (req, res) => {
+  const db = readDB();
+  res.json(db.users || []);
 });
 
-app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+// Get single user details
+app.get('/api/users/:id', (req, res) => {
+  const db = readDB();
+  const u = (db.users || []).find(x => x.id === req.params.id || x.email === req.params.id);
+  if (!u) return res.status(404).json({ error: 'User not found' });
+  res.json(u);
+});
+
+// Create / Sync user profile
+app.post('/api/users', async (req, res) => {
+  const db = readDB();
+  if (!db.users) db.users = [];
+  
+  const user = {
+    id: req.body.id || `usr-${Date.now()}`,
+    name: req.body.name || (req.body.email ? req.body.email.split('@')[0] : 'Client'),
+    email: req.body.email || '',
+    phone: req.body.phone || '',
+    address: req.body.address || '',
+    city: req.body.city || 'Accra',
+    region: req.body.region || 'Greater Accra',
+    walletBalance: Number(req.body.walletBalance || 0),
+    joinedDate: req.body.joinedDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    lastLogin: req.body.lastLogin || new Date().toLocaleString(),
+    ordersCount: Number(req.body.ordersCount || 0),
+    status: req.body.status || 'Active',
+    loggedIn: Boolean(req.body.loggedIn)
+  };
+
+  const idx = db.users.findIndex(u => (u.email && u.email.toLowerCase() === user.email.toLowerCase()) || u.id === user.id);
+  if (idx !== -1) {
+    db.users[idx] = { ...db.users[idx], ...user };
+  } else {
+    db.users.push(user);
+  }
+  writeDB(db);
+
+  const client = getSupabaseClient();
+  if (client) {
+    try { await client.from('users').upsert([user]); } catch (e) {}
+  }
+
+  res.status(200).json({ success: true, user });
+});
+
+// Register new customer account
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, name, phone, address, city, region } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  const db = readDB();
+  if (!db.users) db.users = [];
+
+  const newUser = {
+    id: `usr-${Date.now()}`,
+    name: name || email.split('@')[0],
+    email: email.trim().toLowerCase(),
+    phone: phone || '',
+    address: address || '',
+    city: city || 'Accra',
+    region: region || 'Greater Accra',
+    walletBalance: 0.00,
+    joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    lastLogin: new Date().toLocaleString(),
+    ordersCount: 0,
+    status: 'Active',
+    loggedIn: true
+  };
+
+  const existingIdx = db.users.findIndex(u => u.email === newUser.email);
+  if (existingIdx !== -1) {
+    db.users[existingIdx] = { ...db.users[existingIdx], ...newUser, walletBalance: db.users[existingIdx].walletBalance || 0 };
+  } else {
+    db.users.push(newUser);
+  }
+  writeDB(db);
 
   const client = getSupabaseClient();
   if (client) {
     try {
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return res.json({ success: true, user: data.user, session: data.session });
-    } catch (err) {
-      // Fallback local auth
-    }
+      await client.auth.signUp({
+        email,
+        password: password || 'ByMarie2026!',
+        options: { data: { name, phone } }
+      });
+      await client.from('users').upsert([newUser]);
+    } catch (err) {}
   }
 
-  // Local fallback sign in
-  const user = {
-    id: `usr-${Date.now()}`,
-    email,
-    name: email.split('@')[0],
-    loggedIn: true
-  };
+  res.status(201).json({ success: true, user: newUser });
+});
+
+// Sign In customer account
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  const db = readDB();
+  if (!db.users) db.users = [];
+
+  const cleanEmail = email.trim().toLowerCase();
+  let user = db.users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    user = {
+      id: `usr-${Date.now()}`,
+      email: cleanEmail,
+      name: cleanEmail.split('@')[0],
+      phone: '',
+      address: '',
+      city: 'Accra',
+      region: 'Greater Accra',
+      walletBalance: 0.00,
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      lastLogin: new Date().toLocaleString(),
+      ordersCount: 0,
+      status: cleanEmail === 'adichieifeoma@gmail.com' ? 'Super Admin' : 'Active',
+      loggedIn: true
+    };
+    db.users.push(user);
+  } else {
+    user.lastLogin = new Date().toLocaleString();
+    user.loggedIn = true;
+  }
+  writeDB(db);
+
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      const { data } = await client.auth.signInWithPassword({ email, password: password || 'ByMarie2026!' });
+      if (data && data.user) {
+        await client.from('users').upsert([user]);
+      }
+    } catch (err) {}
+  }
+
   res.json({ success: true, user });
 });
 
