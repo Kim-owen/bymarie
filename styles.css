@@ -271,65 +271,6 @@ header {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* Storefront Mobile Category Swipeable Menu Bar */
-.storefront-mobile-menu-bar {
-  display: none;
-  gap: 6px;
-  padding: 8px 12px;
-  background: rgba(253, 251, 247, 0.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(228, 221, 209, 0.8);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.storefront-mobile-menu-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.storefront-menu-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #ffffff;
-  border: 1px solid var(--line);
-  color: var(--ink-soft);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.storefront-menu-pill:hover {
-  border-color: var(--ink);
-  color: var(--ink);
-}
-
-.storefront-menu-pill.active {
-  background: var(--ink);
-  color: #ffffff;
-  border-color: var(--ink);
-  font-weight: 700;
-}
-
-@media (max-width: 900px) {
-  .storefront-mobile-menu-bar {
-    display: flex !important;
-  }
-  
-  main {
-    padding-top: 146px !important;
-  }
-}
-
 main {
   padding-top: 110px;
 }
