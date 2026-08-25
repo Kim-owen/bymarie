@@ -522,11 +522,8 @@ const INITIAL_SITE_SETTINGS = {
   heroTitle: 'ByMarie — Style, Scent, Essentials',
   heroSubtitle: 'Considered luxury style, handcrafted scent extraits, and daily botanical care in Ghana.',
   heroMediaType: 'video',
-  heroMediaUrl: 'assets/bymarie.mp4',
-  heroVideos: [
-    'assets/bymarie.mp4',
-    'assets/hero-fashion.mp4'
-  ],
+  heroMediaUrl: '',
+  heroVideos: [],
   heroVideoInterval: 30,
   announcementText: 'Complimentary delivery across Greater Accra on orders over GH₵ 300',
   promoCodeNotice: 'WELCOME10',
@@ -552,14 +549,14 @@ const INITIAL_SITE_SETTINGS = {
 
 function getHeroVideosList(settings) {
   settings = settings || getSiteSettings();
-  if (Array.isArray(settings.heroVideos) && settings.heroVideos.length > 0) {
-    const valid = settings.heroVideos.filter(v => typeof v === 'string' && v.trim().length > 0);
+  if (Array.isArray(settings.heroVideos)) {
+    const valid = settings.heroVideos.filter(v => typeof v === 'string' && v.trim().length > 0 && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
     if (valid.length > 0) return valid;
   }
-  if (settings.heroMediaUrl && typeof settings.heroMediaUrl === 'string' && settings.heroMediaUrl.trim()) {
+  if (settings.heroMediaUrl && typeof settings.heroMediaUrl === 'string' && settings.heroMediaUrl.trim() && !settings.heroMediaUrl.includes('assets/bymarie.mp4') && !settings.heroMediaUrl.includes('assets/hero-fashion.mp4')) {
     return [settings.heroMediaUrl.trim()];
   }
-  return ['assets/bymarie.mp4'];
+  return [];
 }
 
 function isValidImageSrc(s) {
@@ -601,6 +598,16 @@ function getSiteSettings() {
     } catch {
       settings = INITIAL_SITE_SETTINGS;
     }
+  }
+
+  // Purge any legacy default template video references
+  if (Array.isArray(settings.heroVideos)) {
+    settings.heroVideos = settings.heroVideos.filter(v => typeof v === 'string' && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
+  } else {
+    settings.heroVideos = [];
+  }
+  if (settings.heroMediaUrl && (settings.heroMediaUrl.includes('assets/bymarie.mp4') || settings.heroMediaUrl.includes('assets/hero-fashion.mp4'))) {
+    settings.heroMediaUrl = settings.heroVideos[0] || '';
   }
 
   // Auto-clean category covers from any broken legacy split strings
@@ -1678,13 +1685,22 @@ function home() {
               <button type="button" class="hero-video-nav-btn next" onclick="nextHeroVideo()" title="Next Campaign Video">❯</button>
             ` : ''}
 
-            <!-- Dual Layer Crossfading Video Players for 100% Mobile & Desktop Compatibility -->
-            <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
-            <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
+            ${heroVideos.length > 0 ? `
+              <!-- Dual Layer Crossfading Video Players for 100% Mobile & Desktop Compatibility -->
+              <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
+              <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
 
-            <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
-              <span class="audio-btn-icon">🔇</span>
-            </button>
+              <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
+                <span class="audio-btn-icon">🔇</span>
+              </button>
+            ` : `
+              <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#051c19 0%,#093832 50%,#031411 100%);color:#fff;text-align:center;padding:24px">
+                <span style="font-size:44px;margin-bottom:12px">✨</span>
+                <span class="eyebrow" style="color:var(--gold-light)">HAUTE COUTURE · GHANA</span>
+                <h3 style="font-family:'Bodoni Moda',serif;font-size:24px;color:var(--gold);margin:8px 0">ByMarie Maison</h3>
+                <p style="color:#a1a1aa;font-size:12.5px;max-width:280px;line-height:1.5">Upload your custom luxury campaign videos in the Admin Console to launch your dynamic 30s video playlist.</p>
+              </div>
+            `}
             
             <div class="floating-card">
               <span>New Arrival</span>
