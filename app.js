@@ -523,6 +523,11 @@ const INITIAL_SITE_SETTINGS = {
   heroSubtitle: 'Considered luxury style, handcrafted scent extraits, and daily botanical care in Ghana.',
   heroMediaType: 'video',
   heroMediaUrl: 'assets/bymarie.mp4',
+  heroVideos: [
+    'assets/bymarie.mp4',
+    'assets/hero-fashion.mp4'
+  ],
+  heroVideoInterval: 30,
   announcementText: 'Complimentary delivery across Greater Accra on orders over GH₵ 300',
   promoCodeNotice: 'WELCOME10',
   brandEthosTitle: 'Created for slow living and enduring beauty.',
@@ -544,6 +549,18 @@ const INITIAL_SITE_SETTINGS = {
     'Toiletries': []
   }
 };
+
+function getHeroVideosList(settings) {
+  settings = settings || getSiteSettings();
+  if (Array.isArray(settings.heroVideos) && settings.heroVideos.length > 0) {
+    const valid = settings.heroVideos.filter(v => typeof v === 'string' && v.trim().length > 0);
+    if (valid.length > 0) return valid;
+  }
+  if (settings.heroMediaUrl && typeof settings.heroMediaUrl === 'string' && settings.heroMediaUrl.trim()) {
+    return [settings.heroMediaUrl.trim()];
+  }
+  return ['assets/bymarie.mp4'];
+}
 
 function isValidImageSrc(s) {
   if (typeof s !== 'string') return false;
@@ -1479,14 +1496,81 @@ function initCategorySliders() {
   }, 3200);
 }
 
+let heroVideoIndex = 0;
+let heroVideoTimer = null;
+
+function initHeroVideoRotation() {
+  if (heroVideoTimer) clearInterval(heroVideoTimer);
+  const settings = getSiteSettings();
+  const videos = getHeroVideosList(settings);
+  if (videos.length <= 1) return;
+
+  const intervalSec = Number(settings.heroVideoInterval || 30);
+  
+  heroVideoTimer = setInterval(() => {
+    switchHeroVideo((heroVideoIndex + 1) % videos.length);
+  }, intervalSec * 1000);
+}
+
+function switchHeroVideo(newIndex) {
+  const settings = getSiteSettings();
+  const videos = getHeroVideosList(settings);
+  if (!videos.length) return;
+  
+  heroVideoIndex = (newIndex + videos.length) % videos.length;
+  const targetSrc = videos[heroVideoIndex];
+  
+  const videoEl = document.getElementById('hero-main-video');
+  if (videoEl) {
+    videoEl.style.opacity = '0.2';
+    setTimeout(() => {
+      videoEl.src = targetSrc;
+      videoEl.load();
+      videoEl.play().catch(() => {});
+      videoEl.style.opacity = '1';
+    }, 200);
+  }
+
+  // Update progress bars
+  const bars = document.querySelectorAll('.hero-video-bar');
+  bars.forEach((b, idx) => {
+    b.classList.remove('active', 'passed');
+    if (idx === heroVideoIndex) {
+      b.classList.add('active');
+    } else if (idx < heroVideoIndex) {
+      b.classList.add('passed');
+    }
+  });
+
+  const countBadge = document.getElementById('hero-video-count-badge');
+  if (countBadge) {
+    countBadge.textContent = `${heroVideoIndex + 1} / ${videos.length}`;
+  }
+}
+
+function prevHeroVideo() {
+  switchHeroVideo(heroVideoIndex - 1);
+  initHeroVideoRotation();
+}
+
+function nextHeroVideo() {
+  switchHeroVideo(heroVideoIndex + 1);
+  initHeroVideoRotation();
+}
+
 function home() {
   const products = getProducts();
   const trending = products.slice(0, 8);
   const settings = getSiteSettings();
+  const heroVideos = getHeroVideosList(settings);
+  const currentVideo = heroVideos[heroVideoIndex] || heroVideos[0] || 'assets/bymarie.mp4';
+  const intervalSec = Number(settings.heroVideoInterval || 30);
+
+  setTimeout(initHeroVideoRotation, 100);
   
   return `
     <main>
-      <!-- Hero Section -->
+      <!-- Hero Section with 30s Multi-Video Carousel -->
       <section class="hero">
         <div class="hero-copy animate-fade-up">
           <div class="eyebrow">CURATED FOR MINDFUL LIVING <i></i> EST. 2024</div>
@@ -1502,19 +1586,37 @@ function home() {
           </div>
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
-          <video id="hero-main-video" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);display:block">
-            <source src="${settings.heroMediaUrl || 'assets/bymarie.mp4'}" type="video/mp4">
-            <source src="assets/bymarie.mp4" type="video/mp4">
-            <source src="assets/hero-fashion.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
-            <span class="audio-btn-icon">🔇</span>
-          </button>
-          <div class="floating-card">
-            <span>New Arrival</span>
-            <strong>The Luxury Edit</strong>
-            <button onclick="go('shop')">Discover Catalog ${icon('arrow')}</button>
+          <div class="hero-video-carousel-container">
+            ${heroVideos.length > 1 ? `
+              <!-- Progress Bars for Multi-Video Playlist (Changes every 30s) -->
+              <div class="hero-video-bars">
+                ${heroVideos.map((_, vIdx) => `
+                  <div class="hero-video-bar ${vIdx === heroVideoIndex ? 'active' : vIdx < heroVideoIndex ? 'passed' : ''}" onclick="switchHeroVideo(${vIdx});initHeroVideoRotation()" title="Play Video #${vIdx + 1}">
+                    <div class="hero-video-bar-fill" style="animation-duration:${intervalSec}s"></div>
+                  </div>
+                `).join('')}
+              </div>
+              <span class="hero-video-counter-badge" id="hero-video-count-badge">${heroVideoIndex + 1} / ${heroVideos.length}</span>
+              
+              <!-- Prev / Next Navigation Controls -->
+              <button type="button" class="hero-video-nav-btn prev" onclick="prevHeroVideo()" title="Previous Campaign Video">❮</button>
+              <button type="button" class="hero-video-nav-btn next" onclick="nextHeroVideo()" title="Next Campaign Video">❯</button>
+            ` : ''}
+
+            <video id="hero-main-video" class="hero-video-player" autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src="${currentVideo}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+
+            <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
+              <span class="audio-btn-icon">🔇</span>
+            </button>
+            
+            <div class="floating-card">
+              <span>New Arrival</span>
+              <strong>The Luxury Edit</strong>
+              <button onclick="go('shop')">Discover Catalog ${icon('arrow')}</button>
+            </div>
           </div>
         </div>
       </section>
@@ -6889,43 +6991,74 @@ function renderAdminSiteCMS() {
         </div>
       </div>
 
-      <!-- Hero Video & Media Uploader -->
+      <!-- Multi-Video Campaign Studio & 30s Rotator CMS -->
       <div class="cms-card animate-fade-up delay-2">
-        <h3 style="color:#fff">🎬 Hero Banner Campaign Video</h3>
-        <p style="color:#a1a1aa;font-size:13px;margin-bottom:16px">
-          Upload an luxury MP4, WEBM, or MOV video file directly from your device. This video loops seamlessly on the homepage hero section.
-        </p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3 style="color:#fff;margin:0">🎬 Hero Multi-Video Campaign Playlist</h3>
+            <p style="color:#a1a1aa;font-size:13px;margin:4px 0 0">
+              Upload multiple luxury MP4/WEBM video files or URLs. The homepage hero automatically rotates through them seamlessly with progress indicators.
+            </p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="color:var(--gold-light);font-size:12px;font-weight:700;margin:0">Transition Interval:</label>
+            <select name="heroVideoInterval" onchange="handleChangeHeroInterval(this.value)" style="background:#083832;color:#fff;border:1px solid var(--gold);border-radius:4px;padding:5px 10px;font-size:12px">
+              <option value="15" ${settings.heroVideoInterval == 15 ? 'selected' : ''}>Every 15 Seconds</option>
+              <option value="30" ${(!settings.heroVideoInterval || settings.heroVideoInterval == 30) ? 'selected' : ''}>Every 30 Seconds (Default ⚡)</option>
+              <option value="45" ${settings.heroVideoInterval == 45 ? 'selected' : ''}>Every 45 Seconds</option>
+              <option value="60" ${settings.heroVideoInterval == 60 ? 'selected' : ''}>Every 60 Seconds</option>
+            </select>
+          </div>
+        </div>
 
-        <div class="form-grid">
+        <div class="form-grid" style="margin-top:14px">
           <div class="form-group full">
-            <label>Upload Video File from Device</label>
+            <label>Upload Video Files from Device (Select 1 or Multiple Files)</label>
             <div class="image-upload-dropzone" style="background:#18181b;border-color:#3f3f46">
               <span style="font-size:28px">🎬</span>
-              <strong style="display:block;margin-top:4px;font-size:14px;color:#fff">Upload Campaign Video File</strong>
-              <small style="color:#a1a1aa">Select MP4, WEBM, or MOV video file</small>
-              <input type="file" accept="video/*" onchange="handleHeroVideoUpload(event)">
+              <strong style="display:block;margin-top:4px;font-size:14px;color:#fff">+ Upload Campaign Video(s)</strong>
+              <small style="color:#a1a1aa">Select MP4, WEBM, or MOV video files from your device</small>
+              <input type="file" accept="video/*" multiple onchange="handleMultiHeroVideoUpload(event)">
             </div>
           </div>
 
           <div class="form-group full">
-            <label>Hero Video / Media URL</label>
-            <input name="heroMediaUrl" value="${settings.heroMediaUrl || ''}" placeholder="https://.../video.mp4">
+            <label>Add Video by Direct URL</label>
+            <div style="display:flex;gap:10px">
+              <input id="new-video-url-input" placeholder="https://example.com/campaign-video.mp4" style="flex-grow:1">
+              <button type="button" class="primary" style="padding:0 20px;font-size:13px;white-space:nowrap" onclick="handleAddHeroVideoUrl(document.getElementById('new-video-url-input').value)">+ Add Video</button>
+            </div>
           </div>
 
-          ${settings.heroMediaUrl ? `
-            <div class="form-group full">
-              <label>Live Hero Video Preview</label>
-              <div style="max-width:380px;border-radius:var(--radius-md);overflow:hidden;border:1px solid #3f3f46;box-shadow:var(--shadow-sm)">
-                ${(settings.heroMediaType === 'video' || settings.heroMediaUrl.includes('.mp4') || settings.heroMediaUrl.includes('.webm') || settings.heroMediaUrl.includes('.mov') || settings.heroMediaUrl.startsWith('data:video/')) ? `
-                  <video autoplay loop muted playsinline style="width:100%;height:220px;object-fit:cover">
-                    <source src="${settings.heroMediaUrl}" type="video/mp4">
-                  </video>
-                ` : `
-                  <img src="${settings.heroMediaUrl}" style="width:100%;height:220px;object-fit:cover">
-                `}
-              </div>
+          <div class="form-group full">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <label style="margin:0">Active Campaign Playlist (${getHeroVideosList(settings).length} Videos)</label>
+              <span style="color:var(--gold-light);font-size:12px">⚡ Auto-Cycles on Homepage Every ${settings.heroVideoInterval || 30}s</span>
             </div>
-          ` : ''}
+
+            <div class="admin-video-grid">
+              ${getHeroVideosList(settings).map((vUrl, vIdx) => `
+                <div class="admin-video-card ${vIdx === 0 ? 'active-primary' : ''}">
+                  <div class="admin-video-thumb-wrap">
+                    <video muted playsinline onmouseover="this.play()" onmouseout="this.pause()" src="${vUrl}"></video>
+                    <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fff;font-size:10.5px;padding:2px 7px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);font-weight:700">
+                      ${vIdx === 0 ? '⭐ Video #1 (Primary)' : `Video #${vIdx + 1}`}
+                    </span>
+                  </div>
+                  
+                  <div style="font-size:11.5px;color:#a1a1aa;word-break:break-all;line-height:1.4">
+                    <code>${vUrl.length > 40 ? vUrl.substring(0, 37) + '...' : vUrl}</code>
+                  </div>
+
+                  <div class="admin-video-card-actions">
+                    ${vIdx > 0 ? `<button type="button" class="admin-video-action-btn" title="Move Up" onclick="handleMoveHeroVideo(${vIdx}, -1)">⬆️ Up</button>` : ''}
+                    ${vIdx < getHeroVideosList(settings).length - 1 ? `<button type="button" class="admin-video-action-btn" title="Move Down" onclick="handleMoveHeroVideo(${vIdx}, 1)">⬇️ Down</button>` : ''}
+                    <button type="button" class="admin-video-action-btn delete" title="Remove Video" onclick="handleDeleteHeroVideo(${vIdx})">🗑️ Remove</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -7684,22 +7817,120 @@ function removeAdminCategoryCover(target, index) {
   } catch (err) {}
 }
 
-function handleHeroVideoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+function handleMultiHeroVideoUpload(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
 
-  toast(`Processing campaign video: ${file.name}...`, 'info');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    const settings = getSiteSettings();
-    settings.heroMediaType = 'video';
-    settings.heroMediaUrl = dataUrl;
-    saveSiteSettings(settings);
-    toast('🎬 Hero campaign video updated!');
-    render();
-  };
-  reader.readAsDataURL(file);
+  toast(`Processing ${files.length} campaign video(s)...`, 'info');
+  const settings = getSiteSettings();
+  if (!Array.isArray(settings.heroVideos)) settings.heroVideos = [];
+
+  let loadedCount = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      settings.heroVideos.push(dataUrl);
+      if (!settings.heroMediaUrl) settings.heroMediaUrl = dataUrl;
+      loadedCount++;
+      if (loadedCount === files.length) {
+        saveSiteSettings(settings);
+        toast(`🎬 Added ${files.length} video(s) to hero playlist! Rotating every ${settings.heroVideoInterval || 30}s ⚡`, 'success');
+        render();
+
+        try {
+          fetch(`${API_BASE}/settings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+          }).catch(() => {});
+        } catch (err) {}
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleAddHeroVideoUrl(url) {
+  if (!url || !url.trim()) return toast('Please enter a valid video URL', 'warning');
+  const trimmed = url.trim();
+  const settings = getSiteSettings();
+  if (!Array.isArray(settings.heroVideos)) settings.heroVideos = [];
+  settings.heroVideos.push(trimmed);
+  if (!settings.heroMediaUrl) settings.heroMediaUrl = trimmed;
+  saveSiteSettings(settings);
+  toast('🎬 Video URL added to hero campaign playlist!', 'success');
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function handleDeleteHeroVideo(index) {
+  const settings = getSiteSettings();
+  if (!Array.isArray(settings.heroVideos)) return;
+  if (settings.heroVideos.length <= 1) {
+    return toast('At least one video must remain in the hero playlist', 'warning');
+  }
+  settings.heroVideos.splice(index, 1);
+  settings.heroMediaUrl = settings.heroVideos[0] || 'assets/bymarie.mp4';
+  saveSiteSettings(settings);
+  toast('Video removed from playlist');
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function handleMoveHeroVideo(index, direction) {
+  const settings = getSiteSettings();
+  if (!Array.isArray(settings.heroVideos)) return;
+  const targetIdx = index + direction;
+  if (targetIdx < 0 || targetIdx >= settings.heroVideos.length) return;
+  const temp = settings.heroVideos[index];
+  settings.heroVideos[index] = settings.heroVideos[targetIdx];
+  settings.heroVideos[targetIdx] = temp;
+  settings.heroMediaUrl = settings.heroVideos[0];
+  saveSiteSettings(settings);
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function handleChangeHeroInterval(seconds) {
+  const settings = getSiteSettings();
+  settings.heroVideoInterval = Number(seconds) || 30;
+  saveSiteSettings(settings);
+  toast(`⏱️ Hero video transition interval set to ${settings.heroVideoInterval} seconds!`, 'info');
+  initHeroVideoRotation();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
+function handleHeroVideoUpload(event) {
+  handleMultiHeroVideoUpload(event);
 }
 
 function exportOrdersCSV() {

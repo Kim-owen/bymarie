@@ -8756,6 +8756,202 @@ html, body {
   color: #d4af37;
 }
 
+/* --- HERO MULTI-VIDEO CAROUSEL & PLAYLIST STYLES --- */
+
+.hero-video-carousel-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: #031411;
+}
+
+.hero-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.35s ease-in-out;
+}
+
+/* Luxury Multi-Video Progress Bars */
+.hero-video-bars {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 8;
+}
+
+.hero-video-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  position: relative;
+}
+
+.hero-video-bar.active {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hero-video-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width linear;
+}
+
+.hero-video-bar.active .hero-video-bar-fill {
+  width: 100%;
+  animation: heroBarFill 30s linear forwards;
+}
+
+.hero-video-bar.passed .hero-video-bar-fill {
+  width: 100% !important;
+  animation: none !important;
+}
+
+@keyframes heroBarFill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Hero Video Controls Overlay */
+.hero-video-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(8, 56, 50, 0.75);
+  color: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 9;
+  opacity: 0;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.hero-image:hover .hero-video-nav-btn {
+  opacity: 1;
+}
+
+.hero-video-nav-btn:hover {
+  background: var(--gold);
+  color: #083832;
+  border-color: var(--gold);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.hero-video-nav-btn.prev {
+  left: 14px;
+}
+
+.hero-video-nav-btn.next {
+  right: 14px;
+}
+
+.hero-video-counter-badge {
+  position: absolute;
+  top: 24px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.65);
+  color: var(--gold-light);
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  z-index: 8;
+  backdrop-filter: blur(4px);
+}
+
+/* Admin Multi-Video Playlist Grid */
+.admin-video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.admin-video-card {
+  background: #0f1c19;
+  border: 1px solid #1a3a33;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.admin-video-card:hover {
+  border-color: var(--gold);
+}
+
+.admin-video-card.active-primary {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+.admin-video-thumb-wrap {
+  width: 100%;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+
+.admin-video-thumb-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-video-card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-video-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-video-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+}
+
+.admin-video-action-btn.delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+
 
 
 
