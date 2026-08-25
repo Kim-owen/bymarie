@@ -4001,20 +4001,41 @@ function authPage() {
           </div>
 
           <div class="auth-tab-bar">
-            <button class="auth-tab-btn ${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';render()">Sign In</button>
-            <button class="auth-tab-btn ${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';render()">Create Account</button>
+            <button class="auth-tab-btn ${authMode === 'signin' && !otpAuthMode ? 'active' : ''}" onclick="authMode='signin';otpAuthMode=false;render()">Sign In</button>
+            <button class="auth-tab-btn ${otpAuthMode ? 'active' : ''}" onclick="authMode='signin';otpAuthMode=true;render()">🔑 6-Digit Code</button>
+            <button class="auth-tab-btn ${authMode === 'signup' && !otpAuthMode ? 'active' : ''}" onclick="authMode='signup';otpAuthMode=false;render()">Create Account</button>
           </div>
 
-          ${authMode === 'signin' ? `
+          ${otpAuthMode ? `
+            <form onsubmit="handleVerifyOtpSubmit(event)">
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Email Address</label>
+                <input required type="email" name="email" value="${otpEmailTarget || user.email || ''}" placeholder="you@example.com">
+              </div>
+              <div class="form-group" style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label style="margin:0">6-Digit Verification Code</label>
+                  <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">Get Code via Email / SMS</a>
+                </div>
+                <input required name="code" maxlength="6" style="font-size:24px;letter-spacing:8px;text-align:center;font-weight:800;color:#c24d67" placeholder="••••••">
+              </div>
+              <button class="primary" style="width:100%;height:48px;font-size:14.5px;background:#c24d67" type="submit">
+                Verify Code &amp; Access Account →
+              </button>
+              <div style="text-align:center;margin-top:14px">
+                <button type="button" class="secondary-btn" style="font-size:12px;padding:6px 14px" onclick="otpAuthMode=false;render()">← Use Standard Password</button>
+              </div>
+            </form>
+          ` : authMode === 'signin' ? `
             <form onsubmit="handleCustomerSignIn(event)">
               <div class="form-group" style="margin-bottom:16px">
                 <label>Email Address</label>
                 <input required type="email" name="email" value="${user.email || ''}" placeholder="you@example.com">
               </div>
-              <div class="form-group" style="margin-bottom:20px">
+              <div class="form-group" style="margin-bottom:16px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                   <label style="margin:0">Password</label>
-                  <a href="javascript:void(0)" onclick="toast('Password reset link sent to your email', 'info')" style="font-size:12px;color:#c24d67;text-decoration:underline">Forgot?</a>
+                  <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">🔑 Login with Email Code</a>
                 </div>
                 <input required type="password" name="password" placeholder="••••••••">
               </div>
@@ -6525,6 +6546,9 @@ async function handleAdminEditUser(event) {
   } catch (e) {}
 }
 
+let otpAuthMode = false;
+let otpEmailTarget = '';
+
 async function handleCustomerSignIn(event) {
   event.preventDefault();
   const fd = new FormData(event.target);
@@ -6532,56 +6556,55 @@ async function handleCustomerSignIn(event) {
   const password = fd.get('password');
 
   if (!email) return toast('Please enter your email', 'warning');
+  if (!password) return toast('Please enter your password', 'warning');
 
-  toast(`Signing into ByMarie account...`, 'info');
-
-  const users = getUsers();
-  let u = users.find(x => x.email && x.email.toLowerCase() === email);
-
-  if (!u) {
-    u = {
-      id: `usr-${Date.now()}`,
-      email,
-      name: email.split('@')[0],
-      phone: '',
-      address: '',
-      city: 'Accra',
-      region: 'Greater Accra',
-      walletBalance: 0.00,
-      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      lastLogin: new Date().toLocaleString(),
-      ordersCount: 0,
-      status: email === ADMIN_EMAIL ? 'Super Admin' : 'Active',
-      loggedIn: true
-    };
-    users.push(u);
-  } else {
-    u.lastLogin = new Date().toLocaleString();
-    u.loggedIn = true;
-  }
-
-  saveUser(u);
-  saveUsers(users);
+  toast(`Authenticating with ByMarie Atelier...`, 'info');
 
   try {
-    await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-  } catch (e) {}
 
-  if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || u.status === 'Super Admin') {
-    adminAuthenticated = true;
-    toast(`Welcome back, Executive Administrator ${u.name}! 👑⚡`);
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      return toast(data.error || 'Authentication failed. Please check credentials.', 'danger');
+    }
+
+    const verifiedUser = data.user;
+    if (data.authToken) {
+      localStorage.setItem('bymarie-auth-token', data.authToken);
+    }
+
+    saveUser(verifiedUser);
+    
+    // Update local users array
+    const users = getUsers();
+    const idx = users.findIndex(u => u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase());
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...verifiedUser };
+    } else {
+      users.unshift(verifiedUser);
+    }
+    saveUsers(users);
+
+    if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || verifiedUser.status === 'Super Admin') {
+      adminAuthenticated = true;
+      toast(`Welcome back, Executive Administrator ${verifiedUser.name}! 👑⚡`, 'success');
+      activeModal = null;
+      go('admin');
+      return;
+    }
+
+    toast(`Welcome back, ${verifiedUser.name}! 👑`, 'success');
     activeModal = null;
-    go('admin');
-    return;
+    go('account');
+  } catch (err) {
+    console.error('Sign In error:', err);
+    toast('Network connection error while authenticating. Please try again.', 'danger');
   }
-
-  toast(`Welcome back, ${u.name}! 👑`);
-  activeModal = null;
-  go('account');
 }
 
 async function handleCustomerSignUp(event) {
@@ -6593,58 +6616,136 @@ async function handleCustomerSignUp(event) {
   const password = fd.get('password');
 
   if (!email || !name) return toast('Please enter name and email', 'warning');
+  if (!password || password.length < 6) return toast('Password must be at least 6 characters', 'warning');
 
-  toast(`Registering luxury membership...`, 'info');
-
-  const users = getUsers();
-  let u = users.find(x => x.email && x.email.toLowerCase() === email);
-
-  if (u) {
-    u.name = name;
-    u.phone = phone || u.phone;
-    u.lastLogin = new Date().toLocaleString();
-    u.loggedIn = true;
-  } else {
-    u = {
-      id: `usr-${Date.now()}`,
-      name,
-      email,
-      phone,
-      address: '',
-      city: 'Accra',
-      region: 'Greater Accra',
-      walletBalance: 0.00,
-      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      lastLogin: new Date().toLocaleString(),
-      ordersCount: 0,
-      status: ADMIN_EMAILS.some(e => e.toLowerCase() === email) ? 'Super Admin' : 'Active',
-      loggedIn: true
-    };
-    users.push(u);
-  }
-
-  saveUser(u);
-  saveUsers(users);
+  toast(`Verifying & registering luxury membership...`, 'info');
 
   try {
-    await fetch(`${API_BASE}/auth/register`, {
+    const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, phone, password })
     });
-  } catch (e) {}
 
-  if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || u.status === 'Super Admin') {
-    adminAuthenticated = true;
-    toast(`Welcome to ByMarie Executive Console, ${u.name}! 👑⚡`);
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      return toast(data.error || 'Registration failed. Email may already be registered.', 'danger');
+    }
+
+    const newUser = data.user;
+    if (data.authToken) {
+      localStorage.setItem('bymarie-auth-token', data.authToken);
+    }
+
+    saveUser(newUser);
+
+    const users = getUsers();
+    const idx = users.findIndex(u => u.email && u.email.toLowerCase() === newUser.email.toLowerCase());
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...newUser };
+    } else {
+      users.unshift(newUser);
+    }
+    saveUsers(users);
+
+    if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || newUser.status === 'Super Admin') {
+      adminAuthenticated = true;
+      toast(`Welcome to ByMarie Executive Console, ${newUser.name}! 👑⚡`, 'success');
+      activeModal = null;
+      go('admin');
+      return;
+    }
+
+    toast(`Welcome to ByMarie, ${newUser.name}! 👑`, 'success');
     activeModal = null;
-    go('admin');
-    return;
+    go('account');
+  } catch (err) {
+    console.error('Registration error:', err);
+    toast('Network error during registration. Please try again.', 'danger');
   }
+}
 
-  toast(`Welcome to ByMarie, ${u.name}! 👑`);
-  activeModal = null;
-  go('account');
+async function handleRequestOtp(targetEmail) {
+  const email = (targetEmail || prompt('Enter your registered email address to receive a 6-digit login code:') || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) return toast('Please provide a valid email address', 'warning');
+
+  toast(`Sending 6-digit verification code to ${email}...`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      return toast(data.error || 'Failed to dispatch verification code', 'danger');
+    }
+
+    otpEmailTarget = email;
+    otpAuthMode = true;
+    toast(`🔑 6-digit code sent to ${email}! Please enter it below.`, 'success');
+    render();
+  } catch (err) {
+    toast('Network error sending verification code', 'danger');
+  }
+}
+
+async function handleVerifyOtpSubmit(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const code = (fd.get('code') || '').trim();
+  const email = otpEmailTarget || (fd.get('email') || '').trim().toLowerCase();
+
+  if (!code || code.length < 6) return toast('Please enter the 6-digit verification code', 'warning');
+
+  toast('Verifying authentication code...', 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      return toast(data.error || 'Invalid or expired verification code', 'danger');
+    }
+
+    const verifiedUser = data.user;
+    if (data.authToken) {
+      localStorage.setItem('bymarie-auth-token', data.authToken);
+    }
+
+    otpAuthMode = false;
+    otpEmailTarget = '';
+    saveUser(verifiedUser);
+
+    const users = getUsers();
+    const idx = users.findIndex(u => u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase());
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...verifiedUser };
+    } else {
+      users.unshift(verifiedUser);
+    }
+    saveUsers(users);
+
+    if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || verifiedUser.status === 'Super Admin') {
+      adminAuthenticated = true;
+      toast(`Authenticated as Executive Administrator ${verifiedUser.name}! 👑⚡`, 'success');
+      activeModal = null;
+      go('admin');
+      return;
+    }
+
+    toast(`Welcome back, ${verifiedUser.name}! 👑`, 'success');
+    activeModal = null;
+    go('account');
+  } catch (err) {
+    toast('Network error during verification', 'danger');
+  }
 }
 
 function handleCustomerSignOut() {
@@ -8650,18 +8751,42 @@ function renderModals() {
           <span class="eyebrow">BYMARIE MEMBER ACCESS</span>
           
           <div class="auth-tab-bar">
-            <button class="auth-tab-btn ${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';render()">Sign In</button>
-            <button class="auth-tab-btn ${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';render()">Create Account</button>
+            <button class="auth-tab-btn ${authMode === 'signin' && !otpAuthMode ? 'active' : ''}" onclick="authMode='signin';otpAuthMode=false;render()">Sign In</button>
+            <button class="auth-tab-btn ${otpAuthMode ? 'active' : ''}" onclick="authMode='signin';otpAuthMode=true;render()">🔑 6-Digit Code</button>
+            <button class="auth-tab-btn ${authMode === 'signup' && !otpAuthMode ? 'active' : ''}" onclick="authMode='signup';otpAuthMode=false;render()">Create Account</button>
           </div>
 
-          ${authMode === 'signin' ? `
-            <form onsubmit="handleCustomerSignIn(event)">
+          ${otpAuthMode ? `
+            <form onsubmit="handleVerifyOtpSubmit(event)">
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Email Address</label>
+                <input required type="email" name="email" value="${otpEmailTarget || ''}" placeholder="you@example.com">
+              </div>
               <div class="form-group" style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label style="margin:0">6-Digit Verification Code</label>
+                  <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">Get Code via Email / SMS</a>
+                </div>
+                <input required name="code" maxlength="6" style="font-size:24px;letter-spacing:8px;text-align:center;font-weight:800;color:#c24d67" placeholder="••••••">
+              </div>
+              <button class="primary" style="width:100%;height:46px;font-size:14px;background:#c24d67" type="submit">
+                Verify Code &amp; Access Account →
+              </button>
+              <div style="text-align:center;margin-top:12px">
+                <button type="button" class="secondary-btn" style="font-size:11.5px;padding:4px 12px" onclick="otpAuthMode=false;render()">← Use Standard Password</button>
+              </div>
+            </form>
+          ` : authMode === 'signin' ? `
+            <form onsubmit="handleCustomerSignIn(event)">
+              <div class="form-group" style="margin-bottom:14px">
                 <label>Email Address</label>
                 <input required type="email" name="email" placeholder="you@example.com">
               </div>
-              <div class="form-group" style="margin-bottom:20px">
-                <label>Password</label>
+              <div class="form-group" style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label style="margin:0">Password</label>
+                  <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">🔑 Email Login Code</a>
+                </div>
                 <input required type="password" name="password" placeholder="••••••••">
               </div>
               <button class="primary" style="width:100%" type="submit">Sign In to Your Account ${icon('arrow')}</button>

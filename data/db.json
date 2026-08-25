@@ -41,7 +41,11 @@
       "joinedDate": "01 Jan 2026",
       "ordersCount": 0,
       "status": "Super Admin",
-      "loggedIn": true
+      "loggedIn": true,
+      "salt": "ee3b7f845fc2b5d794fe010e2090afa5",
+      "passwordHash": "1027dc73c29962440cba287c4aa610c113865d09506ca9394756b74e48869131eb4b86d7a705fa0f2474b839dd4548e87c1e58c2315bf77ae81ad5f26fd968d1",
+      "lastLogin": "25 Aug 2026, 23:42",
+      "authToken": "f62e0137971b870b8cbd725fa10c1870169d70e3c7eefa94545fb403e95cbf86"
     },
     {
       "id": "usr-admin-01",
@@ -52,7 +56,9 @@
       "walletBalance": 0,
       "joinedDate": "01 Jan 2026",
       "ordersCount": 0,
-      "loggedIn": true
+      "loggedIn": true,
+      "salt": "2a0fc632b1c3592b0b5588f171928205",
+      "passwordHash": "8c9097435bea565c6332d6d296b028e7f19ac7f028c2bea81fe52928d1d067b98b48370cc73616125337ff0608fedf4a7a2d85a83ed34c80f8bd004bcb6fc655"
     },
     {
       "id": "usr-1787687408565",
@@ -67,11 +73,36 @@
       "lastLogin": "25/08/2026, 20:50:08",
       "ordersCount": 0,
       "status": "Active",
-      "loggedIn": true
+      "loggedIn": true,
+      "salt": "0bc11e37aebc19f9b300867dd00369f4",
+      "passwordHash": "c933e9298233286c465d7d84a4007b80b8d31b6b7263190215297a6ba0b48e4aa5aea9410f28242e7c904577256e083f58bc985981580af53d9277e54a90df9c"
     }
   ],
   "wholesale_inquiries": [],
   "campaigns": [
+    {
+      "id": "cmp-mail-1787694531742",
+      "channel": "EMAIL",
+      "title": "✨ Verified Atelier Dispatch from ByMarie",
+      "headline": "Brand Domain Verification Active",
+      "content": "Dear {name},\n\nYour verified ByMarie Luxury Atelier domain is now active for all outbound dispatches.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T21:48:51.742Z",
+      "dateFormatted": "25 Aug 2026, 22:48",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "3828afb6-fcea-416a-8481-9d3e1da950b5"
+        }
+      ]
+    },
     {
       "id": "cmp-mail-1787694207768",
       "channel": "EMAIL",
