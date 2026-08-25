@@ -1239,10 +1239,12 @@ function mobileDrawer() {
               <span>👑 Member Account &amp; Atelier Hub</span>
               <small style="color:var(--muted)">Features</small>
             </a>
-            <a href="#admin" onclick="mobileMenuOpen=false;go('admin')" class="drawer-link-item" style="border-left:3px solid var(--gold)">
-              <span>⚡ Executive Admin Console</span>
-              <small style="background:#051916;color:var(--gold-light);padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">Admin Control</small>
-            </a>
+            ${isAdminUser() ? `
+              <a href="#admin" onclick="mobileMenuOpen=false;go('admin')" class="drawer-link-item" style="border-left:3px solid var(--gold)">
+                <span>⚡ Executive Admin Console</span>
+                <small style="background:#051916;color:var(--gold-light);padding:2px 6px;border-radius:4px;font-size:9.5px;font-weight:800">Admin Control</small>
+              </a>
+            ` : ''}
           </div>
         </div>
 
@@ -1272,8 +1274,10 @@ function footer() {
         <a href="#wholesale" onclick="go('wholesale')" style="color:var(--muted);text-decoration:none">Wholesale B2B</a>
         <span style="color:var(--line)">•</span>
         <a href="#account" onclick="accountTab='hub';go('account')" style="color:var(--muted);text-decoration:none">Member Hub</a>
-        <span style="color:var(--line)">•</span>
-        <a href="#admin" onclick="go('admin')" style="color:var(--gold-light);text-decoration:none;font-weight:700">⚡ Admin Console</a>
+        ${isAdminUser() ? `
+          <span style="color:var(--line)">•</span>
+          <a href="#admin" onclick="go('admin')" style="color:var(--gold-light);text-decoration:none;font-weight:700">⚡ Admin Console</a>
+        ` : ''}
       </div>
       <small>© 2026 ByMarie Studio. All rights reserved.</small>
     </footer>
@@ -5267,6 +5271,14 @@ async function handleCustomerSignIn(event) {
     });
   } catch (e) {}
 
+  if (email === ADMIN_EMAIL.toLowerCase() || u.status === 'Super Admin') {
+    adminAuthenticated = true;
+    toast(`Welcome back, Executive Administrator! 👑⚡`);
+    activeModal = null;
+    go('admin');
+    return;
+  }
+
   toast(`Welcome back, ${u.name}! 👑`);
   activeModal = null;
   go('account');
@@ -5328,6 +5340,7 @@ async function handleCustomerSignUp(event) {
 }
 
 function handleCustomerSignOut() {
+  adminAuthenticated = false;
   const user = getUser();
   user.loggedIn = false;
   saveUser(user);
