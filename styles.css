@@ -281,20 +281,22 @@ main,
 .account-shell,
 .auth-page-shell,
 .notifications-page-shell,
+.wishlist-page,
 .wholesale-page,
 .not-found-page {
-  padding-top: 140px !important;
+  padding-top: 155px !important;
   box-sizing: border-box;
 }
 
-/* Home hero handles its own visual padding under translucent header */
+/* Home hero handles its own visual padding under sticky header */
 main:has(.hero),
 .hero-parent-main {
   padding-top: 0 !important;
 }
 
 .hero {
-  padding-top: 150px !important;
+  padding-top: 165px !important;
+  box-sizing: border-box;
 }
 
 /* Admin console is a standalone dashboard with zero top padding */
@@ -313,11 +315,31 @@ main:has(.hero),
   .account-shell,
   .auth-page-shell,
   .notifications-page-shell,
+  .wishlist-page,
   .wholesale-page {
-    padding-top: 126px !important;
+    padding-top: 150px !important;
   }
   .hero {
-    padding-top: 136px !important;
+    padding-top: 155px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  main,
+  .shop-page,
+  .detail-container,
+  .cart-container,
+  .checkout-container,
+  .confirmation-container,
+  .account-shell,
+  .auth-page-shell,
+  .notifications-page-shell,
+  .wishlist-page,
+  .wholesale-page {
+    padding-top: 145px !important;
+  }
+  .hero {
+    padding-top: 150px !important;
   }
 }
 
