@@ -7261,8 +7261,8 @@ html, body {
 
   /* Mobile View for Account Shell */
   .account-shell {
-    margin: 14px auto 80px !important;
-    padding: 0 12px !important;
+    margin: 0 auto 80px !important;
+    padding: 150px 12px 80px !important;
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
@@ -7445,7 +7445,7 @@ html, body {
 
   /* Responsive Auth Mobile Rules */
   .auth-page-shell {
-    padding: 14px 12px 60px !important;
+    padding: 150px 12px 60px !important;
     min-height: auto !important;
     background: linear-gradient(180deg, #fff2f5 0%, #ffeaf0 50%, #fff7f9 100%) !important;
     width: 100% !important;
@@ -7542,10 +7542,20 @@ html, body {
   }
 
   /* Cart & Checkout Mobile Optimization */
+  .cart-container {
+    padding: 150px 14px 60px !important;
+    box-sizing: border-box !important;
+  }
+
   .cart-layout {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
-    padding: 16px 14px 60px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .checkout-container {
+    padding: 150px 0 50px !important;
     box-sizing: border-box !important;
   }
 
@@ -7678,7 +7688,7 @@ html, body {
   }
 @media (max-width: 768px) {
   .shop-page {
-    padding: 16px 12px 60px !important;
+    padding: 150px 12px 60px !important;
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
@@ -7798,7 +7808,18 @@ html, body {
 
 @media (max-width: 480px) {
   .shop-page {
-    padding: 12px 10px 50px !important;
+    padding: 145px 10px 50px !important;
+  }
+
+  .account-shell,
+  .auth-page-shell,
+  .cart-container,
+  .checkout-container,
+  .detail-container,
+  .notifications-page-shell,
+  .wishlist-page,
+  .wholesale-page {
+    padding-top: 145px !important;
   }
 
   .product-grid {
