@@ -439,7 +439,7 @@ async function sendAdminOrderNotifications(order) {
     const resendApiKey = process.env.RESEND_API_KEY;
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
-      const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <onboarding@resend.dev>';
+      const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <concierge@bymarie.shop>';
       const targetAdmin = process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com';
       
       const emailRecipients = [targetAdmin];
@@ -1010,7 +1010,7 @@ app.post('/api/email/broadcast', async (req, res) => {
 
     const cleanContent = String(content || '').trim();
     const resendApiKey = process.env.RESEND_API_KEY;
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Concierge <onboarding@resend.dev>';
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Concierge <concierge@bymarie.shop>';
     const validRecipients = recipients
       .map(r => String(r || '').trim().toLowerCase())
       .filter(r => r && r.includes('@') && r.includes('.'));

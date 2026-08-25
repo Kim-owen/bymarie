@@ -6110,7 +6110,7 @@ function renderAdminBroadcast(users) {
           ` : `
             <div class="email-preview-container">
               <div class="email-client-bar">
-                <div><span style="color:#71717a">From:</span> ByMarie Concierge &lt;onboarding@resend.dev&gt;</div>
+                <div><span style="color:#71717a">From:</span> ByMarie Concierge &lt;concierge@bymarie.shop&gt;</div>
                 <div><span style="color:#71717a">Subject:</span> <strong id="email-live-subject-preview">${broadcastEmailSubject || 'No Subject'}</strong></div>
               </div>
               <div class="email-preview-body">

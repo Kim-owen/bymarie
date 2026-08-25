@@ -73,6 +73,29 @@
   "wholesale_inquiries": [],
   "campaigns": [
     {
+      "id": "cmp-mail-1787694207768",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "adichieifeoma@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T21:43:27.768Z",
+      "dateFormatted": "25 Aug 2026, 22:43",
+      "deliveryLogs": [
+        {
+          "email": "adichieifeoma@gmail.com",
+          "status": "Declined",
+          "error": "You can only send testing emails to your own email address (sunumanfred14@gmail.com). To send emails to other recipients, please verify a domain at resend.com/domains, and change the `from` address to an email using this domain."
+        }
+      ]
+    },
+    {
       "id": "cmp-mail-1787693794075",
       "channel": "EMAIL",
       "title": "Resend SDK Batch Integration Test",
