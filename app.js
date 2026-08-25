@@ -1058,13 +1058,19 @@ window.addEventListener('keydown', (e) => {
 let luxuryAudioElement = null;
 
 function toggleHeroVideoAudio(btn) {
-  const vid = document.getElementById('hero-main-video');
+  const vA = document.getElementById('hero-main-video-a');
+  const vB = document.getElementById('hero-main-video-b');
+  const fallback = document.getElementById('hero-main-video');
+  const targetVid = (vB && vB.style.opacity === '1') ? vB : (vA || fallback);
   const iconSpan = btn ? btn.querySelector('.audio-btn-icon') : null;
-  if (vid) {
-    if (vid.muted) {
-      vid.muted = false;
-      vid.volume = 1.0;
-      vid.play().catch(() => {});
+
+  if (targetVid) {
+    const nextMuted = !targetVid.muted;
+    if (vA) { vA.muted = nextMuted; vA.volume = 1.0; }
+    if (vB) { vB.muted = nextMuted; vB.volume = 1.0; }
+    if (fallback) { fallback.muted = nextMuted; fallback.volume = 1.0; }
+
+    if (!nextMuted) {
       if (iconSpan) iconSpan.textContent = '🔊';
       toast('Hero video audio unmuted 🔊', 'info');
 
@@ -1075,7 +1081,6 @@ function toggleHeroVideoAudio(btn) {
       }
       luxuryAudioElement.play().catch(() => {});
     } else {
-      vid.muted = true;
       if (iconSpan) iconSpan.textContent = '🔇';
       toast('Hero video audio muted 🔇', 'info');
       if (luxuryAudioElement) luxuryAudioElement.pause();
@@ -1084,29 +1089,39 @@ function toggleHeroVideoAudio(btn) {
 }
 
 function initHeroVideoMobilePlayback() {
-  const vid = document.getElementById('hero-main-video');
-  if (!vid) return;
+  const vids = [
+    document.getElementById('hero-main-video-a'),
+    document.getElementById('hero-main-video-b'),
+    document.getElementById('hero-main-video')
+  ].filter(Boolean);
 
-  vid.muted = true;
-  vid.defaultMuted = true;
-  vid.setAttribute('muted', '');
-  vid.setAttribute('playsinline', '');
-  vid.setAttribute('webkit-playsinline', '');
+  if (!vids.length) return;
 
-  const promise = vid.play();
-  if (promise !== undefined) {
-    promise.catch(() => {
-      const playOnInteraction = () => {
-        vid.play().catch(() => {});
-        document.removeEventListener('touchstart', playOnInteraction);
-        document.removeEventListener('scroll', playOnInteraction);
-        document.removeEventListener('click', playOnInteraction);
-      };
-      document.addEventListener('touchstart', playOnInteraction, { once: true, passive: true });
-      document.addEventListener('scroll', playOnInteraction, { once: true, passive: true });
-      document.addEventListener('click', playOnInteraction, { once: true });
-    });
-  }
+  vids.forEach(vid => {
+    vid.muted = true;
+    vid.defaultMuted = true;
+    vid.playsInline = true;
+    vid.setAttribute('muted', '');
+    vid.setAttribute('playsinline', '');
+    vid.setAttribute('webkit-playsinline', '');
+
+    if (vid.src && vid.style.opacity !== '0') {
+      const promise = vid.play();
+      if (promise !== undefined) {
+        promise.catch(() => {
+          const unlock = () => {
+            vid.play().catch(() => {});
+            document.removeEventListener('touchstart', unlock);
+            document.removeEventListener('scroll', unlock);
+            document.removeEventListener('click', unlock);
+          };
+          document.addEventListener('touchstart', unlock, { once: true, passive: true });
+          document.addEventListener('scroll', unlock, { once: true, passive: true });
+          document.addEventListener('click', unlock, { once: true });
+        });
+      }
+    }
+  });
 }
 
 // ===================================================
@@ -1498,6 +1513,7 @@ function initCategorySliders() {
 
 let heroVideoIndex = 0;
 let heroVideoTimer = null;
+let heroActiveLayer = 'a';
 
 function initHeroVideoRotation() {
   if (heroVideoTimer) clearInterval(heroVideoTimer);
@@ -1505,7 +1521,7 @@ function initHeroVideoRotation() {
   const videos = getHeroVideosList(settings);
   if (videos.length <= 1) return;
 
-  const intervalSec = Number(settings.heroVideoInterval || 30);
+  const intervalSec = Math.max(5, Number(settings.heroVideoInterval || 30));
   
   heroVideoTimer = setInterval(() => {
     switchHeroVideo((heroVideoIndex + 1) % videos.length);
@@ -1520,18 +1536,44 @@ function switchHeroVideo(newIndex) {
   heroVideoIndex = (newIndex + videos.length) % videos.length;
   const targetSrc = videos[heroVideoIndex];
   
-  const videoEl = document.getElementById('hero-main-video');
-  if (videoEl) {
-    videoEl.style.opacity = '0.2';
+  const currentEl = document.getElementById(heroActiveLayer === 'a' ? 'hero-main-video-a' : 'hero-main-video-b');
+  const nextEl = document.getElementById(heroActiveLayer === 'a' ? 'hero-main-video-b' : 'hero-main-video-a');
+  const singleEl = document.getElementById('hero-main-video');
+
+  if (nextEl && currentEl) {
+    nextEl.src = targetSrc;
+    nextEl.muted = true;
+    nextEl.defaultMuted = true;
+    nextEl.playsInline = true;
+    nextEl.setAttribute('muted', '');
+    nextEl.setAttribute('playsinline', '');
+    nextEl.setAttribute('webkit-playsinline', '');
+    nextEl.load();
+
+    const playPromise = nextEl.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {});
+    }
+
+    nextEl.style.zIndex = '3';
+    currentEl.style.zIndex = '1';
+    nextEl.style.opacity = '1';
+    currentEl.style.opacity = '0';
+
+    heroActiveLayer = heroActiveLayer === 'a' ? 'b' : 'a';
+
     setTimeout(() => {
-      videoEl.src = targetSrc;
-      videoEl.load();
-      videoEl.play().catch(() => {});
-      videoEl.style.opacity = '1';
-    }, 200);
+      currentEl.pause();
+    }, 450);
+  } else if (singleEl) {
+    singleEl.style.opacity = '0.3';
+    singleEl.src = targetSrc;
+    singleEl.load();
+    singleEl.play().catch(() => {});
+    setTimeout(() => { singleEl.style.opacity = '1'; }, 250);
   }
 
-  // Update progress bars
+  // Update progress bars & counter
   const bars = document.querySelectorAll('.hero-video-bar');
   bars.forEach((b, idx) => {
     b.classList.remove('active', 'passed');
@@ -1564,13 +1606,16 @@ function home() {
   const settings = getSiteSettings();
   const heroVideos = getHeroVideosList(settings);
   const currentVideo = heroVideos[heroVideoIndex] || heroVideos[0] || 'assets/bymarie.mp4';
-  const intervalSec = Number(settings.heroVideoInterval || 30);
+  const intervalSec = Math.max(5, Number(settings.heroVideoInterval || 30));
 
-  setTimeout(initHeroVideoRotation, 100);
+  setTimeout(() => {
+    initHeroVideoRotation();
+    initHeroVideoMobilePlayback();
+  }, 100);
   
   return `
     <main>
-      <!-- Hero Section with 30s Multi-Video Carousel -->
+      <!-- Hero Section with 30s Multi-Video Carousel (Mobile-Optimized Dual Crossfade) -->
       <section class="hero">
         <div class="hero-copy animate-fade-up">
           <div class="eyebrow">CURATED FOR MINDFUL LIVING <i></i> EST. 2024</div>
@@ -1586,7 +1631,7 @@ function home() {
           </div>
         </div>
         <div class="hero-image animate-fade-up delay-2" style="position:relative;overflow:hidden">
-          <div class="hero-video-carousel-container">
+          <div class="hero-video-carousel-container" style="position:relative;width:100%;height:100%;background:#020f0d;overflow:hidden;border-radius:var(--radius-md)">
             ${heroVideos.length > 1 ? `
               <!-- Progress Bars for Multi-Video Playlist (Changes every 30s) -->
               <div class="hero-video-bars">
@@ -1603,10 +1648,9 @@ function home() {
               <button type="button" class="hero-video-nav-btn next" onclick="nextHeroVideo()" title="Next Campaign Video">❯</button>
             ` : ''}
 
-            <video id="hero-main-video" class="hero-video-player" autoplay loop muted playsinline webkit-playsinline preload="auto">
-              <source src="${currentVideo}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
+            <!-- Dual Layer Crossfading Video Players for 100% Mobile & Desktop Compatibility -->
+            <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
+            <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
 
             <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
               <span class="audio-btn-icon">🔇</span>
