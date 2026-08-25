@@ -4983,7 +4983,14 @@ function renderAdminUsers(users) {
         <span class="eyebrow" style="color:var(--gold-light)">CLIENT DIRECTORY &amp; WALLETS</span>
         <h1 style="font-size:32px;margin-top:4px">VIP Client Ledger (${users.length})</h1>
       </div>
-      <button class="primary" style="background:#c24d67" onclick="activeModal='admin_add_user';render()">${svgIcon('plus', 16)} Add VIP Account</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e;font-size:12.5px;padding:8px 14px" onclick="openSendSmsModal()">
+          📢 Send SMS Broadcast to Clients
+        </button>
+        <button class="primary" style="background:#c24d67" onclick="activeModal='admin_add_user';render()">
+          ${svgIcon('plus', 16)} Add VIP Account
+        </button>
+      </div>
     </div>
 
     <div class="stats-row cols-3 animate-fade-up delay-1" style="margin-bottom:20px">
@@ -5066,6 +5073,9 @@ function renderAdminUsers(users) {
                     <button class="icon-action-btn" title="View Complete Client Dossier" onclick="openUserDossierModal('${u.id}')" style="background:rgba(255,255,255,0.1);color:#fff">
                       ${svgIcon('eye', 14)} Dossier
                     </button>
+                    <button class="icon-action-btn" title="Send Direct SMS" onclick="openSendSmsModal('${u.id}')" style="background:rgba(34,197,94,0.18);color:#34d399">
+                      📱 SMS
+                    </button>
                     <button class="secondary-btn" style="padding:4px 8px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
                     <button class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
                   </div>
@@ -5097,6 +5107,67 @@ function openUserDossierModal(userId) {
   modalData = { user: u, orders: userOrders };
   activeModal = 'admin_user_dossier';
   render();
+}
+
+function openSendSmsModal(targetUserId = null) {
+  const users = getUsers();
+  let targetUser = null;
+  if (targetUserId) {
+    targetUser = users.find(u => u.id === targetUserId || u.phone === targetUserId);
+  }
+  modalData = { targetUser, audience: targetUser ? 'single' : 'all', message: '' };
+  activeModal = 'admin_send_sms';
+  render();
+}
+
+async function handleSendSmsBroadcast(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const audience = fd.get('audience') || 'all';
+  const customPhone = (fd.get('customPhone') || '').trim();
+  const message = (fd.get('message') || '').trim();
+  const sender = (fd.get('sender') || 'Bymarie').trim();
+
+  if (!message) return toast('Please enter an SMS message', 'warning');
+
+  const allUsers = getUsers();
+  let recipients = [];
+
+  if (audience === 'single') {
+    if (customPhone) recipients = [customPhone];
+  } else if (audience === 'funded') {
+    recipients = allUsers.filter(u => (u.walletBalance || 0) > 0 && u.phone).map(u => u.phone);
+  } else if (audience === 'buyers') {
+    recipients = allUsers.filter(u => (u.ordersCount || 0) > 0 && u.phone).map(u => u.phone);
+  } else {
+    recipients = allUsers.filter(u => u.phone).map(u => u.phone);
+  }
+
+  if (!recipients.length) {
+    return toast('No client phone numbers found for this audience group', 'warning');
+  }
+
+  toast(`Sending SMS campaign to ${recipients.length} clients via mNotify / BMS...`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/sms/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipients, message, sender })
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Failed to dispatch SMS');
+    }
+
+    toast(`🚀 SMS Broadcast successfully sent to ${recipients.length} clients! 📱`);
+    activeModal = null;
+    render();
+  } catch (err) {
+    console.error('SMS broadcast dispatch error:', err);
+    toast(`SMS Dispatch Notice: ${err.message}`, 'warning');
+  }
 }
 
 async function handleAdminAddUser(event) {
@@ -7021,9 +7092,10 @@ function renderModals() {
                 <div><strong>Total Lifetime Spend:</strong> <b style="color:var(--gold-light)">${money(totalSpent)}</b></div>
                 <div><strong>Last Login:</strong> <small style="color:var(--muted)">${u.lastLogin || 'Recent'}</small></div>
               </div>
-              <div style="display:flex;gap:8px;margin-top:12px">
+              <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
                 <button class="primary" style="padding:6px 14px;font-size:11px;background:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit Float</button>
                 <button class="secondary-btn" style="padding:6px 14px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit Float</button>
+                <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e;font-size:11px;padding:6px 14px" onclick="openSendSmsModal('${u.id}')">📱 Send Direct SMS</button>
               </div>
             </div>
           </div>
@@ -7061,6 +7133,77 @@ function renderModals() {
           <div style="display:flex;justify-content:flex-end;margin-top:20px">
             <button class="secondary-btn" onclick="activeModal=null;render()">Close Dossier</button>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Admin Send SMS Broadcast Modal
+  if (activeModal === 'admin_send_sms') {
+    const { targetUser, audience = 'all' } = modalData;
+    const users = getUsers();
+    const phoneCount = users.filter(u => u.phone).length;
+    const fundedCount = users.filter(u => (u.walletBalance || 0) > 0 && u.phone).length;
+
+    return `
+      <div class="modal-backdrop" onclick="if(event.target===this){activeModal=null;render()}">
+        <div class="modal-card" style="max-width:560px">
+          <button class="modal-close" onclick="activeModal=null;render()">✕</button>
+          <span class="eyebrow" style="color:#22c55e">MNOTIFY / BMS SMS BROADCAST</span>
+          <h2 style="font-size:24px;margin:6px 0 16px">Send Client SMS Campaign</h2>
+
+          <form onsubmit="handleSendSmsBroadcast(event)">
+            <div class="form-group" style="margin-bottom:14px">
+              <label>Target Audience</label>
+              <select name="audience" onchange="modalData.audience=this.value;render()">
+                <option value="all" ${audience === 'all' ? 'selected' : ''}>👥 All Registered Clients (${phoneCount} phone numbers)</option>
+                <option value="funded" ${audience === 'funded' ? 'selected' : ''}>💳 Funded Float Wallet Holders (${fundedCount} clients)</option>
+                <option value="buyers" ${audience === 'buyers' ? 'selected' : ''}>🛍️ Clients with Past Orders</option>
+                <option value="single" ${audience === 'single' ? 'selected' : ''}>🎯 Single Client / Specific Phone Number</option>
+              </select>
+            </div>
+
+            ${audience === 'single' ? `
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Recipient Phone Number</label>
+                <input required name="customPhone" value="${targetUser ? targetUser.phone : ''}" placeholder="e.g. 024 100 2000">
+              </div>
+            ` : ''}
+
+            <div class="form-group" style="margin-bottom:14px">
+              <label>Sender ID (Max 11 Characters)</label>
+              <input required name="sender" value="Bymarie" maxlength="11" placeholder="Bymarie">
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px">
+              <label style="display:flex;justify-content:space-between">
+                <span>SMS Message Content</span>
+                <small id="sms-char-counter" style="color:var(--muted)">0 / 160 chars (1 SMS)</small>
+              </label>
+              <textarea required name="message" id="admin-sms-textarea" rows="4" style="width:100%;border-radius:var(--radius-sm);padding:10px;border:1px solid var(--line);font-family:inherit;font-size:13px" placeholder="Type your client announcement, seasonal discount, or private collection preview..." oninput="const len=this.value.length;const msgs=Math.max(1,Math.ceil(len/160));document.getElementById('sms-char-counter').textContent=len+' / 160 chars ('+msgs+' SMS)'"></textarea>
+            </div>
+
+            <!-- Quick Template Chips -->
+            <label style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px">Quick Luxury Message Templates</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+              <button type="button" class="secondary-btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('admin-sms-textarea').value='ByMarie Luxury: Our new Haute Couture collection is live! Explore fresh silhouettes & pieces at bymarie.shop. Enjoy complimentary delivery.';document.getElementById('admin-sms-textarea').dispatchEvent(new Event('input'))">
+                👗 New Drop
+              </button>
+              <button type="button" class="secondary-btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('admin-sms-textarea').value='VIP Privilege: Enjoy 15% OFF your luxury pieces this weekend with code LUXE15 at bymarie.shop. Offer valid for 48 hours.';document.getElementById('admin-sms-textarea').dispatchEvent(new Event('input'))">
+                🎁 15% Promo
+              </button>
+              <button type="button" class="secondary-btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('admin-sms-textarea').value='ByMarie Notice: Your Float Wallet balance is active for instant 1-click checkout at bymarie.shop. Shop without entering payment cards!';document.getElementById('admin-sms-textarea').dispatchEvent(new Event('input'))">
+                💳 Float Balance
+              </button>
+            </div>
+
+            <div style="display:flex;gap:12px">
+              <button class="primary" style="flex-grow:1;background:#22c55e" type="submit">
+                🚀 Send Broadcast via mNotify / BMS
+              </button>
+              <button class="secondary-btn" type="button" onclick="activeModal=null;render()">Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
     `;

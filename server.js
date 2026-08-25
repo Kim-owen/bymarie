@@ -611,6 +611,54 @@ app.patch('/api/users/:id/wallet', (req, res) => {
   res.json({ success: true, user, newBalance: user.walletBalance, reason });
 });
 
+// --- SMS BROADCAST & CAMPAIGN API ---
+app.post('/api/sms/broadcast', async (req, res) => {
+  try {
+    const { recipients, message, sender } = req.body;
+    if (!recipients || !Array.isArray(recipients) || !recipients.length) {
+      return res.status(400).json({ error: 'No recipients provided' });
+    }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'SMS message content is required' });
+    }
+
+    const mnotifyKey = process.env.MNOTIFY_API_KEY || process.env.BMS_API_KEY;
+    const formatPhoneForGhana = (num) => {
+      let clean = String(num || '').replace(/[^0-9]/g, '');
+      if (clean.startsWith('233') && clean.length === 12) clean = '0' + clean.slice(3);
+      return clean;
+    };
+
+    const formattedRecipients = recipients.map(formatPhoneForGhana).filter(p => p && p.length >= 10);
+    const mnotifySender = sender || process.env.MNOTIFY_SENDER || 'Bymarie';
+
+    if (mnotifyKey) {
+      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      const response = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: formattedRecipients,
+          sender: mnotifySender,
+          message: message.trim(),
+          is_schedule: false,
+          schedule_date: ''
+        })
+      });
+      const data = await response.json();
+      console.log(`📱 [mNotify Broadcast Sent] To ${formattedRecipients.length} clients:`, data);
+      return res.json({ success: true, count: formattedRecipients.length, data });
+    }
+
+    // Fallback simulation log if no key present
+    console.log(`📱 [SMS Broadcast Simulated] Sent to ${formattedRecipients.length} clients: "${message}"`);
+    res.json({ success: true, count: formattedRecipients.length, simulated: true });
+  } catch (err) {
+    console.error('SMS Broadcast error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- WHOLESALE & B2B INQUIRIES API ---
 
 app.get('/api/wholesale', (req, res) => {
