@@ -363,7 +363,7 @@ async function sendAdminOrderNotifications(order) {
   try {
     if (mnotifyKey) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-      const mnotifySender = process.env.MNOTIFY_SENDER || 'ByMarie';
+      const mnotifySender = process.env.MNOTIFY_SENDER || 'Bymarie';
       const res = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
