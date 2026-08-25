@@ -102,12 +102,19 @@ async function fetchLatestUsers(notify = false) {
             merged.push(lu);
           }
         });
-        saveUsers(merged);
+
+        const hasChanged = JSON.stringify(merged) !== JSON.stringify(local);
+        if (hasChanged) {
+          saveUsers(merged);
+        }
+
         if (notify) {
           toast(`⚡ Synced ${merged.length} client accounts from live database!`, 'success');
-        }
-        if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast' || adminTab === 'dashboard')) {
-          render();
+          if (typeof render === 'function') render();
+        } else if (hasChanged) {
+          if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast')) {
+            render();
+          }
         }
         return merged;
       }
@@ -5568,18 +5575,21 @@ function renderAdminUsers(users) {
                   </span>
                 </td>
                 <td>
-                  <div class="table-actions">
-                    <button class="icon-action-btn" title="View Complete Client Dossier" onclick="openUserDossierModal('${u.id}')" style="background:rgba(255,255,255,0.1);color:#fff">
-                      ${svgIcon('eye', 14)} Dossier
+                  <div class="table-actions" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+                    <button class="client-action-btn dossier" title="View Complete Client Dossier" onclick="openUserDossierModal('${u.id}')">
+                      ${svgIcon('eye', 13)} Dossier
                     </button>
-                    <button class="icon-action-btn" title="Send Direct SMS" onclick="openSendSmsModal('${u.id}')" style="background:rgba(34,197,94,0.18);color:#34d399">
+                    <button class="client-action-btn edit" title="Edit Contact, Phone & Details" onclick="openEditUserModal('${u.id}')">
+                      ✏️ Edit
+                    </button>
+                    <button class="client-action-btn sms" title="Send Direct SMS" onclick="openSendSmsModal('${u.id}')">
                       📱 SMS
                     </button>
-                    <button class="icon-action-btn" title="Send Direct Email" onclick="openDirectEmail('${u.id}')" style="background:rgba(56,189,248,0.18);color:#38bdf8">
+                    <button class="client-action-btn email" title="Send Direct Email" onclick="openDirectEmail('${u.id}')">
                       📧 Email
                     </button>
-                    <button class="secondary-btn" style="padding:4px 8px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
-                    <button class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
+                    <button class="client-action-btn credit" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
+                    <button class="client-action-btn debit" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
                   </div>
                 </td>
               </tr>
@@ -5653,6 +5663,98 @@ const BROADCAST_TEMPLATES = {
   }
 };
 
+function onSmsMessageInput(val) {
+  broadcastSmsMessage = val;
+  const countEl = document.getElementById('sms-live-counter');
+  const len = val.length;
+  const pages = Math.ceil(len / 160) || 1;
+  if (countEl) {
+    countEl.textContent = `${len} Chars • ${pages} SMS ${pages > 1 ? 'Pages' : 'Page'}`;
+    if (pages > 1) countEl.classList.add('warn');
+    else countEl.classList.remove('warn');
+  }
+  const previewBubble = document.getElementById('sms-live-bubble-preview');
+  if (previewBubble) {
+    previewBubble.textContent = (val || 'Type your message...')
+      .replace(/\{name\}/g, 'Ifeoma')
+      .replace(/\{balance\}/g, 'GH₵ 250.00')
+      .replace(/\{email\}/g, 'ifeoma@example.com')
+      .replace(/\{phone\}/g, '024 100 2000');
+  }
+}
+
+function onSmsSenderInput(val) {
+  broadcastSmsSender = val;
+  const senderHeader = document.getElementById('sms-live-sender-preview');
+  if (senderHeader) {
+    senderHeader.textContent = val || 'Bymarie';
+  }
+}
+
+function onEmailSubjectInput(val) {
+  broadcastEmailSubject = val;
+  const subjPreview = document.getElementById('email-live-subject-preview');
+  if (subjPreview) subjPreview.textContent = val || 'No Subject';
+}
+
+function onEmailHeadlineInput(val) {
+  broadcastEmailHeadline = val;
+  const headlinePreview = document.getElementById('email-live-headline-preview');
+  if (headlinePreview) {
+    headlinePreview.textContent = val;
+    headlinePreview.style.display = val ? 'block' : 'none';
+  }
+}
+
+function onEmailBodyInput(val) {
+  broadcastEmailBody = val;
+  const bodyPreview = document.getElementById('email-live-body-preview');
+  if (bodyPreview) {
+    bodyPreview.innerHTML = (val || 'Email body content...')
+      .replace(/\{name\}/g, 'Ifeoma')
+      .replace(/\{balance\}/g, 'GH₵ 250.00')
+      .replace(/\{email\}/g, 'ifeoma@example.com')
+      .replace(/\{phone\}/g, '024 100 2000')
+      .split('\n\n')
+      .map(p => `<p style="margin:0 0 12px 0">${p.replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+  }
+}
+
+function onEmailCtaTextInput(val) {
+  broadcastEmailCtaText = val;
+  const ctaWrap = document.getElementById('email-live-cta-wrap');
+  const ctaBtn = document.getElementById('email-live-cta-preview');
+  if (ctaWrap && ctaBtn) {
+    ctaBtn.textContent = `${val} →`;
+    ctaWrap.style.display = (val && broadcastEmailCtaUrl) ? 'block' : 'none';
+  }
+}
+
+function onEmailCtaUrlInput(val) {
+  broadcastEmailCtaUrl = val;
+  const ctaWrap = document.getElementById('email-live-cta-wrap');
+  const ctaBtn = document.getElementById('email-live-cta-preview');
+  if (ctaWrap && ctaBtn) {
+    ctaBtn.href = val;
+    ctaWrap.style.display = (broadcastEmailCtaText && val) ? 'block' : 'none';
+  }
+}
+
+function onCustomRecipientsInput(val) {
+  broadcastCustomRecipients = val;
+  const list = val.split(/[\n,;]+/).map(x => x.trim()).filter(Boolean);
+  const strip = document.getElementById('custom-recipients-strip');
+  if (strip) {
+    strip.innerHTML = `
+      <span style="font-size:12px;color:#a1a1aa;margin-right:8px">Target Preview:</span>
+      ${list.slice(0, 6).map(r => `<span class="recipient-chip">${r}</span>`).join('')}
+      ${list.length > 6 ? `<span class="recipient-chip more">+${list.length - 6} more</span>` : ''}
+      ${list.length === 0 ? `<span style="color:#ef4444;font-size:12px">⚠️ No valid recipients entered</span>` : ''}
+    `;
+  }
+}
+
 function applyBroadcastTemplate(key) {
   const t = BROADCAST_TEMPLATES[key];
   if (!t) return;
@@ -5671,13 +5773,30 @@ function applyBroadcastTemplate(key) {
 
 function insertBroadcastVariable(varName, targetField) {
   if (broadcastChannel === 'sms') {
-    broadcastSmsMessage += ` {${varName}}`;
+    broadcastSmsMessage = (broadcastSmsMessage ? broadcastSmsMessage + ' ' : '') + `{${varName}}`;
+    const textarea = document.getElementById('broadcast-sms-textarea');
+    if (textarea) {
+      textarea.value = broadcastSmsMessage;
+      onSmsMessageInput(broadcastSmsMessage);
+    }
   } else {
-    if (targetField === 'subject') broadcastEmailSubject += ` {${varName}}`;
-    else broadcastEmailBody += ` {${varName}}`;
+    if (targetField === 'subject') {
+      broadcastEmailSubject = (broadcastEmailSubject ? broadcastEmailSubject + ' ' : '') + `{${varName}}`;
+      const subjInput = document.getElementById('broadcast-email-subject');
+      if (subjInput) {
+        subjInput.value = broadcastEmailSubject;
+        onEmailSubjectInput(broadcastEmailSubject);
+      }
+    } else {
+      broadcastEmailBody = (broadcastEmailBody ? broadcastEmailBody + ' ' : '') + `{${varName}}`;
+      const bodyTextarea = document.getElementById('broadcast-email-body');
+      if (bodyTextarea) {
+        bodyTextarea.value = broadcastEmailBody;
+        onEmailBodyInput(broadcastEmailBody);
+      }
+    }
   }
   toast(`Inserted variable {${varName}}`);
-  render();
 }
 
 function openDirectEmail(userId) {
@@ -5692,33 +5811,33 @@ function openDirectEmail(userId) {
 }
 
 function renderAdminBroadcast(users) {
-  const allPhones = users.filter(u => u.phone && u.phone.trim()).map(u => u.phone.trim());
-  const allEmails = users.filter(u => u.email && u.email.trim()).map(u => u.email.trim());
+  const allPhones = users.filter(u => u.phone && u.phone.trim().length >= 8);
+  const allEmails = users.filter(u => u.email && u.email.includes('@'));
 
   let targetRecipients = [];
   let recipientLabel = '';
 
   if (broadcastChannel === 'sms') {
     if (broadcastAudience === 'all') {
-      targetRecipients = allPhones;
-      recipientLabel = `All VIP Clients (${allPhones.length} phone numbers)`;
+      targetRecipients = allPhones.map(u => u.phone.trim());
+      recipientLabel = `All VIP Clients (${targetRecipients.length} phone numbers)`;
     } else if (broadcastAudience === 'funded') {
       targetRecipients = users.filter(u => (u.walletBalance || 0) > 0 && u.phone).map(u => u.phone.trim());
-      recipientLabel = `Funded Float Accounts (${targetRecipients.length} clients)`;
+      recipientLabel = `Funded Float Accounts (${targetRecipients.length} phones)`;
     } else if (broadcastAudience === 'buyers') {
       targetRecipients = users.filter(u => (u.ordersCount || 0) > 0 && u.phone).map(u => u.phone.trim());
-      recipientLabel = `Active Shoppers (${targetRecipients.length} clients)`;
+      recipientLabel = `Active Shoppers (${targetRecipients.length} phones)`;
     } else if (broadcastAudience === 'prospects') {
       targetRecipients = users.filter(u => (!u.ordersCount || u.ordersCount === 0) && u.phone).map(u => u.phone.trim());
-      recipientLabel = `Prospect Accounts (${targetRecipients.length} clients)`;
+      recipientLabel = `Prospect Accounts (${targetRecipients.length} phones)`;
     } else if (broadcastAudience === 'custom') {
-      targetRecipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.length >= 9);
+      targetRecipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.length >= 8);
       recipientLabel = `Custom Recipient List (${targetRecipients.length} phone numbers)`;
     }
   } else {
     if (broadcastAudience === 'all') {
-      targetRecipients = allEmails;
-      recipientLabel = `All VIP Clients (${allEmails.length} email addresses)`;
+      targetRecipients = allEmails.map(u => u.email.trim());
+      recipientLabel = `All VIP Clients (${targetRecipients.length} email addresses)`;
     } else if (broadcastAudience === 'funded') {
       targetRecipients = users.filter(u => (u.walletBalance || 0) > 0 && u.email).map(u => u.email.trim());
       recipientLabel = `Funded Float Accounts (${targetRecipients.length} emails)`;
@@ -5787,7 +5906,7 @@ function renderAdminBroadcast(users) {
         <b class="channel-badge">${allEmails.length} Emails</b>
       </button>
       <button class="broadcast-channel-btn ${broadcastChannel === 'history' ? 'active' : ''}" onclick="broadcastChannel='history';fetchCampaignLogs();render()">
-        ${svgIcon('receipt', 18)}
+        ${svgIcon('clock', 18)}
         <span>📜 Broadcast Delivery History</span>
         <b class="channel-badge">${campaignLogs.length} Sent</b>
       </button>
@@ -5832,12 +5951,12 @@ function renderAdminBroadcast(users) {
                 <label style="font-size:12px;color:#a1a1aa;margin-bottom:6px;display:block">
                   Paste ${broadcastChannel === 'sms' ? 'Ghana Mobile Numbers (comma or line separated e.g. 0244123456, +233501234567)' : 'Email Addresses (comma or line separated)'}:
                 </label>
-                <textarea class="admin-input" rows="3" placeholder="0241002000, 0551002000..." oninput="broadcastCustomRecipients=this.value;render()">${broadcastCustomRecipients}</textarea>
+                <textarea class="admin-input" rows="3" placeholder="0241002000, 0551002000..." oninput="onCustomRecipientsInput(this.value)">${broadcastCustomRecipients}</textarea>
               </div>
             ` : ''}
 
             <!-- Recipient Preview Strip -->
-            <div class="recipient-preview-strip">
+            <div class="recipient-preview-strip" id="custom-recipients-strip">
               <span style="font-size:12px;color:#a1a1aa;margin-right:8px">Target Preview:</span>
               ${targetRecipients.slice(0, 6).map(r => `<span class="recipient-chip">${r}</span>`).join('')}
               ${targetRecipients.length > 6 ? `<span class="recipient-chip more">+${targetRecipients.length - 6} more</span>` : ''}
@@ -5879,17 +5998,17 @@ function renderAdminBroadcast(users) {
                   <label style="margin:0">SMS Sender ID (mNotify / BMS)</label>
                   <small style="color:var(--gold)">Max 11 Characters</small>
                 </div>
-                <input required maxlength="11" name="sender" value="${broadcastSmsSender}" oninput="broadcastSmsSender=this.value" placeholder="Bymarie" class="admin-input">
+                <input required maxlength="11" name="sender" id="broadcast-sms-sender" value="${broadcastSmsSender}" oninput="onSmsSenderInput(this.value)" placeholder="Bymarie" class="admin-input">
               </div>
 
               <div class="form-group" style="margin-bottom:16px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                   <label style="margin:0">SMS Campaign Message</label>
-                  <span class="sms-counter ${smsPageCount > 1 ? 'warn' : ''}">
+                  <span id="sms-live-counter" class="sms-counter ${smsPageCount > 1 ? 'warn' : ''}">
                     ${smsCharCount} Chars • ${smsPageCount} SMS ${smsPageCount > 1 ? 'Pages' : 'Page'}
                   </span>
                 </div>
-                <textarea required rows="5" name="message" class="admin-input" oninput="broadcastSmsMessage=this.value;render()" placeholder="Type your luxury SMS message here...">${broadcastSmsMessage}</textarea>
+                <textarea required rows="5" name="message" id="broadcast-sms-textarea" class="admin-input" oninput="onSmsMessageInput(this.value)" placeholder="Type your luxury SMS message here...">${broadcastSmsMessage}</textarea>
               </div>
 
               <!-- Test Dispatch Bar -->
@@ -5914,27 +6033,27 @@ function renderAdminBroadcast(users) {
             <form onsubmit="handleDispatchEmailBroadcast(event)">
               <div class="form-group" style="margin-bottom:16px">
                 <label>Email Subject Line</label>
-                <input required name="subject" value="${broadcastEmailSubject}" oninput="broadcastEmailSubject=this.value;render()" placeholder="Exclusive VIP Preview: New Haute Couture Drop" class="admin-input">
+                <input required name="subject" id="broadcast-email-subject" value="${broadcastEmailSubject}" oninput="onEmailSubjectInput(this.value)" placeholder="Exclusive VIP Preview: New Haute Couture Drop" class="admin-input">
               </div>
 
               <div class="form-group" style="margin-bottom:16px">
                 <label>Luxury Headline (Optional Title)</label>
-                <input name="headline" value="${broadcastEmailHeadline}" oninput="broadcastEmailHeadline=this.value;render()" placeholder="A New Epoch of African Luxury & Tailored Excellence" class="admin-input">
+                <input name="headline" id="broadcast-email-headline" value="${broadcastEmailHeadline}" oninput="onEmailHeadlineInput(this.value)" placeholder="A New Epoch of African Luxury & Tailored Excellence" class="admin-input">
               </div>
 
               <div class="form-group" style="margin-bottom:16px">
                 <label>Email Body Content (Paragraphs)</label>
-                <textarea required rows="6" name="content" class="admin-input" oninput="broadcastEmailBody=this.value;render()" placeholder="Dear {name},&#10;&#10;We are delighted to invite you...">${broadcastEmailBody}</textarea>
+                <textarea required rows="6" name="content" id="broadcast-email-body" class="admin-input" oninput="onEmailBodyInput(this.value)" placeholder="Dear {name},&#10;&#10;We are delighted to invite you...">${broadcastEmailBody}</textarea>
               </div>
 
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
                 <div class="form-group">
                   <label>CTA Button Text</label>
-                  <input name="ctaText" value="${broadcastEmailCtaText}" oninput="broadcastEmailCtaText=this.value;render()" placeholder="Explore The Atelier" class="admin-input">
+                  <input name="ctaText" id="broadcast-email-cta-text" value="${broadcastEmailCtaText}" oninput="onEmailCtaTextInput(this.value)" placeholder="Explore The Atelier" class="admin-input">
                 </div>
                 <div class="form-group">
                   <label>CTA Button URL</label>
-                  <input name="ctaUrl" value="${broadcastEmailCtaUrl}" oninput="broadcastEmailCtaUrl=this.value;render()" placeholder="https://bymarie.shop" class="admin-input">
+                  <input name="ctaUrl" id="broadcast-email-cta-url" value="${broadcastEmailCtaUrl}" oninput="onEmailCtaUrlInput(this.value)" placeholder="https://bymarie.shop" class="admin-input">
                 </div>
               </div>
 
@@ -5973,11 +6092,11 @@ function renderAdminBroadcast(users) {
               <div class="phone-mockup-speaker"></div>
               <div class="phone-mockup-screen">
                 <div class="sms-sender-header">
-                  <strong>${broadcastSmsSender || 'Bymarie'}</strong>
+                  <strong id="sms-live-sender-preview">${broadcastSmsSender || 'Bymarie'}</strong>
                   <small>SMS • Today</small>
                 </div>
                 <div class="sms-bubble-wrapper">
-                  <div class="sms-chat-bubble">
+                  <div class="sms-chat-bubble" id="sms-live-bubble-preview">
                     ${(broadcastSmsMessage || 'Type your message...')
                       .replace(/\{name\}/g, 'Ifeoma')
                       .replace(/\{balance\}/g, 'GH₵ 250.00')
@@ -5992,7 +6111,7 @@ function renderAdminBroadcast(users) {
             <div class="email-preview-container">
               <div class="email-client-bar">
                 <div><span style="color:#71717a">From:</span> ByMarie Concierge &lt;onboarding@resend.dev&gt;</div>
-                <div><span style="color:#71717a">Subject:</span> <strong>${broadcastEmailSubject || 'No Subject'}</strong></div>
+                <div><span style="color:#71717a">Subject:</span> <strong id="email-live-subject-preview">${broadcastEmailSubject || 'No Subject'}</strong></div>
               </div>
               <div class="email-preview-body">
                 <!-- Header -->
@@ -6002,8 +6121,8 @@ function renderAdminBroadcast(users) {
                 </div>
                 <!-- Content -->
                 <div class="email-html-content">
-                  ${broadcastEmailHeadline ? `<h3 style="font-family:'Playfair Display', Georgia, serif;font-size:18px;color:#083832;margin:0 0 14px 0">${broadcastEmailHeadline}</h3>` : ''}
-                  <div style="font-size:13.5px;line-height:1.7;color:#3f3f46">
+                  <h3 id="email-live-headline-preview" style="font-family:'Playfair Display', Georgia, serif;font-size:18px;color:#083832;margin:0 0 14px 0;display:${broadcastEmailHeadline ? 'block' : 'none'}">${broadcastEmailHeadline}</h3>
+                  <div id="email-live-body-preview" style="font-size:13.5px;line-height:1.7;color:#3f3f46">
                     ${(broadcastEmailBody || 'Email body content...')
                       .replace(/\{name\}/g, 'Ifeoma')
                       .replace(/\{balance\}/g, 'GH₵ 250.00')
@@ -6014,13 +6133,11 @@ function renderAdminBroadcast(users) {
                       .join('')}
                   </div>
 
-                  ${(broadcastEmailCtaText && broadcastEmailCtaUrl) ? `
-                    <div style="text-align:center;margin:24px 0 18px 0">
-                      <a href="${broadcastEmailCtaUrl}" target="_blank" class="email-preview-btn">
-                        ${broadcastEmailCtaText} →
-                      </a>
-                    </div>
-                  ` : ''}
+                  <div id="email-live-cta-wrap" style="text-align:center;margin:24px 0 18px 0;display:${(broadcastEmailCtaText && broadcastEmailCtaUrl) ? 'block' : 'none'}">
+                    <a href="${broadcastEmailCtaUrl || '#'}" target="_blank" class="email-preview-btn" id="email-live-cta-preview">
+                      ${broadcastEmailCtaText || 'Explore The Atelier'} →
+                    </a>
+                  </div>
 
                   <div style="margin-top:24px;padding-top:16px;border-top:1px solid #f4f4f5;font-size:11.5px;color:#71717a">
                     <strong style="color:#083832;display:block">ByMarie Private Client Atelier</strong>
@@ -6341,6 +6458,70 @@ async function handleAdminAddUser(event) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(existing)
     });
+    fetchLatestUsers();
+  } catch (e) {}
+}
+
+function openEditUserModal(userId) {
+  const users = getUsers();
+  const u = users.find(x => x.id === userId || x.email === userId);
+  if (!u) return toast('Client profile not found', 'warning');
+  modalData = { user: u };
+  activeModal = 'admin_edit_user';
+  render();
+}
+
+async function handleAdminEditUser(event) {
+  event.preventDefault();
+  const fd = new FormData(event.target);
+  const id = fd.get('id');
+  const name = (fd.get('name') || '').trim();
+  const email = (fd.get('email') || '').trim().toLowerCase();
+  const phone = (fd.get('phone') || '').trim();
+  const address = (fd.get('address') || '').trim();
+  const city = (fd.get('city') || 'Accra').trim();
+  const walletBalance = Number(fd.get('walletBalance') || 0);
+
+  if (!email || !name) return toast('Name and email are required', 'warning');
+
+  const users = getUsers();
+  let u = users.find(x => x.id === id || (x.email && x.email.toLowerCase() === email));
+
+  if (u) {
+    u.name = name;
+    u.email = email;
+    u.phone = phone;
+    u.address = address;
+    u.city = city;
+    u.walletBalance = walletBalance;
+  } else {
+    u = {
+      id: id || `usr-${Date.now()}`,
+      name,
+      email,
+      phone,
+      address,
+      city,
+      walletBalance,
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      ordersCount: 0,
+      status: 'Active'
+    };
+    users.unshift(u);
+  }
+
+  saveUsers(users);
+  activeModal = null;
+  toast(`Updated client details for "${u.name}" (${u.phone || 'No phone'}) ⚡`, 'success');
+  render();
+
+  try {
+    await fetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(u)
+    });
+    fetchLatestUsers();
   } catch (e) {}
 }
 
@@ -8332,9 +8513,58 @@ function renderModals() {
             <p style="color:var(--muted);font-size:13px;padding:12px;background:var(--sand);border-radius:var(--radius-sm)">No orders placed yet by this client.</p>
           `}
 
-          <div style="display:flex;justify-content:flex-end;margin-top:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;flex-wrap:wrap;gap:10px">
+            <button class="primary" style="padding:8px 18px;font-size:12.5px" onclick="openEditUserModal('${u.id}')">✏️ Edit Client Profile &amp; Contact</button>
             <button class="secondary-btn" onclick="activeModal=null;render()">Close Dossier</button>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Admin Edit User Modal
+  if (activeModal === 'admin_edit_user') {
+    const u = modalData.user;
+    return `
+      <div class="modal-backdrop" onclick="if(event.target===this){activeModal=null;render()}">
+        <div class="modal-card" style="max-width:540px">
+          <button class="modal-close" onclick="activeModal=null;render()">✕</button>
+          <span class="eyebrow" style="color:var(--gold)">VIP CLIENT CRM</span>
+          <h2 style="font-size:24px;margin:6px 0 20px">Edit Client Profile &amp; Contacts</h2>
+
+          <form onsubmit="handleAdminEditUser(event)">
+            <input type="hidden" name="id" value="${u.id}">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Client Full Name</label>
+                <input required name="name" value="${u.name || ''}" placeholder="Full Name">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input required type="email" name="email" value="${u.email || ''}" placeholder="email@example.com">
+              </div>
+              <div class="form-group">
+                <label>Phone / WhatsApp Number</label>
+                <input name="phone" value="${u.phone || ''}" placeholder="024 100 2000 or +233...">
+              </div>
+              <div class="form-group">
+                <label>City</label>
+                <input name="city" value="${u.city || 'Accra'}" placeholder="Accra">
+              </div>
+              <div class="form-group">
+                <label>Float Wallet Balance (GH₵)</label>
+                <input name="walletBalance" type="number" step="any" value="${u.walletBalance || 0}" placeholder="0.00">
+              </div>
+              <div class="form-group full">
+                <label>Delivery Address</label>
+                <input name="address" value="${u.address || ''}" placeholder="Residential / Delivery Address">
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px">
+              <button class="primary" style="flex-grow:1" type="submit">Save Changes ⚡</button>
+              <button class="secondary-btn" type="button" onclick="activeModal=null;render()">Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
     `;

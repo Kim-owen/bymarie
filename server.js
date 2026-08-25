@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 require('dotenv').config();
 
 const app = express();
@@ -437,7 +438,7 @@ async function sendAdminOrderNotifications(order) {
   try {
     const resendApiKey = process.env.RESEND_API_KEY;
     if (resendApiKey) {
-      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      const resend = new Resend(resendApiKey);
       const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <onboarding@resend.dev>';
       const targetAdmin = process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com';
       
@@ -446,17 +447,15 @@ async function sendAdminOrderNotifications(order) {
         emailRecipients.push(order.email);
       }
 
-      await fetchFn('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: emailRecipients,
-          subject: `⚡ Order Confirmation #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
-          html: emailHtml
-        })
+      await resend.emails.send({
+        from: fromAddress,
+        to: emailRecipients,
+        reply_to: targetAdmin,
+        subject: `⚡ Order Confirmation #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
+        text: `Order Confirmation #${order.id}\nTotal: GH₵ ${Number(order.total || 0).toFixed(2)}\nClient: ${order.name}\n\nTrack order at https://bymarie.shop/#account`,
+        html: emailHtml
       });
-      console.log(`📧 [EMAIL DISPATCH] Alert sent to recipients:`, emailRecipients);
+      console.log(`📧 [EMAIL DISPATCH via Resend SDK] Alert sent to recipients:`, emailRecipients);
     }
   } catch (err) {
     console.warn('Email dispatch notification note:', err.message);
@@ -801,6 +800,27 @@ app.delete('/api/coupons/:code', (req, res) => {
 app.get('/api/users', async (req, res) => {
   const db = readDB();
   if (!db.users) db.users = [];
+  const orders = db.orders || [];
+
+  const adminEmails = [
+    'sunumanfred14@gmail.com',
+    'adichieifeoma@gmail.com',
+    (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+  ].filter(Boolean);
+
+  // Sync and enrich users with real order counts & role statuses
+  db.users.forEach(u => {
+    if (u.email) {
+      const emailLower = u.email.trim().toLowerCase();
+      const userOrders = orders.filter(o => o.email && o.email.trim().toLowerCase() === emailLower);
+      u.ordersCount = userOrders.length;
+      if (adminEmails.includes(emailLower)) {
+        u.status = 'Super Admin';
+      } else if (!u.status) {
+        u.status = 'Active';
+      }
+    }
+  });
 
   const client = getSupabaseClient();
   if (client) {
@@ -988,6 +1008,7 @@ app.post('/api/email/broadcast', async (req, res) => {
       return res.status(400).json({ error: 'Email content is required' });
     }
 
+    const cleanContent = String(content || '').trim();
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Concierge <onboarding@resend.dev>';
     const validRecipients = recipients
@@ -1060,39 +1081,81 @@ app.post('/api/email/broadcast', async (req, res) => {
     const deliveryLogs = [];
 
     if (resendApiKey) {
-      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      const resend = new Resend(resendApiKey);
 
-      // Send to recipients (batches of 10 or single recipient to ensure deliverability)
-      for (const recipient of validRecipients) {
-        try {
-          const resendResp = await fetchFn('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              from: fromAddress,
-              to: [recipient],
-              subject: subject.trim(),
-              html: emailHtml
-            })
-          });
+      // Build personalized batch email payload
+      const batchPayload = validRecipients.map(recipient => {
+        const recipientUser = (db.users || []).find(u => u.email && u.email.toLowerCase() === recipient.toLowerCase());
+        const recipientName = recipientUser ? recipientUser.name : recipient.split('@')[0];
+        const personalizedHtml = emailHtml.replace(/\{name\}/g, recipientName);
+        const personalizedText = `${headline ? headline + '\n\n' : ''}${cleanContent.replace(/\{name\}/g, recipientName)}\n\nByMarie Luxury Atelier\nCantonments & East Legon, Accra\nhttps://bymarie.shop`;
 
-          const resData = await resendResp.json();
-          if (resendResp.ok && !resData.error) {
-            deliveredCount++;
-            isLive = true;
-            deliveryLogs.push({ email: recipient, status: 'Sent', id: resData.id });
-          } else {
-            // Note: If Resend sandbox restricts domain to owner, log clearly
-            failedCount++;
-            deliveryLogs.push({ email: recipient, status: 'Declined', error: resData.message || resData.error });
+        return {
+          from: fromAddress,
+          to: [recipient],
+          reply_to: process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com',
+          subject: subject.trim(),
+          text: personalizedText,
+          html: personalizedHtml,
+          headers: {
+            'X-Entity-Ref-ID': `camp-${Date.now()}`
           }
-        } catch (dispatchErr) {
-          failedCount++;
-          deliveryLogs.push({ email: recipient, status: 'Error', error: dispatchErr.message });
+        };
+      });
+
+      // Send via Resend Batch SDK
+      try {
+        if (batchPayload.length === 1) {
+          const singleRes = await resend.emails.send(batchPayload[0]);
+          if (singleRes.data && singleRes.data.id) {
+            deliveredCount = 1;
+            isLive = true;
+            deliveryLogs.push({ email: validRecipients[0], status: 'Sent', id: singleRes.data.id });
+          } else {
+            failedCount = 1;
+            deliveryLogs.push({ email: validRecipients[0], status: 'Declined', error: singleRes.error ? singleRes.error.message : 'Unknown error' });
+          }
+        } else {
+          // Process in batches of up to 100 as per Resend API limits
+          const chunkSize = 100;
+          for (let i = 0; i < batchPayload.length; i += chunkSize) {
+            const chunk = batchPayload.slice(i, i + chunkSize);
+            const batchResult = await resend.batch.send(chunk);
+
+            if (batchResult.data && Array.isArray(batchResult.data.data)) {
+              batchResult.data.data.forEach((item, idx) => {
+                const recEmail = chunk[idx].to[0];
+                if (item.id) {
+                  deliveredCount++;
+                  isLive = true;
+                  deliveryLogs.push({ email: recEmail, status: 'Sent', id: item.id });
+                } else {
+                  failedCount++;
+                  deliveryLogs.push({ email: recEmail, status: 'Declined' });
+                }
+              });
+            } else if (batchResult.data && Array.isArray(batchResult.data)) {
+              batchResult.data.forEach((item, idx) => {
+                const recEmail = chunk[idx].to[0];
+                if (item.id) {
+                  deliveredCount++;
+                  isLive = true;
+                  deliveryLogs.push({ email: recEmail, status: 'Sent', id: item.id });
+                } else {
+                  failedCount++;
+                  deliveryLogs.push({ email: recEmail, status: 'Declined' });
+                }
+              });
+            } else if (batchResult.error) {
+              failedCount += chunk.length;
+              chunk.forEach(c => deliveryLogs.push({ email: c.to[0], status: 'Error', error: batchResult.error.message }));
+            }
+          }
         }
+      } catch (sdkErr) {
+        console.error('Resend SDK Batch Send Error:', sdkErr);
+        failedCount = validRecipients.length;
+        validRecipients.forEach(r => deliveryLogs.push({ email: r, status: 'Error', error: sdkErr.message }));
       }
     } else {
       deliveredCount = validRecipients.length;
@@ -1254,23 +1317,34 @@ app.post('/api/auth/register', async (req, res) => {
   const db = readDB();
   if (!db.users) db.users = [];
 
+  const adminEmails = [
+    'sunumanfred14@gmail.com',
+    'adichieifeoma@gmail.com',
+    (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+  ].filter(Boolean);
+
+  const cleanEmail = email.trim().toLowerCase();
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const formattedTime = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
   const newUser = {
     id: `usr-${Date.now()}`,
-    name: name || email.split('@')[0],
-    email: email.trim().toLowerCase(),
+    name: name || cleanEmail.split('@')[0],
+    email: cleanEmail,
     phone: phone || '',
     address: address || '',
     city: city || 'Accra',
     region: region || 'Greater Accra',
     walletBalance: 0.00,
-    joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    lastLogin: new Date().toLocaleString(),
+    joinedDate: formattedDate,
+    lastLogin: formattedTime,
     ordersCount: 0,
-    status: 'Active',
+    status: adminEmails.includes(cleanEmail) ? 'Super Admin' : 'Active',
     loggedIn: true
   };
 
-  const existingIdx = db.users.findIndex(u => u.email === newUser.email);
+  const existingIdx = db.users.findIndex(u => u.email && u.email.toLowerCase() === newUser.email);
   if (existingIdx !== -1) {
     db.users[existingIdx] = { ...db.users[existingIdx], ...newUser, walletBalance: db.users[existingIdx].walletBalance || 0 };
   } else {
@@ -1282,7 +1356,7 @@ app.post('/api/auth/register', async (req, res) => {
   if (client) {
     try {
       await client.auth.signUp({
-        email,
+        email: cleanEmail,
         password: password || 'ByMarie2026!',
         options: { data: { name, phone } }
       });
@@ -1301,7 +1375,17 @@ app.post('/api/auth/login', async (req, res) => {
   const db = readDB();
   if (!db.users) db.users = [];
 
+  const adminEmails = [
+    'sunumanfred14@gmail.com',
+    'adichieifeoma@gmail.com',
+    (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+  ].filter(Boolean);
+
   const cleanEmail = email.trim().toLowerCase();
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const formattedTime = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
   let user = db.users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
 
   if (!user) {
@@ -1314,16 +1398,19 @@ app.post('/api/auth/login', async (req, res) => {
       city: 'Accra',
       region: 'Greater Accra',
       walletBalance: 0.00,
-      joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      lastLogin: new Date().toLocaleString(),
+      joinedDate: formattedDate,
+      lastLogin: formattedTime,
       ordersCount: 0,
-      status: cleanEmail === 'adichieifeoma@gmail.com' ? 'Super Admin' : 'Active',
+      status: adminEmails.includes(cleanEmail) ? 'Super Admin' : 'Active',
       loggedIn: true
     };
     db.users.push(user);
   } else {
-    user.lastLogin = new Date().toLocaleString();
+    user.lastLogin = formattedTime;
     user.loggedIn = true;
+    if (adminEmails.includes(cleanEmail)) {
+      user.status = 'Super Admin';
+    }
   }
   writeDB(db);
 

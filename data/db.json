@@ -30,6 +30,20 @@
   },
   "users": [
     {
+      "id": "usr-admin-manfred",
+      "name": "Manfred Sunu",
+      "email": "sunumanfred14@gmail.com",
+      "phone": "+233 24 100 2000",
+      "address": "Executive Suite, Cantonments, Accra",
+      "city": "Accra",
+      "region": "Greater Accra",
+      "walletBalance": 0,
+      "joinedDate": "01 Jan 2026",
+      "ordersCount": 0,
+      "status": "Super Admin",
+      "loggedIn": true
+    },
+    {
       "id": "usr-admin-01",
       "name": "Ifeoma Adichie",
       "email": "adichieifeoma@gmail.com",
@@ -58,6 +72,348 @@
   ],
   "wholesale_inquiries": [],
   "campaigns": [
+    {
+      "id": "cmp-mail-1787693794075",
+      "channel": "EMAIL",
+      "title": "Resend SDK Batch Integration Test",
+      "headline": "Official Resend SDK Active",
+      "content": "Dear {name},\n\nYour Resend SDK Batch & Transactional Email Engine is now fully active with official SDK methods.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T21:36:34.075Z",
+      "dateFormatted": "25 Aug 2026, 22:36",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "dc05cbc7-6024-47f2-88df-f0ac3b7efb9b"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787692332466",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred4189@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T21:12:12.466Z",
+      "dateFormatted": "25 Aug 2026, 22:12",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred4189@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787692319788",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T21:11:59.788Z",
+      "dateFormatted": "25 Aug 2026, 22:11",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787692255890",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred4189@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T21:10:55.892Z",
+      "dateFormatted": "25 Aug 2026, 22:10",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred4189@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787691529830",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T20:58:49.830Z",
+      "dateFormatted": "25 Aug 2026, 21:58",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787691464299",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T20:57:44.299Z",
+      "dateFormatted": "25 Aug 2026, 21:57",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787691444130",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T20:57:24.130Z",
+      "dateFormatted": "25 Aug 2026, 21:57",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787691391530",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 0,
+      "failedCount": 1,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Failed / Domain Sandbox",
+      "timestamp": "2026-08-25T20:56:31.530Z",
+      "dateFormatted": "25 Aug 2026, 21:56",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Error",
+          "error": "cleanContent is not defined"
+        }
+      ]
+    },
+    {
+      "id": "cmp-sms-1787690741854",
+      "channel": "SMS",
+      "title": "[TEST PREVIEW] Greetings from ByMarie! Our ex...",
+      "content": "[TEST PREVIEW] Greetings from ByMarie! Our exclusive new couture collection is now live. Explore handcrafted scents & styles: https://bymarie.shop Concierge: +233241002000",
+      "sender": "Bymarie",
+      "recipientsCount": 1,
+      "recipients": [
+        "0537052500"
+      ],
+      "status": "Delivered",
+      "timestamp": "2026-08-25T20:45:41.854Z",
+      "dateFormatted": "25 Aug 2026, 21:45",
+      "meta": {
+        "status": "success",
+        "code": "2000",
+        "message": "messages sent successfully",
+        "summary": {
+          "_id": "BB5712DD-9ED4-470F-A463-8825392A36AD",
+          "message_id": "20260825233204120633V2",
+          "type": "API QUICK SMS",
+          "total_sent": 1,
+          "contacts": 1,
+          "total_rejected": 0,
+          "numbers_sent": [
+            "0537052500"
+          ],
+          "credit_used": 2,
+          "credit_left": 390,
+          "wallet_used": 0
+        }
+      }
+    },
+    {
+      "id": "cmp-sms-1787690697831",
+      "channel": "SMS",
+      "title": "[TEST PREVIEW] Greetings from ByMarie! Our ex...",
+      "content": "[TEST PREVIEW] Greetings from ByMarie! Our exclusive new couture collection is now live. Explore handcrafted scents & styles: https://bymarie.shop Concierge: +233241002000",
+      "sender": "Bymarie",
+      "recipientsCount": 1,
+      "recipients": [
+        "0547636024"
+      ],
+      "status": "Delivered",
+      "timestamp": "2026-08-25T20:44:57.833Z",
+      "dateFormatted": "25 Aug 2026, 21:44",
+      "meta": {
+        "status": "success",
+        "code": "2000",
+        "message": "messages sent successfully",
+        "summary": {
+          "_id": "4CFAA78E-32A3-440A-B18F-9C7A29F2C101",
+          "message_id": "20260825233204120633V2",
+          "type": "API QUICK SMS",
+          "total_sent": 1,
+          "contacts": 1,
+          "total_rejected": 0,
+          "numbers_sent": [
+            "0547636024"
+          ],
+          "credit_used": 2,
+          "credit_left": 392,
+          "wallet_used": 0
+        }
+      }
+    },
+    {
+      "id": "cmp-mail-1787689710654",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T20:28:30.654Z",
+      "dateFormatted": "25 Aug 2026, 21:28",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "ced1a758-89bd-479b-95b7-3c2a0d242710"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787689701594",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T20:28:21.594Z",
+      "dateFormatted": "25 Aug 2026, 21:28",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "a4445e39-228d-4bdf-8db6-863bef2165bb"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787689662720",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] ✨ Unveiling the New ByMarie Haute Couture Collection",
+      "headline": "A New Epoch of African Luxury & Tailored Excellence",
+      "content": "Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T20:27:42.722Z",
+      "dateFormatted": "25 Aug 2026, 21:27",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "03f1753c-c997-42f0-bfa0-c4ab500e9d9c"
+        }
+      ]
+    },
+    {
+      "id": "cmp-mail-1787687779330",
+      "channel": "EMAIL",
+      "title": "[TEST PREVIEW] 👑 Private Client Privilege: 20% Off All ByMarie Creations",
+      "headline": "Exclusive Atelier Privilege for Valued Clients",
+      "content": "Dear {name},\n\nFor a limited window, enjoy a bespoke 20% privilege across all ByMarie luxury couture, hair aesthetics, and fine scent extraits.\n\nUse your private access voucher code at checkout: VIP20",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T19:56:19.331Z",
+      "dateFormatted": "25 Aug 2026, 20:56",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "ed39c22d-5c0d-41a7-bcf2-0a270f340cb0"
+        }
+      ]
+    },
     {
       "id": "cmp-mail-1787687410656",
       "channel": "EMAIL",
