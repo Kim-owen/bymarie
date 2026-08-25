@@ -276,7 +276,9 @@ main,
 .shop-page,
 .detail-container,
 .cart-container,
+.cart-page,
 .checkout-container,
+.checkout-page,
 .confirmation-container,
 .account-shell,
 .auth-page-shell,
@@ -284,8 +286,8 @@ main,
 .wishlist-page,
 .wholesale-page,
 .not-found-page {
-  padding-top: 155px !important;
-  box-sizing: border-box;
+  padding-top: 160px !important;
+  box-sizing: border-box !important;
 }
 
 /* Home hero handles its own visual padding under sticky header */
@@ -296,7 +298,7 @@ main:has(.hero),
 
 .hero {
   padding-top: 165px !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 /* Admin console is a standalone dashboard with zero top padding */
@@ -310,14 +312,18 @@ main:has(.hero),
   .shop-page,
   .detail-container,
   .cart-container,
+  .cart-page,
   .checkout-container,
+  .checkout-page,
   .confirmation-container,
   .account-shell,
   .auth-page-shell,
   .notifications-page-shell,
   .wishlist-page,
-  .wholesale-page {
-    padding-top: 150px !important;
+  .wholesale-page,
+  .not-found-page {
+    padding-top: 155px !important;
+    box-sizing: border-box !important;
   }
   .hero {
     padding-top: 155px !important;
@@ -329,14 +335,18 @@ main:has(.hero),
   .shop-page,
   .detail-container,
   .cart-container,
+  .cart-page,
   .checkout-container,
+  .checkout-page,
   .confirmation-container,
   .account-shell,
   .auth-page-shell,
   .notifications-page-shell,
   .wishlist-page,
-  .wholesale-page {
-    padding-top: 145px !important;
+  .wholesale-page,
+  .not-found-page {
+    padding-top: 150px !important;
+    box-sizing: border-box !important;
   }
   .hero {
     padding-top: 150px !important;
@@ -1382,6 +1392,8 @@ h1, h2, h3, .serif {
   font-weight: 700;
   color: #18181b;
 }
+
+.product-card-price del {
   font-weight: 500;
   color: var(--muted-light);
   margin-left: 6px;
@@ -1783,7 +1795,8 @@ h1, h2, h3, .serif {
 .detail-container {
   max-width: 1260px;
   margin: 0 auto;
-  padding: 45px 24px 100px;
+  padding: 160px 24px 100px !important;
+  box-sizing: border-box;
 }
 
 .breadcrumbs {
@@ -2186,10 +2199,11 @@ h1, h2, h3, .serif {
 .cart-page {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 55px 24px 100px;
+  padding: 160px 24px 100px !important;
   display: grid;
   grid-template-columns: 1fr 390px;
   gap: 65px;
+  box-sizing: border-box;
 }
 
 .cart-items-table {
@@ -2354,13 +2368,15 @@ h1, h2, h3, .serif {
 }
 
 .checkout-form-side {
-  padding: 55px clamp(24px, 6vw, 95px);
+  padding: 160px clamp(24px, 6vw, 95px) 60px !important;
+  box-sizing: border-box;
 }
 
 .checkout-summary-side {
   background: #f5f4ef;
-  padding: 75px clamp(24px, 5vw, 75px);
+  padding: 160px clamp(24px, 5vw, 75px) 60px !important;
   border-left: 1px solid var(--line);
+  box-sizing: border-box;
 }
 
 .checkout-steps {
@@ -2700,8 +2716,9 @@ h1, h2, h3, .serif {
 .confirmation-container {
   max-width: 780px;
   margin: 0 auto;
-  padding: 75px 24px 110px;
+  padding: 160px 24px 110px !important;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .success-icon {
