@@ -7933,6 +7933,17 @@ function handleHeroVideoUpload(event) {
   handleMultiHeroVideoUpload(event);
 }
 
+// Global window bindings for video playlist handlers
+window.handleDeleteHeroVideo = handleDeleteHeroVideo;
+window.handleMoveHeroVideo = handleMoveHeroVideo;
+window.handleAddHeroVideoUrl = handleAddHeroVideoUrl;
+window.handleMultiHeroVideoUpload = handleMultiHeroVideoUpload;
+window.handleChangeHeroInterval = handleChangeHeroInterval;
+window.switchHeroVideo = switchHeroVideo;
+window.prevHeroVideo = prevHeroVideo;
+window.nextHeroVideo = nextHeroVideo;
+window.initHeroVideoRotation = initHeroVideoRotation;
+
 function exportOrdersCSV() {
   const orders = getOrders();
   let csv = 'Order ID,Date,Customer Name,Email,Phone,City,Region,Delivery,Payment,Status,Total (GHc)\n';
