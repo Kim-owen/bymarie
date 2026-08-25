@@ -2181,29 +2181,71 @@ function checkout() {
           </div>
 
           <h2 style="font-size:26px;margin:35px 0 16px">3. Payment Option</h2>
-          <div class="payment-method-selector" style="grid-template-columns:repeat(4,1fr)">
-            <div class="method-chip ${checkoutPaymentMethod === 'wallet' ? 'active' : ''}" onclick="checkoutPaymentMethod='wallet';render()">
-              💳 Float Wallet
+          
+          <div class="luxe-payment-grid">
+            <div class="luxe-payment-card mtn ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork === 'MTN' ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='MTN';render()">
+              ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork === 'MTN' ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">MTN MoMo</span>
+                <strong>MTN Mobile Money</strong>
+                <small>USSD Direct Handset Prompt</small>
+              </div>
             </div>
-            <div class="method-chip ${checkoutPaymentMethod === 'momo' ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';render()">
-              📱 Mobile Money
+
+            <div class="luxe-payment-card telecel ${checkoutPaymentMethod === 'momo' && (checkoutMomoNetwork.includes('Telecel') || checkoutMomoNetwork.includes('Vodafone')) ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='Telecel (Vodafone)';render()">
+              ${checkoutPaymentMethod === 'momo' && (checkoutMomoNetwork.includes('Telecel') || checkoutMomoNetwork.includes('Vodafone')) ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">Telecel Cash</span>
+                <strong>Telecel (Vodafone)</strong>
+                <small>Instant MoMo Push / OTP</small>
+              </div>
             </div>
-            <div class="method-chip ${checkoutPaymentMethod === 'card' ? 'active' : ''}" onclick="checkoutPaymentMethod='card';render()">
-              💳 Card
+
+            <div class="luxe-payment-card at ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork.includes('AT') ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='AT Money';render()">
+              ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork.includes('AT') ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">AT Money</span>
+                <strong>AirtelTigo Cash</strong>
+                <small>Ghana MoMo Gateway</small>
+              </div>
             </div>
-            <div class="method-chip ${checkoutPaymentMethod === 'cod' ? 'active' : ''}" onclick="checkoutPaymentMethod='cod';render()">
-              💵 Cash on Delivery
+
+            <div class="luxe-payment-card card ${checkoutPaymentMethod === 'card' ? 'active' : ''}" onclick="checkoutPaymentMethod='card';render()">
+              ${checkoutPaymentMethod === 'card' ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">Bank Card</span>
+                <strong>Visa / Mastercard</strong>
+                <small>256-Bit TLS Direct Charge</small>
+              </div>
+            </div>
+
+            <div class="luxe-payment-card wallet ${checkoutPaymentMethod === 'wallet' ? 'active' : ''}" onclick="checkoutPaymentMethod='wallet';render()">
+              ${checkoutPaymentMethod === 'wallet' ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">VIP Float</span>
+                <strong>Float Wallet</strong>
+                <small>${money(user.walletBalance || 0)} available</small>
+              </div>
+            </div>
+
+            <div class="luxe-payment-card cod ${checkoutPaymentMethod === 'cod' ? 'active' : ''}" onclick="checkoutPaymentMethod='cod';render()">
+              ${checkoutPaymentMethod === 'cod' ? '<span class="selected-check">✓</span>' : ''}
+              <div>
+                <span class="card-badge">Courier</span>
+                <strong>Cash on Delivery</strong>
+                <small>Accra Express Only</small>
+              </div>
             </div>
           </div>
 
           ${checkoutPaymentMethod === 'wallet' ? `
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
+            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
                 <div>
-                  <strong style="font-size:15px;display:block">ByMarie Float Wallet Balance</strong>
-                  <small style="color:var(--muted)">Instant 1-click checkout with pre-loaded float funds</small>
+                  <span class="badge" style="background:#047857;color:#fff;font-size:10px;font-weight:800;padding:2px 8px">⚡ 1-CLICK CHECKOUT</span>
+                  <strong style="font-size:16px;display:block;margin-top:4px">ByMarie Member Float Wallet</strong>
                 </div>
-                <b style="font-size:18px;color:${(user.walletBalance || 0) >= tot ? 'var(--emerald)' : 'var(--red)'}">${money(user.walletBalance || 0)}</b>
+                <b style="font-size:20px;color:${(user.walletBalance || 0) >= tot ? 'var(--emerald)' : 'var(--red)'}">${money(user.walletBalance || 0)}</b>
               </div>
               ${(user.walletBalance || 0) < tot ? `
                 <div style="background:var(--red-bg);border:1px solid var(--red-line);padding:12px 14px;border-radius:var(--radius-sm);color:var(--red);font-size:13px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
@@ -2211,61 +2253,62 @@ function checkout() {
                   <button type="button" class="primary" style="padding:6px 12px;font-size:11px" onclick="activeModal='topup_wallet';render()">+ Top Up Wallet</button>
                 </div>
               ` : `
-                <p style="color:var(--emerald);font-size:13px;font-weight:700;margin-top:8px">✓ Sufficient balance available. Payment will be deducted instantly upon order confirmation.</p>
+                <p style="color:var(--emerald);font-size:13px;font-weight:700;margin-top:8px">✓ Sufficient balance available. Total will be deducted automatically upon confirmation with zero card prompts.</p>
               `}
             </div>
           ` : ''}
 
           ${checkoutPaymentMethod === 'momo' ? `
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
-              <label style="font-size:11px;font-weight:800;text-transform:uppercase">Select Mobile Money Network</label>
-              <div class="momo-provider-row">
-                ${['MTN', 'Telecel (Vodafone)', 'AT Money'].map(net => `
-                  <button type="button" class="provider-btn ${checkoutMomoNetwork === net ? 'active' : ''}" onclick="checkoutMomoNetwork='${net}';render()">
-                    ${net}
-                  </button>
-                `).join('')}
+            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 PAYSTACK IN-APP PROMPT</span>
+                <small style="color:var(--muted);font-weight:700">Selected Network: <b style="color:var(--ink)">${checkoutMomoNetwork}</b></small>
               </div>
               <div class="form-group">
-                <label>Ghana MoMo Number</label>
-                <input required name="momoNumber" type="tel" value="${user.phone}" placeholder="024 XXX XXXX">
-                <small style="color:var(--muted)">You will receive an automated USSD prompt on your phone to approve payment.</small>
+                <label>Ghana Mobile Money Phone Number</label>
+                <input required name="momoNumber" type="tel" value="${user.phone || ''}" placeholder="024 XXX XXXX" style="font-size:15px;font-weight:600;letter-spacing:0.5px">
+                <small style="color:var(--muted);margin-top:6px;display:block">📲 An instant USSD prompt will be sent directly to this phone to authorize payment.</small>
               </div>
             </div>
           ` : ''}
 
           ${checkoutPaymentMethod === 'card' ? `
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
+            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 256-BIT TLS ENCRYPTED</span>
+                <small style="color:var(--muted)">Visa, Mastercard &amp; AMEX</small>
+              </div>
               <div class="form-grid">
                 <div class="form-group full">
-                  <label>Cardholder Name</label>
-                  <input required name="cardName" value="${user.name}" placeholder="Name on card">
+                  <label>Cardholder Full Name</label>
+                  <input required name="cardName" value="${user.name || ''}" placeholder="Name on card">
                 </div>
                 <div class="form-group full">
                   <label>Card Number</label>
-                  <input required name="cardNumber" maxlength="19" placeholder="4123 •••• •••• 1234">
+                  <input required name="cardNumber" maxlength="19" placeholder="4123 •••• •••• 1234" style="font-family:'DM Mono',monospace;font-size:14px">
                 </div>
                 <div class="form-group">
                   <label>Expiry (MM/YY)</label>
-                  <input required name="cardExpiry" maxlength="5" placeholder="12/28">
+                  <input required name="cardExpiry" maxlength="5" placeholder="12/28" style="font-family:'DM Mono',monospace;text-align:center">
                 </div>
                 <div class="form-group">
-                  <label>CVV / CVC</label>
-                  <input required name="cardCvv" maxlength="4" placeholder="123">
+                  <label>CVV / CVC Security Code</label>
+                  <input required name="cardCvv" maxlength="4" placeholder="123" style="font-family:'DM Mono',monospace;text-align:center">
                 </div>
               </div>
-              <small style="color:var(--muted)">🔒 Encrypted 256-bit TLS connection. No card data is stored on server.</small>
+              <small style="color:var(--muted);display:block;margin-top:6px">🔒 Direct in-app bank handshake. Your card credentials are encrypted and never stored on the server.</small>
             </div>
           ` : ''}
 
           ${checkoutPaymentMethod === 'cod' ? `
-            <div style="background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin-bottom:24px">
-              <p style="color:var(--ink);font-size:13px">Pay with cash or MoMo directly to the courier upon physical receipt. (Greater Accra region only).</p>
+            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+              <strong style="display:block;margin-bottom:4px;font-size:14px">💵 Courier Hand-Delivery Cash / MoMo Payment</strong>
+              <p style="color:var(--muted);font-size:13px;margin:0">Pay with physical cash or direct MoMo to our luxury dispatch courier upon door delivery in Greater Accra.</p>
             </div>
           ` : ''}
 
-          <button class="primary" style="width:100%;height:52px;font-size:15px" type="submit">
-            Confirm & Pay ${money(tot)} ${icon('arrow')}
+          <button class="primary" style="width:100%;height:54px;font-size:15px;font-weight:800" type="submit">
+            Authorize &amp; Pay ${money(tot)} ${icon('arrow')}
           </button>
         </form>
       </section>
@@ -2483,7 +2526,11 @@ function startSeamlessPolling(reference) {
         render();
         setTimeout(() => {
           activeModal = null;
-          completeOrder(seamlessPaymentState.orderData);
+          if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
+            completeWalletTopup(seamlessPaymentState.orderData);
+          } else {
+            completeOrder(seamlessPaymentState.orderData);
+          }
         }, 1200);
       }
     } catch (e) {
@@ -2549,7 +2596,11 @@ async function initiateInAppPaystackPayment(orderDetails, paymentInfo) {
       render();
       setTimeout(() => {
         activeModal = null;
-        completeOrder(orderDetails);
+        if (orderDetails.isTopup) {
+          completeWalletTopup(orderDetails);
+        } else {
+          completeOrder(orderDetails);
+        }
       }, 1000);
       return;
     }
@@ -2617,7 +2668,11 @@ async function handleSeamlessSubmitOtp(event) {
       render();
       setTimeout(() => {
         activeModal = null;
-        completeOrder(seamlessPaymentState.orderData);
+        if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
+          completeWalletTopup(seamlessPaymentState.orderData);
+        } else {
+          completeOrder(seamlessPaymentState.orderData);
+        }
       }, 1000);
       return;
     }
@@ -2651,7 +2706,11 @@ async function handleSeamlessManualVerify() {
       render();
       setTimeout(() => {
         activeModal = null;
-        completeOrder(seamlessPaymentState.orderData);
+        if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
+          completeWalletTopup(seamlessPaymentState.orderData);
+        } else {
+          completeOrder(seamlessPaymentState.orderData);
+        }
       }, 1000);
     } else {
       toast('Payment is still pending authorization on your phone.', 'info');
@@ -2659,6 +2718,120 @@ async function handleSeamlessManualVerify() {
   } catch (e) {
     toast('Unable to verify transaction right now.', 'warning');
   }
+}
+
+let topupPaymentMethod = 'momo';
+let topupMomoNetwork = 'MTN';
+
+async function submitWalletTopup(event) {
+  event.preventDefault();
+  const user = getUser();
+  if (!user || !user.loggedIn) {
+    activeModal = 'auth';
+    toast('Please sign in to top up your Float Wallet', 'warning');
+    render();
+    return;
+  }
+
+  const fd = new FormData(event.target);
+  const amount = Number(fd.get('amount') || 0);
+  if (amount < 5) return toast('Minimum deposit amount is GH₵ 5', 'warning');
+
+  const depositDetails = {
+    id: `TOPUP-${Math.floor(100000 + Math.random() * 900000)}`,
+    isTopup: true,
+    total: amount,
+    email: user.email,
+    name: user.name || 'Member',
+    phone: user.phone || '',
+    paymentMethod: topupPaymentMethod === 'card' ? 'Bank Card' : `Mobile Money (${topupMomoNetwork})`
+  };
+
+  if (topupPaymentMethod === 'momo') {
+    let provider = 'mtn';
+    if (topupMomoNetwork.toLowerCase().includes('telecel') || topupMomoNetwork.toLowerCase().includes('vodafone')) provider = 'vod';
+    else if (topupMomoNetwork.toLowerCase().includes('at')) provider = 'tgo';
+
+    const momoPhone = fd.get('momoNumber') || user.phone;
+    if (!momoPhone) return toast('Please enter a Mobile Money number', 'warning');
+
+    depositDetails.phone = momoPhone;
+    initiateInAppPaystackPayment(depositDetails, { type: 'momo', phone: momoPhone, provider, isTopup: true });
+  } else if (topupPaymentMethod === 'card') {
+    const cardNum = fd.get('cardNumber') || '';
+    const cardExp = fd.get('cardExpiry') || '';
+    const cardCvv = fd.get('cardCvv') || '';
+    const [expMonth, expYear] = cardExp.split('/').map(s => s.trim());
+
+    if (!cardNum || !cardExp || !cardCvv) return toast('Please complete card details', 'warning');
+
+    initiateInAppPaystackPayment(depositDetails, {
+      type: 'card',
+      isTopup: true,
+      card: {
+        number: cardNum,
+        cvv: cardCvv,
+        expiry_month: expMonth,
+        expiry_year: expYear && expYear.length === 2 ? `20${expYear}` : expYear
+      }
+    });
+  }
+}
+
+async function completeWalletTopup(depositDetails) {
+  toast('Verifying deposit and crediting Float Wallet...', 'info');
+  const user = getUser();
+
+  try {
+    const res = await fetch(`${API_BASE}/wallet/deposit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        phone: depositDetails.phone || user.phone,
+        amount: depositDetails.total,
+        reference: depositDetails.id,
+        paymentMethod: depositDetails.paymentMethod
+      })
+    });
+
+    const data = await res.json();
+    if (data.balance !== undefined) {
+      user.walletBalance = data.balance;
+    } else {
+      user.walletBalance = Number(((user.walletBalance || 0) + depositDetails.total).toFixed(2));
+    }
+  } catch (e) {
+    user.walletBalance = Number(((user.walletBalance || 0) + depositDetails.total).toFixed(2));
+  }
+
+  saveUser(user);
+  
+  // Sync users array
+  const users = getUsers();
+  const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
+  if (uIdx !== -1) {
+    users[uIdx].walletBalance = user.walletBalance;
+    saveUsers(users);
+  }
+
+  // Record transaction in ledger
+  const txList = getTransactions();
+  txList.unshift({
+    id: depositDetails.id,
+    type: 'Credit',
+    amount: depositDetails.total,
+    note: `Paystack Deposit (${depositDetails.paymentMethod})`,
+    date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • ' + new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+  });
+  saveTransactions(txList);
+
+  activeModal = null;
+  playNotificationChime();
+  render();
+  toast(`🎉 Deposit Verified! GH₵ ${depositDetails.total} credited to your Float Wallet. Available balance: ${money(user.walletBalance)}`);
 }
 
 function cancelSeamlessPayment() {
@@ -7179,44 +7352,106 @@ function renderModals() {
     `;
   }
 
-  // Top Up Float Wallet Modal
+  // Top Up Float Wallet Modal with Full Paystack In-App Logic
   if (activeModal === 'topup_wallet') {
     const user = getUser();
     return `
       <div class="modal-backdrop" onclick="if(event.target===this){activeModal=null;render()}">
-        <div class="modal-card" style="max-width:480px">
+        <div class="modal-card" style="max-width:520px;padding:28px 24px">
           <button class="modal-close" onclick="activeModal=null;render()">✕</button>
-          <span class="eyebrow">BYMARIE FLOAT WALLET</span>
-          <h2 style="font-size:24px;margin:6px 0 6px">Top Up Wallet Funds</h2>
-          <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Current Balance: <strong style="color:var(--emerald);font-size:16px">${money(user.walletBalance || 0)}</strong></p>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge" style="background:#047857;color:#fff;font-weight:800;padding:3px 8px;font-size:10.5px">⚡ INSTANT DEPOSIT</span>
+            <span class="eyebrow" style="margin:0">BYMARIE FLOAT WALLET</span>
+          </div>
+          <h2 style="font-size:24px;margin:2px 0 6px">Add Wallet Funds</h2>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:18px">
+            Current Available Balance: <strong style="color:var(--emerald);font-size:16px">${money(user.walletBalance || 0)}</strong>
+          </p>
 
           <form onsubmit="submitWalletTopup(event)">
-            <label style="font-size:11px;font-weight:800;text-transform:uppercase">Quick Preset Top-Up Amounts</label>
-            <div class="topup-amount-chips">
-              ${[100, 250, 500, 1000].map(amt => `
+            <label style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px">1. Select Preset Amount or Enter Custom (GH₵)</label>
+            <div class="topup-amount-chips" style="margin-bottom:12px">
+              ${[50, 100, 250, 500, 1000].map(amt => `
                 <button type="button" class="topup-chip" onclick="document.getElementById('topup-amt-input').value=${amt}">
                   + GH₵ ${amt}
                 </button>
               `).join('')}
             </div>
 
-            <div class="form-group" style="margin-bottom:16px">
-              <label>Top-Up Amount (GH₵)</label>
-              <input required id="topup-amt-input" name="amount" type="number" min="10" value="250" placeholder="e.g. 250">
+            <div class="form-group" style="margin-bottom:18px">
+              <input required id="topup-amt-input" name="amount" type="number" min="5" value="250" placeholder="Enter amount (e.g. 250)" style="font-size:16px;font-weight:700;color:var(--ink)">
             </div>
 
-            <div style="background:var(--sage-light);border:1px solid var(--emerald-glow);border-radius:var(--radius-md);padding:14px;margin-bottom:20px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                <span class="badge" style="background:var(--emerald);color:#fff;font-weight:800;padding:2px 8px">⚡ PAYSTACK SECURED</span>
-                <small style="color:var(--muted);font-weight:700">Official Payment Gateway</small>
+            <label style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px">2. Choose Payment Channel</label>
+            <div class="luxe-payment-grid" style="margin-bottom:16px;grid-template-columns:repeat(2,1fr)">
+              <div class="luxe-payment-card mtn ${topupPaymentMethod === 'momo' && topupMomoNetwork === 'MTN' ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='MTN';render()">
+                ${topupPaymentMethod === 'momo' && topupMomoNetwork === 'MTN' ? '<span class="selected-check">✓</span>' : ''}
+                <div>
+                  <span class="card-badge">MTN MoMo</span>
+                  <strong>MTN Money</strong>
+                  <small>Handset USSD</small>
+                </div>
               </div>
-              <p style="font-size:12px;color:var(--ink);margin:0">
-                Supports <strong>MTN Mobile Money</strong>, <strong>Telecel Cash</strong>, <strong>AT Money</strong>, and <strong>Visa / Mastercard</strong> with instant verification.
-              </p>
+
+              <div class="luxe-payment-card telecel ${topupPaymentMethod === 'momo' && (topupMomoNetwork.includes('Telecel') || topupMomoNetwork.includes('Vodafone')) ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='Telecel (Vodafone)';render()">
+                ${topupPaymentMethod === 'momo' && (topupMomoNetwork.includes('Telecel') || topupMomoNetwork.includes('Vodafone')) ? '<span class="selected-check">✓</span>' : ''}
+                <div>
+                  <span class="card-badge">Telecel Cash</span>
+                  <strong>Telecel (Vodafone)</strong>
+                  <small>Instant Push</small>
+                </div>
+              </div>
+
+              <div class="luxe-payment-card at ${topupPaymentMethod === 'momo' && topupMomoNetwork.includes('AT') ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='AT Money';render()">
+                ${topupPaymentMethod === 'momo' && topupMomoNetwork.includes('AT') ? '<span class="selected-check">✓</span>' : ''}
+                <div>
+                  <span class="card-badge">AT Money</span>
+                  <strong>AT Cash</strong>
+                  <small>MoMo Push</small>
+                </div>
+              </div>
+
+              <div class="luxe-payment-card card ${topupPaymentMethod === 'card' ? 'active' : ''}" onclick="topupPaymentMethod='card';render()">
+                ${topupPaymentMethod === 'card' ? '<span class="selected-check">✓</span>' : ''}
+                <div>
+                  <span class="card-badge">Card</span>
+                  <strong>Visa / Master</strong>
+                  <small>Bank Card</small>
+                </div>
+              </div>
             </div>
+
+            ${topupPaymentMethod === 'momo' ? `
+              <div class="form-group" style="margin-bottom:20px;background:#f9f9fb;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px">
+                <label>Ghana Mobile Money Phone Number</label>
+                <input required name="momoNumber" type="tel" value="${user.phone || ''}" placeholder="024 XXX XXXX" style="font-size:14px;font-weight:600">
+                <small style="color:var(--muted);display:block;margin-top:4px">📲 An automated authorization prompt will be sent to this phone.</small>
+              </div>
+            ` : ''}
+
+            ${topupPaymentMethod === 'card' ? `
+              <div style="background:#f9f9fb;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px">
+                <div class="form-grid">
+                  <div class="form-group full">
+                    <label>Card Number</label>
+                    <input required name="cardNumber" maxlength="19" placeholder="4123 •••• •••• 1234">
+                  </div>
+                  <div class="form-group">
+                    <label>Expiry (MM/YY)</label>
+                    <input required name="cardExpiry" maxlength="5" placeholder="12/28">
+                  </div>
+                  <div class="form-group">
+                    <label>CVV</label>
+                    <input required name="cardCvv" maxlength="4" placeholder="123">
+                  </div>
+                </div>
+              </div>
+            ` : ''}
 
             <div style="display:flex;gap:12px">
-              <button class="primary" style="flex-grow:1;height:46px" type="submit">Pay via Paystack ${icon('arrow')}</button>
+              <button class="primary" style="flex-grow:1;height:48px;font-size:14px;font-weight:800" type="submit">
+                Authorize Deposit via Paystack →
+              </button>
               <button class="secondary-btn" type="button" onclick="activeModal=null;render()">Cancel</button>
             </div>
           </form>

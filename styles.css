@@ -8147,6 +8147,102 @@ html, body {
   margin: 20px auto;
 }
 
+/* ===================================================
+   REDESIGNED LUXE PAYMENT PAGE & ADD FUNDS STYLES
+   =================================================== */
+
+.luxe-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .luxe-payment-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .luxe-payment-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.luxe-payment-card {
+  background: #ffffff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: var(--shadow-subtle);
+  box-sizing: border-box;
+}
+
+.luxe-payment-card:hover {
+  border-color: #c24d67;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(194, 77, 103, 0.1);
+}
+
+.luxe-payment-card.active {
+  border-color: #c24d67;
+  background: linear-gradient(180deg, #fffafd 0%, #fff 100%);
+  box-shadow: 0 0 0 2px #c24d67, 0 8px 24px rgba(194, 77, 103, 0.12);
+}
+
+.luxe-payment-card .card-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 8px;
+  width: fit-content;
+}
+
+.luxe-payment-card.mtn .card-badge { background: #ffcc00; color: #000; }
+.luxe-payment-card.telecel .card-badge { background: #e60000; color: #fff; }
+.luxe-payment-card.at .card-badge { background: #003399; color: #fff; }
+.luxe-payment-card.card .card-badge { background: #182822; color: #e8cca4; }
+.luxe-payment-card.wallet .card-badge { background: #047857; color: #fff; }
+.luxe-payment-card.cod .card-badge { background: #71717a; color: #fff; }
+
+.luxe-payment-card strong {
+  font-size: 13.5px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.luxe-payment-card small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.luxe-payment-card .selected-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  background: #c24d67;
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
 
 
 

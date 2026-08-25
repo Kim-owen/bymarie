@@ -644,6 +644,110 @@ app.get('/api/paystack/verify/:reference', async (req, res) => {
   }
 });
 
+// --- WALLET DEPOSIT & TOP-UP NOTIFICATION API ---
+app.post('/api/wallet/deposit', async (req, res) => {
+  try {
+    const { userId, email, name, phone, amount, reference, paymentMethod } = req.body;
+    const numAmount = Number(amount || 0);
+    if (numAmount <= 0) return res.status(400).json({ error: 'Invalid deposit amount' });
+
+    const db = readDB();
+    if (!db.users) db.users = [];
+    let user = db.users.find(u => (u.email && u.email.toLowerCase() === (email || '').toLowerCase()) || u.id === userId);
+
+    if (user) {
+      user.walletBalance = Number(((user.walletBalance || 0) + numAmount).toFixed(2));
+    } else {
+      user = {
+        id: userId || `usr-${Date.now()}`,
+        name: name || 'Valued Member',
+        email: email || '',
+        phone: phone || '',
+        walletBalance: numAmount,
+        joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        ordersCount: 0,
+        status: 'Active'
+      };
+      db.users.push(user);
+    }
+    writeDB(db);
+
+    // Sync to Supabase
+    const client = getSupabaseClient();
+    if (client) {
+      try {
+        await client.from('users').upsert([user], { onConflict: 'email' });
+      } catch (e) {}
+    }
+
+    // In-Dashboard Notification
+    if (!db.notifications) db.notifications = [];
+    const depositNotif = {
+      id: `notif-${Date.now()}`,
+      type: 'wallet',
+      title: `💳 Float Wallet Top-Up: GH₵ ${numAmount.toFixed(2)}`,
+      message: `${user.name} deposited GH₵ ${numAmount.toFixed(2)} via Paystack ${paymentMethod || 'Mobile Money'}. Reference: ${reference || 'N/A'}.`,
+      date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • Today',
+      target: 'admin',
+      read: false
+    };
+    db.notifications.unshift(depositNotif);
+    writeDB(db);
+
+    // SMS Notifications via mNotify / BMS
+    const mnotifyKey = process.env.MNOTIFY_API_KEY || process.env.BMS_API_KEY;
+    const adminPhone = process.env.ADMIN_PHONE || '0241002000';
+    const mnotifySender = process.env.MNOTIFY_SENDER || 'Bymarie';
+
+    const formatPhoneForGhana = (num) => {
+      let clean = String(num || '').replace(/[^0-9]/g, '');
+      if (clean.startsWith('233') && clean.length === 12) clean = '0' + clean.slice(3);
+      return clean;
+    };
+
+    if (mnotifyKey) {
+      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      
+      // Customer SMS
+      const custPhone = formatPhoneForGhana(user.phone || phone);
+      if (custPhone && custPhone.length >= 10) {
+        await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: [custPhone],
+            sender: mnotifySender,
+            message: `ByMarie: Your Float Wallet has been credited with GH₵ ${numAmount.toFixed(2)}! New available balance: GH₵ ${user.walletBalance.toFixed(2)}. Enjoy instant 1-click checkout at bymarie.shop.`,
+            is_schedule: false,
+            schedule_date: ''
+          })
+        });
+      }
+
+      // Admin Alert SMS
+      const admPhone = formatPhoneForGhana(adminPhone);
+      if (admPhone && admPhone.length >= 10) {
+        await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: [admPhone],
+            sender: mnotifySender,
+            message: `ByMarie Float Top-Up: ${user.name} (${user.phone}) added GH₵ ${numAmount.toFixed(2)} to Float Wallet. New balance: GH₵ ${user.walletBalance.toFixed(2)}.`,
+            is_schedule: false,
+            schedule_date: ''
+          })
+        });
+      }
+    }
+
+    res.json({ success: true, user, balance: user.walletBalance });
+  } catch (err) {
+    console.error('Wallet deposit error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Update order status
 app.patch('/api/orders/:id/status', async (req, res) => {
   const { status } = req.body;
