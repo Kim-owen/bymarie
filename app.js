@@ -632,8 +632,65 @@ function getSiteSettings() {
   return settings;
 }
 
+// Lightweight IndexedDB Store for High-Def Videos (Bypasses 5MB localStorage limit)
+const VideoDB = {
+  dbPromise: null,
+  getDB() {
+    if (!this.dbPromise) {
+      this.dbPromise = new Promise((resolve, reject) => {
+        try {
+          const req = indexedDB.open('bymarie_video_store', 1);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains('videos')) {
+              db.createObjectStore('videos');
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }
+    return this.dbPromise;
+  },
+  async saveVideo(key, data) {
+    try {
+      const db = await this.getDB();
+      if (!db) return false;
+      return new Promise((resolve) => {
+        const tx = db.transaction('videos', 'readwrite');
+        tx.objectStore('videos').put(data, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    } catch { return false; }
+  },
+  async getVideo(key) {
+    try {
+      const db = await this.getDB();
+      if (!db) return null;
+      return new Promise((resolve) => {
+        const tx = db.transaction('videos', 'readonly');
+        const req = tx.objectStore('videos').get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    } catch { return null; }
+  }
+};
+
 function saveSiteSettings(settings) {
-  localStorage.setItem('bymarie-site-settings', JSON.stringify(settings));
+  try {
+    const safe = { ...settings };
+    if (Array.isArray(safe.heroVideos)) {
+      safe.heroVideos = safe.heroVideos.filter(v => typeof v === 'string' && (v.startsWith('http') || v.startsWith('/') || v.startsWith('blob:') || (v.startsWith('data:') && v.length < 50000)));
+    }
+    localStorage.setItem('bymarie-site-settings', JSON.stringify(safe));
+  } catch (err) {
+    console.warn('localStorage quota handled safely:', err.message);
+  }
 }
 
 const DEFAULT_SUPABASE_CONFIG = {
@@ -7907,38 +7964,58 @@ function removeAdminCategoryCover(target, index) {
   } catch (err) {}
 }
 
-function handleMultiHeroVideoUpload(event) {
+async function handleMultiHeroVideoUpload(event) {
   const files = Array.from(event.target.files || []);
   if (!files.length) return;
 
-  toast(`Processing ${files.length} campaign video(s)...`, 'info');
+  toast(`Uploading ${files.length} campaign video(s)...`, 'info');
   const settings = getSiteSettings();
   if (!Array.isArray(settings.heroVideos)) settings.heroVideos = [];
 
-  let loadedCount = 0;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const dataUrl = e.target.result;
-      settings.heroVideos.push(dataUrl);
-      if (!settings.heroMediaUrl) settings.heroMediaUrl = dataUrl;
-      loadedCount++;
-      if (loadedCount === files.length) {
-        saveSiteSettings(settings);
-        toast(`🎬 Added ${files.length} video(s) to hero playlist! Rotating every ${settings.heroVideoInterval || 30}s ⚡`, 'success');
-        render();
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    let uploadedUrl = null;
 
-        try {
-          fetch(`${API_BASE}/settings`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(settings)
-          }).catch(() => {});
-        } catch (err) {}
+    // 1. Try uploading to backend /api/upload (Server storage)
+    try {
+      const fd = new FormData();
+      fd.append('photos', file);
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        body: fd
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.urls && data.urls[0]) {
+          uploadedUrl = data.urls[0];
+        }
       }
-    };
-    reader.readAsDataURL(file);
-  });
+    } catch (err) {
+      console.warn('API upload fallback:', err);
+    }
+
+    // 2. Fallback: Save to IndexedDB & create local Blob URL (Zero quota limit)
+    if (!uploadedUrl) {
+      const blobUrl = URL.createObjectURL(file);
+      await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file);
+      uploadedUrl = blobUrl;
+    }
+
+    settings.heroVideos.push(uploadedUrl);
+    if (!settings.heroMediaUrl) settings.heroMediaUrl = uploadedUrl;
+  }
+
+  saveSiteSettings(settings);
+  toast(`🎬 Added ${files.length} video(s) to hero playlist! Rotating every ${settings.heroVideoInterval || 30}s ⚡`, 'success');
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
 }
 
 function handleAddHeroVideoUrl(url) {
