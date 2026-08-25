@@ -692,11 +692,12 @@ h1, h2, h3, .serif {
   display: grid;
   grid-template-columns: 1fr 1.05fr;
   gap: clamp(24px, 4vw, 50px);
-  padding: 50px clamp(24px, 5vw, 80px);
+  padding: 160px clamp(24px, 5vw, 80px) 60px !important;
   overflow: hidden;
   align-items: center;
   position: relative;
   border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
 }
 
 .hero::after {
@@ -6990,11 +6991,12 @@ html, body {
   .hero {
     grid-template-columns: 1fr !important;
     gap: 24px !important;
-    padding: 24px 16px 36px !important;
+    padding: 155px 16px 36px !important;
     min-height: auto !important;
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
+    box-sizing: border-box !important;
   }
 
   .hero-copy {
@@ -7809,6 +7811,12 @@ html, body {
 @media (max-width: 480px) {
   .shop-page {
     padding: 145px 10px 50px !important;
+  }
+
+  .hero {
+    padding-top: 150px !important;
+    padding-bottom: 30px !important;
+    box-sizing: border-box !important;
   }
 
   .account-shell,
