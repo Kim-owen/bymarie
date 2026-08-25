@@ -7989,6 +7989,164 @@ html, body {
   }
 }
 
+/* ===================================================
+   SEAMLESS IN-APP PAYSTACK PAYMENT & OTP VERIFICATION
+   =================================================== */
+
+.paystack-modal-card {
+  max-width: 480px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.paystack-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.paystack-security-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.paystack-amount-banner {
+  background: linear-gradient(135deg, #182822 0%, #0d1915 100%);
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paystack-amount-banner span {
+  font-size: 12px;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.paystack-amount-banner strong {
+  font-size: 22px;
+  color: var(--gold-light);
+  font-family: 'Playfair Display', serif;
+}
+
+/* Phone Radar / USSD Handset Animation */
+.handset-radar-wrap {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.handset-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #059669;
+  opacity: 0;
+  animation: radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.handset-radar-ring.delay-1 {
+  animation-delay: 0.6s;
+}
+
+.handset-radar-icon {
+  width: 54px;
+  height: 54px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  z-index: 2;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* OTP 6-Digit Code Input */
+.otp-input-field {
+  width: 100%;
+  max-width: 260px;
+  letter-spacing: 8px;
+  font-size: 24px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-md);
+  outline: none;
+  background: #fafafa;
+  transition: all 0.2s ease;
+  margin: 0 auto 14px;
+}
+
+.otp-input-field:focus {
+  border-color: #c24d67;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(194, 77, 103, 0.15);
+}
+
+.countdown-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f4f4f5;
+  color: #52525b;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.countdown-timer-badge.active {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+.pulse-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(194, 77, 103, 0.2);
+  border-top-color: #c24d67;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 20px auto;
+}
+
 
 
 

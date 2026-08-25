@@ -357,44 +357,51 @@ async function sendAdminOrderNotifications(order) {
     return clean;
   };
 
-  const recipientList = [formatPhoneForGhana(adminPhone), formatPhoneForGhana(order.phone)].filter(p => p && p.length >= 10);
-  const smsBody = `ByMarie Alert: New Order #${order.id} received from ${order.name} (${order.phone}) for GH₵ ${Number(order.total || 0).toFixed(2)}. Destination: ${order.city}. Status: Processing.`;
+  const adminPhoneFormatted = formatPhoneForGhana(adminPhone);
+  const customerPhoneFormatted = formatPhoneForGhana(order.phone);
+  const mnotifySender = process.env.MNOTIFY_SENDER || 'Bymarie';
 
   try {
     if (mnotifyKey) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-      const mnotifySender = process.env.MNOTIFY_SENDER || 'Bymarie';
-      const res = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+      
+      // Admin SMS Alert
+      const adminSmsBody = `ByMarie Alert: New Order #${order.id} received from ${order.name} (${order.phone}) for GH₵ ${Number(order.total || 0).toFixed(2)}. Destination: ${order.city}. Status: Processing.`;
+      await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipient: recipientList,
+          recipient: [adminPhoneFormatted],
           sender: mnotifySender,
-          message: smsBody,
+          message: adminSmsBody,
           is_schedule: false,
           schedule_date: ''
         })
       });
-      const data = await res.json();
-      console.log(`📱 [mNotify BMS SMS DISPATCH] Result:`, data);
-    } else if (process.env.ARKESEL_API_KEY) {
-      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-      await fetchFn(`https://sms.arkesel.com/api/v2/sms/send`, {
-        method: 'POST',
-        headers: { 'api-key': process.env.ARKESEL_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sender: 'ByMarie',
-          message: smsBody,
-          recipients: recipientList
-        })
-      });
+
+      // Customer Confirmation SMS Receipt
+      if (customerPhoneFormatted && customerPhoneFormatted.length >= 10) {
+        const customerSmsBody = `ByMarie: Thank you for your order, ${order.name}! Order #${order.id} for GH₵ ${Number(order.total || 0).toFixed(2)} has been verified and is being prepared for express delivery to ${order.city}. Track status: bymarie.shop/#account`;
+        await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: [customerPhoneFormatted],
+            sender: mnotifySender,
+            message: customerSmsBody,
+            is_schedule: false,
+            schedule_date: ''
+          })
+        });
+      }
+
+      console.log(`📱 [mNotify BMS SMS DISPATCH] Admin & Customer SMS receipts sent successfully`);
     }
-    console.log(`📱 [SMS DISPATCH] Alert queued to Admin (${adminPhone}): "${smsBody}"`);
   } catch (err) {
     console.warn('SMS dispatch notification note:', err.message);
   }
 
-  // 3. Dispatch Email to Admin (Resend / SendGrid / Supabase)
+  // 3. Dispatch Email to Admin and Customer via Resend
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;">
       <div style="background: #182822; color: #fff; padding: 24px; text-align: center;">
@@ -402,8 +409,8 @@ async function sendAdminOrderNotifications(order) {
         <p style="color: #e8cca4; margin: 6px 0 0; font-size: 13px;">HAUTE COUTURE ATELIER • ACCRA</p>
       </div>
       <div style="padding: 24px; background: #fff;">
-        <h2 style="color: #182822; margin-top: 0;">⚡ New Customer Order Received: #${order.id}</h2>
-        <p style="color: #52525b; font-size: 14px;">A new order has just been placed and verified on the ByMarie luxury storefront.</p>
+        <h2 style="color: #182822; margin-top: 0;">⚡ Order Confirmation: #${order.id}</h2>
+        <p style="color: #52525b; font-size: 14px;">Thank you for shopping at ByMarie. Your luxury order has been verified and queued for express dispatch.</p>
         
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
           <tr style="background: #faf5f6;"><td style="padding: 8px 12px; font-weight: bold;">Client Name:</td><td style="padding: 8px 12px;">${order.name}</td></tr>
@@ -418,7 +425,7 @@ async function sendAdminOrderNotifications(order) {
         <p style="background: #f4f4f5; padding: 12px; border-radius: 6px; font-size: 13px; color: #27272a;">${itemsText}</p>
 
         <div style="text-align: center; margin-top: 24px;">
-          <a href="https://bymarie.vercel.app/#admin/orders" style="background: #c24d67; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Open Admin Order Logistics →</a>
+          <a href="https://bymarie.vercel.app/#account" style="background: #c24d67; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Track Order in Member Hub →</a>
         </div>
       </div>
       <div style="background: #fafafa; padding: 16px; text-align: center; font-size: 12px; color: #71717a; border-top: 1px solid #e4e4e7;">
@@ -432,32 +439,24 @@ async function sendAdminOrderNotifications(order) {
     if (resendApiKey) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
       const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Orders <onboarding@resend.dev>';
-      const targetEmail = process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com';
-      const res = await fetchFn('https://api.resend.com/emails', {
+      const targetAdmin = process.env.ADMIN_EMAIL || 'sunumanfred14@gmail.com';
+      
+      const emailRecipients = [targetAdmin];
+      if (order.email && order.email.includes('@') && !emailRecipients.includes(order.email)) {
+        emailRecipients.push(order.email);
+      }
+
+      await fetchFn('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: fromAddress,
-          to: [targetEmail],
-          subject: `⚡ New Order Alert #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
+          to: emailRecipients,
+          subject: `⚡ Order Confirmation #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
           html: emailHtml
         })
       });
-      const data = await res.json();
-      if (data.error || data.statusCode >= 400) {
-        // If domain restricted to registered email in sandbox, retry with sunumanfred14@gmail.com
-        await fetchFn('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from: 'ByMarie Orders <onboarding@resend.dev>',
-            to: ['sunumanfred14@gmail.com'],
-            subject: `⚡ New Order Alert #${order.id} (GH₵ ${Number(order.total || 0).toFixed(2)}) - ByMarie`,
-            html: emailHtml
-          })
-        });
-      }
-      console.log(`📧 [EMAIL DISPATCH] Alert sent to Admin for Order #${order.id}. Resend ID:`, data.id || data);
+      console.log(`📧 [EMAIL DISPATCH] Alert sent to recipients:`, emailRecipients);
     }
   } catch (err) {
     console.warn('Email dispatch notification note:', err.message);
@@ -522,6 +521,126 @@ app.post('/api/orders', async (req, res) => {
   } catch (err) {
     console.error('Secure Order Creation Error:', err.message);
     res.status(400).json({ error: err.message });
+  }
+});
+
+// --- PAYSTACK IN-APP DIRECT CHARGE & OTP API ---
+
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || 'sk_test_b05bc12163a77b862d08386b7e7c2e18476ce2a6';
+
+// 1. Direct In-App Charge (Zero external redirects)
+app.post('/api/paystack/charge', async (req, res) => {
+  try {
+    const { email, amount, mobile_money, card, reference, metadata } = req.body;
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+
+    const payload = {
+      email: (email || 'customer@bymarie.shop').trim(),
+      amount: Math.round(Number(amount) * 100),
+      currency: 'GHS',
+      reference: reference || `bm_tx_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
+      metadata: metadata || {}
+    };
+
+    if (mobile_money) {
+      let cleanPhone = String(mobile_money.phone || '').replace(/[^0-9]/g, '');
+      if (cleanPhone.startsWith('233') && cleanPhone.length === 12) cleanPhone = '0' + cleanPhone.slice(3);
+      payload.mobile_money = {
+        phone: cleanPhone,
+        provider: (mobile_money.provider || 'mtn').toLowerCase()
+      };
+    } else if (card) {
+      payload.card = {
+        number: String(card.number || '').replace(/\s/g, ''),
+        cvv: String(card.cvv || '').trim(),
+        expiry_month: String(card.expiry_month || '').trim(),
+        expiry_year: String(card.expiry_year || '').trim(),
+        pin: card.pin ? String(card.pin).trim() : undefined
+      };
+    }
+
+    const response = await fetchFn('https://api.paystack.co/charge', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    console.log(`💳 [PAYSTACK IN-APP CHARGE] Status:`, data.status, data.data ? data.data.status : data.message);
+    res.json(data);
+  } catch (err) {
+    console.error('Paystack Charge Error:', err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// 2. Submit In-App OTP
+app.post('/api/paystack/submit-otp', async (req, res) => {
+  try {
+    const { otp, reference } = req.body;
+    if (!otp || !reference) {
+      return res.status(400).json({ status: false, message: 'OTP and reference are required' });
+    }
+
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn('https://api.paystack.co/charge/submit_otp', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ otp: String(otp).trim(), reference })
+    });
+
+    const data = await response.json();
+    console.log(`🔐 [PAYSTACK SUBMIT OTP] Result:`, data.status, data.data ? data.data.status : data.message);
+    res.json(data);
+  } catch (err) {
+    console.error('Paystack Submit OTP Error:', err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// 3. Submit In-App Card PIN
+app.post('/api/paystack/submit-pin', async (req, res) => {
+  try {
+    const { pin, reference } = req.body;
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn('https://api.paystack.co/charge/submit_pin', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ pin: String(pin).trim(), reference })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// 4. Verify Paystack Transaction
+app.get('/api/paystack/verify/:reference', async (req, res) => {
+  try {
+    const { reference } = req.params;
+    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+    const response = await fetchFn(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET}`
+      }
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
   }
 });
 
