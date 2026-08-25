@@ -1,8 +1,8 @@
-// ===================================================
-// BYMARIE LUXURY E-COMMERCE - APPLICATION ENGINE
-// ===================================================
-
-const ADMIN_EMAIL = 'adichieifeoma@gmail.com';
+const ADMIN_EMAILS = [
+  'sunumanfred14@gmail.com',
+  'adichieifeoma@gmail.com'
+];
+const ADMIN_EMAIL = 'sunumanfred14@gmail.com';
 
 const INITIAL_PRODUCTS = [];
 const INITIAL_COUPONS = [];
@@ -12,6 +12,17 @@ const INITIAL_NOTIFICATIONS = [];
 const INITIAL_USERS = [
   {
     id: 'usr-admin-01',
+    name: 'Manfred Sunu',
+    email: 'sunumanfred14@gmail.com',
+    phone: '+233 24 100 2000',
+    address: 'Executive Suite, Cantonments, Accra',
+    walletBalance: 0.00,
+    joinedDate: '01 Jan 2026',
+    ordersCount: 0,
+    status: 'Super Admin'
+  },
+  {
+    id: 'usr-admin-02',
     name: 'Ifeoma Adichie',
     email: 'adichieifeoma@gmail.com',
     phone: '+233 24 100 2000',
@@ -3925,7 +3936,10 @@ function wishlistPage() {
 
 function isAdminUser() {
   const user = getUser();
-  if (user && user.loggedIn && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  if (user && user.loggedIn && user.email && ADMIN_EMAILS.some(e => e.toLowerCase() === user.email.toLowerCase())) {
+    return true;
+  }
+  if (user && user.loggedIn && user.status === 'Super Admin') {
     return true;
   }
   if (adminAuthenticated) return true;
@@ -3954,7 +3968,7 @@ function renderAdminLoginGate() {
         <span class="eyebrow" style="color:var(--gold-light)">EXECUTIVE CONTROL GATE</span>
         <h2 style="font-size:26px;margin:8px 0 12px">Admin Console Access</h2>
         <p style="color:#a1a1aa;font-size:13.5px;line-height:1.6;margin-bottom:24px">
-          The Admin Console is strictly restricted to executive account <strong style="color:#fff">${ADMIN_EMAIL}</strong>.
+          The Admin Console is strictly restricted to executive accounts (<strong style="color:#fff">sunumanfred14@gmail.com</strong>).
         </p>
 
         ${user && user.loggedIn ? `
@@ -3964,7 +3978,7 @@ function renderAdminLoginGate() {
             <small style="color:var(--red);display:block;margin-top:6px;font-weight:700">⚠️ Account does not have administrative privileges.</small>
           </div>
           <div style="display:flex;gap:10px;flex-direction:column">
-            <button class="primary" style="width:100%" onclick="clearUser();authMode='signin';go('auth')">Sign In as Admin (${ADMIN_EMAIL})</button>
+            <button class="primary" style="width:100%" onclick="clearUser();authMode='signin';go('auth')">Sign In as Admin (sunumanfred14@gmail.com)</button>
             <button class="secondary-btn" style="width:100%;color:#fff;border-color:rgba(255,255,255,0.2)" onclick="go('home')">Return to Storefront</button>
           </div>
         ` : `
@@ -3976,7 +3990,7 @@ function renderAdminLoginGate() {
             <button class="primary" style="width:100%" type="submit">Unlock Console ${icon('arrow')}</button>
           </form>
           <div style="margin-top:14px">
-            <button class="secondary-btn" style="width:100%;color:#fff;border-color:rgba(255,255,255,0.2)" onclick="authMode='signin';go('auth')">Sign In with Admin Account (${ADMIN_EMAIL})</button>
+            <button class="secondary-btn" style="width:100%;color:#fff;border-color:rgba(255,255,255,0.2)" onclick="authMode='signin';go('auth')">Sign In with Admin Account (sunumanfred14@gmail.com)</button>
           </div>
         `}
       </div>
@@ -5271,9 +5285,9 @@ async function handleCustomerSignIn(event) {
     });
   } catch (e) {}
 
-  if (email === ADMIN_EMAIL.toLowerCase() || u.status === 'Super Admin') {
+  if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || u.status === 'Super Admin') {
     adminAuthenticated = true;
-    toast(`Welcome back, Executive Administrator! 👑⚡`);
+    toast(`Welcome back, Executive Administrator ${u.name}! 👑⚡`);
     activeModal = null;
     go('admin');
     return;
@@ -5317,7 +5331,7 @@ async function handleCustomerSignUp(event) {
       joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       lastLogin: new Date().toLocaleString(),
       ordersCount: 0,
-      status: email === ADMIN_EMAIL ? 'Super Admin' : 'Active',
+      status: ADMIN_EMAILS.some(e => e.toLowerCase() === email) ? 'Super Admin' : 'Active',
       loggedIn: true
     };
     users.push(u);
@@ -5333,6 +5347,14 @@ async function handleCustomerSignUp(event) {
       body: JSON.stringify({ name, email, phone, password })
     });
   } catch (e) {}
+
+  if (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || u.status === 'Super Admin') {
+    adminAuthenticated = true;
+    toast(`Welcome to ByMarie Executive Console, ${u.name}! 👑⚡`);
+    activeModal = null;
+    go('admin');
+    return;
+  }
 
   toast(`Welcome to ByMarie, ${u.name}! 👑`);
   activeModal = null;
