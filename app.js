@@ -1122,6 +1122,36 @@ function initHeroVideoMobilePlayback() {
       }
     }
   });
+
+  // Mobile Touch Swipe Navigation (Swipe Left for Next Video, Swipe Right for Prev Video)
+  const container = document.querySelector('.hero-video-carousel-container');
+  if (container && !container._touchBound) {
+    container._touchBound = true;
+    let startX = 0;
+    let startY = 0;
+    container.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+
+      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX < 0) {
+          nextHeroVideo();
+        } else {
+          prevHeroVideo();
+        }
+      }
+    }, { passive: true });
+  }
 }
 
 // ===================================================
