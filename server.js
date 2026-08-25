@@ -346,11 +346,38 @@ async function sendAdminOrderNotifications(order) {
   db.notifications.unshift(adminNotif);
   writeDB(db);
 
-  // 2. Dispatch SMS to Admin (Hubtel / Arkesel / Twilio Ghana)
-  const smsBody = `ByMarie Alert: New Order #${order.id} received from ${order.name} (${order.phone}) for GH₵ ${Number(order.total || 0).toFixed(2)}. Deliver to: ${order.city}. Status: ${order.status}.`;
+  // 2. Dispatch SMS to Admin & Customer via mNotify / BMS Quick Bulk SMS API
+  const mnotifyKey = process.env.MNOTIFY_API_KEY || process.env.BMS_API_KEY;
+  const adminPhone = process.env.ADMIN_PHONE || '0241002000';
   
+  // Format Ghana phone numbers (e.g. +233 24 -> 024...)
+  const formatPhoneForGhana = (num) => {
+    let clean = String(num || '').replace(/[^0-9]/g, '');
+    if (clean.startsWith('233') && clean.length === 12) clean = '0' + clean.slice(3);
+    return clean;
+  };
+
+  const recipientList = [formatPhoneForGhana(adminPhone), formatPhoneForGhana(order.phone)].filter(p => p && p.length >= 10);
+  const smsBody = `ByMarie Alert: New Order #${order.id} received from ${order.name} (${order.phone}) for GH₵ ${Number(order.total || 0).toFixed(2)}. Destination: ${order.city}. Status: Processing.`;
+
   try {
-    if (process.env.ARKESEL_API_KEY) {
+    if (mnotifyKey) {
+      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+      const mnotifySender = process.env.MNOTIFY_SENDER || 'ByMarie';
+      const res = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: recipientList,
+          sender: mnotifySender,
+          message: smsBody,
+          is_schedule: false,
+          schedule_date: ''
+        })
+      });
+      const data = await res.json();
+      console.log(`📱 [mNotify BMS SMS DISPATCH] Result:`, data);
+    } else if (process.env.ARKESEL_API_KEY) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
       await fetchFn(`https://sms.arkesel.com/api/v2/sms/send`, {
         method: 'POST',
@@ -358,11 +385,11 @@ async function sendAdminOrderNotifications(order) {
         body: JSON.stringify({
           sender: 'ByMarie',
           message: smsBody,
-          recipients: [ADMIN_PHONE, order.phone].filter(Boolean)
+          recipients: recipientList
         })
       });
     }
-    console.log(`📱 [SMS DISPATCH] Alert sent to Admin (${ADMIN_PHONE}): "${smsBody}"`);
+    console.log(`📱 [SMS DISPATCH] Alert queued to Admin (${adminPhone}): "${smsBody}"`);
   } catch (err) {
     console.warn('SMS dispatch notification note:', err.message);
   }
