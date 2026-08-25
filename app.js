@@ -89,6 +89,59 @@ function saveUsers(users) {
   localStorage.setItem('bymarie-users', JSON.stringify(users));
 }
 
+async function fetchLatestUsers(notify = false) {
+  try {
+    const res = await fetch(`${API_BASE}/users`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        const local = getUsers();
+        const merged = [...data];
+        local.forEach(lu => {
+          if (!merged.some(m => (m.email && lu.email && m.email.toLowerCase() === lu.email.toLowerCase()) || m.id === lu.id)) {
+            merged.push(lu);
+          }
+        });
+        saveUsers(merged);
+        if (notify) {
+          toast(`⚡ Synced ${merged.length} client accounts from live database!`, 'success');
+        }
+        if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast' || adminTab === 'dashboard')) {
+          render();
+        }
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('Live users sync note:', err.message);
+  }
+  return getUsers();
+}
+
+function getCampaignLogs() {
+  const data = localStorage.getItem('bymarie-campaigns');
+  if (!data) return [];
+  try { return JSON.parse(data); } catch { return []; }
+}
+
+function saveCampaignLogs(logs) {
+  localStorage.setItem('bymarie-campaigns', JSON.stringify(logs));
+}
+
+async function fetchCampaignLogs() {
+  try {
+    const res = await fetch(`${API_BASE}/campaigns`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        saveCampaignLogs(data);
+        return data;
+      }
+    }
+  } catch (e) {}
+  return getCampaignLogs();
+}
+
 function getNotifications() {
   const data = localStorage.getItem('bymarie-notifications');
   if (!data) {
@@ -892,7 +945,12 @@ function svgIcon(name, size = 18) {
     receipt: '<path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/>',
     eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
     users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-    wallet: '<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V12a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><circle cx="16" cy="14" r="1" fill="currentColor"/>'
+    wallet: '<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V12a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><circle cx="16" cy="14" r="1" fill="currentColor"/>',
+    mail: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+    send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+    message: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+    check: '<polyline points="20 6 9 17 4 12"/>'
   };
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name] || ''}</svg>`;
 }
@@ -4423,6 +4481,7 @@ const ADMIN_NAV = [
   ]},
   { section: 'Commercial & CRM', items: [
     { key: 'users', label: 'VIP Clients & Wallets', icon: 'users' },
+    { key: 'broadcast', label: 'Bulk SMS & Email Engine', icon: 'send' },
     { key: 'wholesale', label: 'Wholesale B2B Pipeline', icon: 'zap' },
     { key: 'discounts', label: 'Promo & Marketing', icon: 'tag' }
   ]},
@@ -4438,6 +4497,7 @@ const ADMIN_TAB_TITLES = {
   products: 'Haute Couture Product Catalog',
   inventory: 'Real-Time Stock Sentinel',
   users: 'VIP Client CRM & Float Wallets',
+  broadcast: 'Bulk SMS & Email Broadcast Engine',
   wholesale: 'Wholesale & B2B Commercial Inquiries',
   discounts: 'Marketing & Promo Engine',
   cms: 'Storefront CMS & Campaign Media',
@@ -4480,7 +4540,8 @@ function getCommandPaletteResults(query) {
     { icon: 'bag', label: 'Go to Order Logistics', action: "adminTab='orders';commandPaletteOpen=false;render()" },
     { icon: 'box', label: 'Go to Haute Couture Catalog', action: "adminTab='products';commandPaletteOpen=false;render()" },
     { icon: 'layers', label: 'Go to Inventory Sentinel', action: "adminTab='inventory';commandPaletteOpen=false;render()" },
-    { icon: 'users', label: 'Go to VIP Clients & Wallets', action: "adminTab='users';commandPaletteOpen=false;render()" },
+    { icon: 'users', label: 'Go to VIP Clients & Wallets', action: "adminTab='users';fetchLatestUsers();commandPaletteOpen=false;render()" },
+    { icon: 'send', label: 'Go to Bulk SMS & Email Engine', action: "adminTab='broadcast';fetchLatestUsers();commandPaletteOpen=false;render()" },
     { icon: 'zap', label: 'Go to Wholesale B2B Pipeline', action: "adminTab='wholesale';commandPaletteOpen=false;render()" },
     { icon: 'tag', label: 'Go to Promo & Marketing', action: "adminTab='discounts';commandPaletteOpen=false;render()" },
     { icon: 'palette', label: 'Go to Storefront CMS', action: "adminTab='cms';commandPaletteOpen=false;render()" },
@@ -4679,6 +4740,7 @@ function admin() {
           ${adminTab === 'products' ? renderAdminProducts(products) : ''}
           ${adminTab === 'inventory' ? renderAdminInventory(products) : ''}
           ${adminTab === 'users' ? renderAdminUsers(users) : ''}
+          ${adminTab === 'broadcast' ? renderAdminBroadcast(users) : ''}
           ${adminTab === 'wholesale' ? renderAdminWholesale(wholesaleInquiries) : ''}
           ${adminTab === 'discounts' ? renderAdminDiscounts(coupons) : ''}
           ${adminTab === 'cms' ? renderAdminSiteCMS() : ''}
@@ -5417,9 +5479,12 @@ function renderAdminUsers(users) {
         <span class="eyebrow" style="color:var(--gold-light)">CLIENT DIRECTORY &amp; WALLETS</span>
         <h1 style="font-size:32px;margin-top:4px">VIP Client Ledger (${users.length})</h1>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e;font-size:12.5px;padding:8px 14px" onclick="openSendSmsModal()">
-          📢 Send SMS Broadcast to Clients
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="secondary-btn" style="background:#0a2924;color:var(--gold-light);border-color:var(--gold);font-size:12.5px;padding:8px 14px" onclick="fetchLatestUsers(true)">
+          ${svgIcon('refresh', 14)} Refresh Live Clients
+        </button>
+        <button class="secondary-btn" style="background:#22c55e;color:#fff;border-color:#22c55e;font-size:12.5px;padding:8px 14px" onclick="adminTab='broadcast';render()">
+          📢 Bulk SMS &amp; Email Engine
         </button>
         <button class="primary" style="background:#c24d67" onclick="activeModal='admin_add_user';render()">
           ${svgIcon('plus', 16)} Add VIP Account
@@ -5475,7 +5540,7 @@ function renderAdminUsers(users) {
                     <span class="table-avatar" style="background:#c24d67;color:#fff">${(u.name || 'C').charAt(0).toUpperCase()}</span>
                     <div>
                       <strong style="color:#fff">${u.name || 'Anonymous Client'}</strong>
-                      <small style="display:block;color:#a1a1aa">${u.email}</small>
+                      <small style="display:block;color:#a1a1aa">${u.email || 'No email'}</small>
                     </div>
                   </div>
                 </td>
@@ -5510,6 +5575,9 @@ function renderAdminUsers(users) {
                     <button class="icon-action-btn" title="Send Direct SMS" onclick="openSendSmsModal('${u.id}')" style="background:rgba(34,197,94,0.18);color:#34d399">
                       📱 SMS
                     </button>
+                    <button class="icon-action-btn" title="Send Direct Email" onclick="openDirectEmail('${u.id}')" style="background:rgba(56,189,248,0.18);color:#38bdf8">
+                      📧 Email
+                    </button>
                     <button class="secondary-btn" style="padding:4px 8px;font-size:11px;background:#c24d67;color:#fff;border-color:#c24d67" onclick="promptAdjustWallet('${u.id}', '${u.name}')">+ Credit</button>
                     <button class="secondary-btn" style="padding:4px 8px;font-size:11px" onclick="promptDebitWallet('${u.id}', '${u.name}')">− Debit</button>
                   </div>
@@ -5523,11 +5591,678 @@ function renderAdminUsers(users) {
       <div class="admin-empty-state">
         <span>${svgIcon('users', 26)}</span>
         <h3 style="color:#fff">No clients match your filter</h3>
-        <p style="color:#a1a1aa">Try adjusting your search terms.</p>
-        <button class="secondary-btn" onclick="adminUserFilter={search:'',minWallet:'All'};render()">Clear filters</button>
+        <p style="color:#a1a1aa">Try adjusting your search terms or refresh from database.</p>
+        <button class="secondary-btn" onclick="adminUserFilter={search:'',minWallet:'All'};fetchLatestUsers(true);render()">Clear &amp; Refresh</button>
       </div>
     `}
   `;
+}
+
+// ===================================================
+// BULK SMS & BULK EMAIL CAMPAIGN BROADCAST ENGINE
+// ===================================================
+
+let broadcastChannel = 'sms'; // 'sms' | 'email' | 'history'
+let broadcastAudience = 'all'; // 'all' | 'funded' | 'buyers' | 'prospects' | 'custom'
+let broadcastCustomRecipients = '';
+let broadcastSmsSender = 'Bymarie';
+let broadcastSmsMessage = 'Greetings from ByMarie! Our exclusive new couture collection is now live. Explore handcrafted scents & styles: https://bymarie.shop Concierge: +233241002000';
+let broadcastEmailSubject = '✨ Unveiling the New ByMarie Haute Couture Collection';
+let broadcastEmailHeadline = 'A New Epoch of African Luxury & Tailored Excellence';
+let broadcastEmailBody = 'Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.';
+let broadcastEmailCtaText = 'Explore The Private Collection';
+let broadcastEmailCtaUrl = 'https://bymarie.shop';
+let broadcastSending = false;
+
+const BROADCAST_TEMPLATES = {
+  drop: {
+    name: '🌟 Haute Couture Drop',
+    sms: 'Greetings from ByMarie! Our exclusive new couture collection is now live. Explore handcrafted scents & styles: https://bymarie.shop Concierge: +233241002000',
+    emailSubject: '✨ Unveiling the New ByMarie Haute Couture Collection',
+    emailHeadline: 'A New Epoch of African Luxury & Tailored Excellence',
+    emailBody: 'Dear {name},\n\nWe are delighted to present the latest private collection at ByMarie. Handcrafted with bespoke silken textures and refined botanical extraits, each piece represents the pinnacle of Ghanaian luxury artistry.\n\nAs a valued member of our private client ledger, you enjoy priority access to secure pieces before public availability.',
+    ctaText: 'Explore The Private Collection',
+    ctaUrl: 'https://bymarie.shop'
+  },
+  sale: {
+    name: '⚡ 20% VIP Privilege Code',
+    sms: 'Hello {name}! Enjoy an exclusive 20% privilege code "VIP20" on all luxury styles and scents today at ByMarie: https://bymarie.shop Concierge: +233241002000',
+    emailSubject: '👑 Private Client Privilege: 20% Off All ByMarie Creations',
+    emailHeadline: 'Exclusive Atelier Privilege for Valued Clients',
+    emailBody: 'Dear {name},\n\nFor a limited window, enjoy a bespoke 20% privilege across all ByMarie luxury couture, hair aesthetics, and fine scent extraits.\n\nUse your private access voucher code at checkout: VIP20',
+    ctaText: 'Claim Your VIP Privilege',
+    ctaUrl: 'https://bymarie.shop'
+  },
+  wallet: {
+    name: '💳 Float Wallet Top-up Bonus',
+    sms: 'ByMarie Alert: Top up your VIP Float Wallet today and receive 10% bonus shopping credit instantly! Check your balance ({balance}): https://bymarie.shop/#account',
+    emailSubject: '💳 VIP Float Wallet Bonus: 10% Extra on Every Deposit',
+    emailHeadline: 'Accelerate Your Float Wallet with Exclusive Bonus Credit',
+    emailBody: 'Dear {name},\n\nYour current ByMarie Float Wallet balance is {balance}.\n\nFor this week only, top up your Float Wallet via Mobile Money or Card and receive an instant 10% complimentary bonus credit added to your account.',
+    ctaText: 'Top Up Float Wallet Now',
+    ctaUrl: 'https://bymarie.shop/#account'
+  },
+  concierge: {
+    name: '🎁 Private Concierge Invitation',
+    sms: 'Dear {name}, your ByMarie private concierge is available for personalized styling & bridal consultations. WhatsApp us directly: https://wa.me/233241002000',
+    emailSubject: '💎 Private Concierge & Bespoke Client Services',
+    emailHeadline: 'At Your Service: Dedicated Personal Styling & Bridal Consultations',
+    emailBody: 'Dear {name},\n\nWhether preparing for an executive gala, custom bridal fitting, or private scent consultation, our dedicated concierge team is at your disposal in Cantonments and East Legon.\n\nConnect directly with your dedicated style advisor today.',
+    ctaText: 'Connect with Concierge',
+    ctaUrl: 'https://wa.me/233241002000'
+  }
+};
+
+function applyBroadcastTemplate(key) {
+  const t = BROADCAST_TEMPLATES[key];
+  if (!t) return;
+  if (broadcastChannel === 'sms') {
+    broadcastSmsMessage = t.sms;
+  } else {
+    broadcastEmailSubject = t.emailSubject;
+    broadcastEmailHeadline = t.emailHeadline;
+    broadcastEmailBody = t.emailBody;
+    broadcastEmailCtaText = t.ctaText;
+    broadcastEmailCtaUrl = t.ctaUrl;
+  }
+  toast(`Applied luxury template: "${t.name}" ✨`);
+  render();
+}
+
+function insertBroadcastVariable(varName, targetField) {
+  if (broadcastChannel === 'sms') {
+    broadcastSmsMessage += ` {${varName}}`;
+  } else {
+    if (targetField === 'subject') broadcastEmailSubject += ` {${varName}}`;
+    else broadcastEmailBody += ` {${varName}}`;
+  }
+  toast(`Inserted variable {${varName}}`);
+  render();
+}
+
+function openDirectEmail(userId) {
+  const u = getUsers().find(x => x.id === userId || x.email === userId);
+  if (!u || !u.email) return toast('Client does not have an email address', 'warning');
+  adminTab = 'broadcast';
+  broadcastChannel = 'email';
+  broadcastAudience = 'custom';
+  broadcastCustomRecipients = u.email;
+  toast(`Composing private VIP email to ${u.name || u.email} 📧`);
+  render();
+}
+
+function renderAdminBroadcast(users) {
+  const allPhones = users.filter(u => u.phone && u.phone.trim()).map(u => u.phone.trim());
+  const allEmails = users.filter(u => u.email && u.email.trim()).map(u => u.email.trim());
+
+  let targetRecipients = [];
+  let recipientLabel = '';
+
+  if (broadcastChannel === 'sms') {
+    if (broadcastAudience === 'all') {
+      targetRecipients = allPhones;
+      recipientLabel = `All VIP Clients (${allPhones.length} phone numbers)`;
+    } else if (broadcastAudience === 'funded') {
+      targetRecipients = users.filter(u => (u.walletBalance || 0) > 0 && u.phone).map(u => u.phone.trim());
+      recipientLabel = `Funded Float Accounts (${targetRecipients.length} clients)`;
+    } else if (broadcastAudience === 'buyers') {
+      targetRecipients = users.filter(u => (u.ordersCount || 0) > 0 && u.phone).map(u => u.phone.trim());
+      recipientLabel = `Active Shoppers (${targetRecipients.length} clients)`;
+    } else if (broadcastAudience === 'prospects') {
+      targetRecipients = users.filter(u => (!u.ordersCount || u.ordersCount === 0) && u.phone).map(u => u.phone.trim());
+      recipientLabel = `Prospect Accounts (${targetRecipients.length} clients)`;
+    } else if (broadcastAudience === 'custom') {
+      targetRecipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.length >= 9);
+      recipientLabel = `Custom Recipient List (${targetRecipients.length} phone numbers)`;
+    }
+  } else {
+    if (broadcastAudience === 'all') {
+      targetRecipients = allEmails;
+      recipientLabel = `All VIP Clients (${allEmails.length} email addresses)`;
+    } else if (broadcastAudience === 'funded') {
+      targetRecipients = users.filter(u => (u.walletBalance || 0) > 0 && u.email).map(u => u.email.trim());
+      recipientLabel = `Funded Float Accounts (${targetRecipients.length} emails)`;
+    } else if (broadcastAudience === 'buyers') {
+      targetRecipients = users.filter(u => (u.ordersCount || 0) > 0 && u.email).map(u => u.email.trim());
+      recipientLabel = `Active Shoppers (${targetRecipients.length} emails)`;
+    } else if (broadcastAudience === 'prospects') {
+      targetRecipients = users.filter(u => (!u.ordersCount || u.ordersCount === 0) && u.email).map(u => u.email.trim());
+      recipientLabel = `Prospect Accounts (${targetRecipients.length} emails)`;
+    } else if (broadcastAudience === 'custom') {
+      targetRecipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.includes('@'));
+      recipientLabel = `Custom Recipient List (${targetRecipients.length} email addresses)`;
+    }
+  }
+
+  const campaignLogs = getCampaignLogs();
+  const smsCharCount = broadcastSmsMessage.length;
+  const smsPageCount = Math.ceil(smsCharCount / 160) || 1;
+
+  return `
+    <div class="admin-top-bar animate-fade-up">
+      <div>
+        <span class="eyebrow" style="color:var(--gold-light)">COMMUNICATIONS &amp; MARKETING ATELIER</span>
+        <h1 style="font-size:32px;margin-top:4px">Bulk SMS &amp; Email Broadcast Engine</h1>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="secondary-btn" style="background:#0a2924;color:var(--gold-light);border-color:var(--gold);font-size:12.5px;padding:8px 14px" onclick="fetchLatestUsers(true)">
+          ${svgIcon('refresh', 14)} Sync Latest Clients
+        </button>
+        <button class="secondary-btn" onclick="adminTab='users';render()">
+          ${svgIcon('users', 14)} View Client Ledger (${users.length})
+        </button>
+      </div>
+    </div>
+
+    <!-- Multi-Channel Hub Stats -->
+    <div class="stats-row cols-4 animate-fade-up delay-1" style="margin-bottom:24px">
+      <div class="stat-card compact">
+        <strong style="color:#fff">${users.length}</strong>
+        <span>Registered VIP Clients</span>
+      </div>
+      <div class="stat-card compact">
+        <strong style="color:#34d399">${allPhones.length}</strong>
+        <span>Reachable Mobile Numbers (mNotify)</span>
+      </div>
+      <div class="stat-card compact">
+        <strong style="color:#38bdf8">${allEmails.length}</strong>
+        <span>Reachable VIP Emails (Resend)</span>
+      </div>
+      <div class="stat-card compact">
+        <strong style="color:var(--gold)">${campaignLogs.length}</strong>
+        <span>Campaigns Dispatched</span>
+      </div>
+    </div>
+
+    <!-- Channel Navigation Switcher -->
+    <div class="broadcast-channel-bar animate-fade-up delay-1">
+      <button class="broadcast-channel-btn ${broadcastChannel === 'sms' ? 'active' : ''}" onclick="broadcastChannel='sms';render()">
+        ${svgIcon('message', 18)}
+        <span>📱 Bulk SMS Broadcast</span>
+        <b class="channel-badge">${allPhones.length} Phones</b>
+      </button>
+      <button class="broadcast-channel-btn ${broadcastChannel === 'email' ? 'active' : ''}" onclick="broadcastChannel='email';render()">
+        ${svgIcon('mail', 18)}
+        <span>📧 Luxury Email Campaign</span>
+        <b class="channel-badge">${allEmails.length} Emails</b>
+      </button>
+      <button class="broadcast-channel-btn ${broadcastChannel === 'history' ? 'active' : ''}" onclick="broadcastChannel='history';fetchCampaignLogs();render()">
+        ${svgIcon('receipt', 18)}
+        <span>📜 Broadcast Delivery History</span>
+        <b class="channel-badge">${campaignLogs.length} Sent</b>
+      </button>
+    </div>
+
+    ${broadcastChannel === 'history' ? renderBroadcastHistoryView(campaignLogs) : `
+      <div class="broadcast-layout animate-fade-up delay-2">
+        <!-- Left Column: Audience & Composer Form -->
+        <div class="broadcast-composer-card">
+          
+          <!-- Audience Targeting Section -->
+          <div class="composer-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <label style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-light);margin:0">
+                1. Select Target Audience Segment
+              </label>
+              <span class="badge" style="background:#092e29;color:var(--gold);border:1px solid #165e53">
+                ${recipientLabel}
+              </span>
+            </div>
+
+            <div class="audience-options-grid">
+              <button type="button" class="audience-pill ${broadcastAudience === 'all' ? 'active' : ''}" onclick="broadcastAudience='all';render()">
+                👥 All Registered Clients (${broadcastChannel === 'sms' ? allPhones.length : allEmails.length})
+              </button>
+              <button type="button" class="audience-pill ${broadcastAudience === 'funded' ? 'active' : ''}" onclick="broadcastAudience='funded';render()">
+                💳 Funded Float Wallets (${users.filter(u => (u.walletBalance || 0) > 0).length})
+              </button>
+              <button type="button" class="audience-pill ${broadcastAudience === 'buyers' ? 'active' : ''}" onclick="broadcastAudience='buyers';render()">
+                🛍️ Active Shoppers (Orders > 0)
+              </button>
+              <button type="button" class="audience-pill ${broadcastAudience === 'prospects' ? 'active' : ''}" onclick="broadcastAudience='prospects';render()">
+                🎯 Prospects (0 Orders)
+              </button>
+              <button type="button" class="audience-pill ${broadcastAudience === 'custom' ? 'active' : ''}" onclick="broadcastAudience='custom';render()">
+                ✍️ Custom Recipient Paste List
+              </button>
+            </div>
+
+            ${broadcastAudience === 'custom' ? `
+              <div style="margin-top:14px">
+                <label style="font-size:12px;color:#a1a1aa;margin-bottom:6px;display:block">
+                  Paste ${broadcastChannel === 'sms' ? 'Ghana Mobile Numbers (comma or line separated e.g. 0244123456, +233501234567)' : 'Email Addresses (comma or line separated)'}:
+                </label>
+                <textarea class="admin-input" rows="3" placeholder="0241002000, 0551002000..." oninput="broadcastCustomRecipients=this.value;render()">${broadcastCustomRecipients}</textarea>
+              </div>
+            ` : ''}
+
+            <!-- Recipient Preview Strip -->
+            <div class="recipient-preview-strip">
+              <span style="font-size:12px;color:#a1a1aa;margin-right:8px">Target Preview:</span>
+              ${targetRecipients.slice(0, 6).map(r => `<span class="recipient-chip">${r}</span>`).join('')}
+              ${targetRecipients.length > 6 ? `<span class="recipient-chip more">+${targetRecipients.length - 6} more</span>` : ''}
+              ${targetRecipients.length === 0 ? `<span style="color:#ef4444;font-size:12px">⚠️ No valid recipients found in this segment</span>` : ''}
+            </div>
+          </div>
+
+          <!-- Luxury Preset Templates -->
+          <div class="composer-section">
+            <label style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px;display:block">
+              2. Quick Luxury Atelier Presets
+            </label>
+            <div class="template-presets-grid">
+              ${Object.entries(BROADCAST_TEMPLATES).map(([k, t]) => `
+                <button type="button" class="template-preset-btn" onclick="applyBroadcastTemplate('${k}')">
+                  ${t.name}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Personalization Tags Bar -->
+          <div class="composer-section" style="padding-bottom:6px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:12px;color:#a1a1aa">Personalization Tokens:</span>
+              <button type="button" class="token-btn" onclick="insertBroadcastVariable('name')">+ {name}</button>
+              <button type="button" class="token-btn" onclick="insertBroadcastVariable('balance')">+ {balance}</button>
+              <button type="button" class="token-btn" onclick="insertBroadcastVariable('email')">+ {email}</button>
+              <button type="button" class="token-btn" onclick="insertBroadcastVariable('phone')">+ {phone}</button>
+            </div>
+          </div>
+
+          <!-- Channel-Specific Content Studio -->
+          ${broadcastChannel === 'sms' ? `
+            <!-- SMS Form -->
+            <form onsubmit="handleDispatchSmsBroadcast(event)">
+              <div class="form-group" style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label style="margin:0">SMS Sender ID (mNotify / BMS)</label>
+                  <small style="color:var(--gold)">Max 11 Characters</small>
+                </div>
+                <input required maxlength="11" name="sender" value="${broadcastSmsSender}" oninput="broadcastSmsSender=this.value" placeholder="Bymarie" class="admin-input">
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label style="margin:0">SMS Campaign Message</label>
+                  <span class="sms-counter ${smsPageCount > 1 ? 'warn' : ''}">
+                    ${smsCharCount} Chars • ${smsPageCount} SMS ${smsPageCount > 1 ? 'Pages' : 'Page'}
+                  </span>
+                </div>
+                <textarea required rows="5" name="message" class="admin-input" oninput="broadcastSmsMessage=this.value;render()" placeholder="Type your luxury SMS message here...">${broadcastSmsMessage}</textarea>
+              </div>
+
+              <!-- Test Dispatch Bar -->
+              <div class="test-dispatch-bar">
+                <div style="flex-grow:1;display:flex;gap:8px;align-items:center">
+                  <input type="text" id="test-sms-phone" placeholder="024 100 2000" style="background:#031c18;color:#fff;border:1px solid #165e53;padding:8px 12px;border-radius:4px;font-size:12.5px;width:160px">
+                  <button type="button" class="secondary-btn" style="font-size:12px;padding:8px 12px" onclick="handleSendTestSms()">
+                    📲 Send Test SMS
+                  </button>
+                </div>
+                <span style="font-size:11.5px;color:#a1a1aa">Verify on your mobile before mass send</span>
+              </div>
+
+              <div style="margin-top:24px">
+                <button type="submit" class="primary" style="width:100%;height:52px;font-size:15px;background:#22c55e;font-weight:700" ${broadcastSending || !targetRecipients.length ? 'disabled' : ''}>
+                  ${broadcastSending ? '⚡ Dispatching SMS Campaign...' : `🚀 Dispatch Bulk SMS to ${targetRecipients.length} Clients →`}
+                </button>
+              </div>
+            </form>
+          ` : `
+            <!-- Email Form -->
+            <form onsubmit="handleDispatchEmailBroadcast(event)">
+              <div class="form-group" style="margin-bottom:16px">
+                <label>Email Subject Line</label>
+                <input required name="subject" value="${broadcastEmailSubject}" oninput="broadcastEmailSubject=this.value;render()" placeholder="Exclusive VIP Preview: New Haute Couture Drop" class="admin-input">
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px">
+                <label>Luxury Headline (Optional Title)</label>
+                <input name="headline" value="${broadcastEmailHeadline}" oninput="broadcastEmailHeadline=this.value;render()" placeholder="A New Epoch of African Luxury & Tailored Excellence" class="admin-input">
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px">
+                <label>Email Body Content (Paragraphs)</label>
+                <textarea required rows="6" name="content" class="admin-input" oninput="broadcastEmailBody=this.value;render()" placeholder="Dear {name},&#10;&#10;We are delighted to invite you...">${broadcastEmailBody}</textarea>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+                <div class="form-group">
+                  <label>CTA Button Text</label>
+                  <input name="ctaText" value="${broadcastEmailCtaText}" oninput="broadcastEmailCtaText=this.value;render()" placeholder="Explore The Atelier" class="admin-input">
+                </div>
+                <div class="form-group">
+                  <label>CTA Button URL</label>
+                  <input name="ctaUrl" value="${broadcastEmailCtaUrl}" oninput="broadcastEmailCtaUrl=this.value;render()" placeholder="https://bymarie.shop" class="admin-input">
+                </div>
+              </div>
+
+              <!-- Test Dispatch Bar -->
+              <div class="test-dispatch-bar">
+                <div style="flex-grow:1;display:flex;gap:8px;align-items:center">
+                  <input type="email" id="test-email-address" value="${ADMIN_EMAIL}" placeholder="you@example.com" style="background:#031c18;color:#fff;border:1px solid #165e53;padding:8px 12px;border-radius:4px;font-size:12.5px;width:220px">
+                  <button type="button" class="secondary-btn" style="font-size:12px;padding:8px 12px" onclick="handleSendTestEmail()">
+                    📧 Send Test Email
+                  </button>
+                </div>
+                <span style="font-size:11.5px;color:#a1a1aa">Powered by Resend API</span>
+              </div>
+
+              <div style="margin-top:24px">
+                <button type="submit" class="primary" style="width:100%;height:52px;font-size:15px;background:#38bdf8;color:#000;font-weight:700" ${broadcastSending || !targetRecipients.length ? 'disabled' : ''}>
+                  ${broadcastSending ? '⚡ Dispatching Luxury Email Campaign...' : `👑 Dispatch Luxury Email to ${targetRecipients.length} VIP Clients →`}
+                </button>
+              </div>
+            </form>
+          `}
+
+        </div>
+
+        <!-- Right Column: Live Luxury Preview Drawer -->
+        <div class="broadcast-preview-card">
+          <div class="preview-header">
+            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)">
+              ${broadcastChannel === 'sms' ? '📱 Mobile Phone Live SMS Preview' : '📧 Luxury Branded HTML Email Preview'}
+            </span>
+            <span class="preview-badge">Live Canvas</span>
+          </div>
+
+          ${broadcastChannel === 'sms' ? `
+            <div class="phone-mockup-frame">
+              <div class="phone-mockup-speaker"></div>
+              <div class="phone-mockup-screen">
+                <div class="sms-sender-header">
+                  <strong>${broadcastSmsSender || 'Bymarie'}</strong>
+                  <small>SMS • Today</small>
+                </div>
+                <div class="sms-bubble-wrapper">
+                  <div class="sms-chat-bubble">
+                    ${(broadcastSmsMessage || 'Type your message...')
+                      .replace(/\{name\}/g, 'Ifeoma')
+                      .replace(/\{balance\}/g, 'GH₵ 250.00')
+                      .replace(/\{email\}/g, 'ifeoma@example.com')
+                      .replace(/\{phone\}/g, '024 100 2000')}
+                  </div>
+                  <small class="sms-time-stamp">Delivered Just Now</small>
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="email-preview-container">
+              <div class="email-client-bar">
+                <div><span style="color:#71717a">From:</span> ByMarie Concierge &lt;onboarding@resend.dev&gt;</div>
+                <div><span style="color:#71717a">Subject:</span> <strong>${broadcastEmailSubject || 'No Subject'}</strong></div>
+              </div>
+              <div class="email-preview-body">
+                <!-- Header -->
+                <div class="email-html-header">
+                  <h2 style="font-family:'Cinzel', Georgia, serif;margin:0;font-size:20px;letter-spacing:3px;color:#fff">BYMARIE</h2>
+                  <small style="color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;font-size:9.5px;display:block;margin-top:4px">Luxury Style • Scent Extraits • Essentials</small>
+                </div>
+                <!-- Content -->
+                <div class="email-html-content">
+                  ${broadcastEmailHeadline ? `<h3 style="font-family:'Playfair Display', Georgia, serif;font-size:18px;color:#083832;margin:0 0 14px 0">${broadcastEmailHeadline}</h3>` : ''}
+                  <div style="font-size:13.5px;line-height:1.7;color:#3f3f46">
+                    ${(broadcastEmailBody || 'Email body content...')
+                      .replace(/\{name\}/g, 'Ifeoma')
+                      .replace(/\{balance\}/g, 'GH₵ 250.00')
+                      .replace(/\{email\}/g, 'ifeoma@example.com')
+                      .replace(/\{phone\}/g, '024 100 2000')
+                      .split('\n\n')
+                      .map(p => `<p style="margin:0 0 12px 0">${p.replace(/\n/g, '<br/>')}</p>`)
+                      .join('')}
+                  </div>
+
+                  ${(broadcastEmailCtaText && broadcastEmailCtaUrl) ? `
+                    <div style="text-align:center;margin:24px 0 18px 0">
+                      <a href="${broadcastEmailCtaUrl}" target="_blank" class="email-preview-btn">
+                        ${broadcastEmailCtaText} →
+                      </a>
+                    </div>
+                  ` : ''}
+
+                  <div style="margin-top:24px;padding-top:16px;border-top:1px solid #f4f4f5;font-size:11.5px;color:#71717a">
+                    <strong style="color:#083832;display:block">ByMarie Private Client Atelier</strong>
+                    Cantonments &amp; East Legon, Accra • WhatsApp: +233 24 100 2000
+                  </div>
+                </div>
+                <!-- Footer -->
+                <div class="email-html-footer">
+                  Exclusive VIP Dispatch from ByMarie Luxury Atelier
+                </div>
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+    `}
+  `;
+}
+
+function renderBroadcastHistoryView(logs) {
+  return `
+    <div class="admin-card animate-fade-up" style="padding:0;overflow:hidden">
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="margin:0;font-size:18px;color:#fff">Broadcast Campaign History (${logs.length})</h3>
+          <small style="color:#a1a1aa">Chronological ledger of all SMS and Email dispatches</small>
+        </div>
+        <button class="secondary-btn" style="font-size:12px" onclick="fetchCampaignLogs();render()">
+          ${svgIcon('refresh', 13)} Refresh Ledger
+        </button>
+      </div>
+
+      ${logs.length ? `
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Campaign Title / Subject</th>
+                <th>Audience / Count</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${logs.map(log => `
+                <tr>
+                  <td>
+                    <span class="badge" style="background:${log.channel === 'SMS' ? '#22c55e' : '#38bdf8'};color:#000;font-weight:700;font-size:11px">
+                      ${log.channel === 'SMS' ? '📱 SMS' : '📧 EMAIL'}
+                    </span>
+                  </td>
+                  <td>
+                    <strong style="color:#fff;display:block;font-size:13.5px">${log.title || 'Campaign'}</strong>
+                    ${log.headline ? `<small style="color:#a1a1aa">${log.headline}</small>` : ''}
+                  </td>
+                  <td>
+                    <b style="color:var(--gold-light);font-size:13px">${log.recipientsCount || (log.recipients ? log.recipients.length : 0)} Recipients</b>
+                  </td>
+                  <td>
+                    <span class="badge delivered" style="font-size:11px">
+                      ✓ ${log.status || 'Delivered'}
+                    </span>
+                  </td>
+                  <td>
+                    <span style="color:#a1a1aa;font-size:12px">${log.dateFormatted || log.timestamp || 'Recent'}</span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="admin-empty-state">
+          <span>${svgIcon('receipt', 26)}</span>
+          <h3 style="color:#fff">No past campaigns recorded yet</h3>
+          <p style="color:#a1a1aa">Compose and send your first SMS or Email broadcast above.</p>
+          <button class="primary" style="background:#22c55e" onclick="broadcastChannel='sms';render()">Compose SMS Campaign</button>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+async function handleDispatchSmsBroadcast(event) {
+  event.preventDefault();
+  const allUsers = getUsers();
+  let recipients = [];
+
+  if (broadcastAudience === 'all') {
+    recipients = allUsers.filter(u => u.phone).map(u => u.phone.trim());
+  } else if (broadcastAudience === 'funded') {
+    recipients = allUsers.filter(u => (u.walletBalance || 0) > 0 && u.phone).map(u => u.phone.trim());
+  } else if (broadcastAudience === 'buyers') {
+    recipients = allUsers.filter(u => (u.ordersCount || 0) > 0 && u.phone).map(u => u.phone.trim());
+  } else if (broadcastAudience === 'prospects') {
+    recipients = allUsers.filter(u => (!u.ordersCount || u.ordersCount === 0) && u.phone).map(u => u.phone.trim());
+  } else if (broadcastAudience === 'custom') {
+    recipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.length >= 9);
+  }
+
+  if (!recipients.length) {
+    return toast('No valid recipient phone numbers in this segment', 'warning');
+  }
+
+  if (!confirm(`Confirm dispatch of Bulk SMS to ${recipients.length} clients via mNotify?`)) return;
+
+  broadcastSending = true;
+  render();
+  toast(`🚀 Dispatching SMS broadcast to ${recipients.length} clients...`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/sms/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipients,
+        message: broadcastSmsMessage.trim(),
+        sender: broadcastSmsSender.trim() || 'Bymarie'
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'SMS Dispatch failed');
+
+    toast(`✅ Bulk SMS successfully dispatched to ${recipients.length} clients! 📱`, 'success');
+    await fetchCampaignLogs();
+    broadcastChannel = 'history';
+  } catch (err) {
+    console.error('SMS broadcast dispatch error:', err);
+    toast(`SMS Dispatch error: ${err.message}`, 'warning');
+  } finally {
+    broadcastSending = false;
+    render();
+  }
+}
+
+async function handleDispatchEmailBroadcast(event) {
+  event.preventDefault();
+  const allUsers = getUsers();
+  let recipients = [];
+
+  if (broadcastAudience === 'all') {
+    recipients = allUsers.filter(u => u.email).map(u => u.email.trim());
+  } else if (broadcastAudience === 'funded') {
+    recipients = allUsers.filter(u => (u.walletBalance || 0) > 0 && u.email).map(u => u.email.trim());
+  } else if (broadcastAudience === 'buyers') {
+    recipients = allUsers.filter(u => (u.ordersCount || 0) > 0 && u.email).map(u => u.email.trim());
+  } else if (broadcastAudience === 'prospects') {
+    recipients = allUsers.filter(u => (!u.ordersCount || u.ordersCount === 0) && u.email).map(u => u.email.trim());
+  } else if (broadcastAudience === 'custom') {
+    recipients = broadcastCustomRecipients.split(/[\n,;]+/).map(x => x.trim()).filter(x => x && x.includes('@'));
+  }
+
+  if (!recipients.length) {
+    return toast('No valid recipient email addresses in this segment', 'warning');
+  }
+
+  if (!confirm(`Confirm dispatch of Luxury Email Campaign to ${recipients.length} VIP clients?`)) return;
+
+  broadcastSending = true;
+  render();
+  toast(`📧 Dispatching Luxury Email Campaign to ${recipients.length} VIPs via Resend...`, 'info');
+
+  try {
+    const res = await fetch(`${API_BASE}/email/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipients,
+        subject: broadcastEmailSubject.trim(),
+        headline: broadcastEmailHeadline.trim(),
+        content: broadcastEmailBody.trim(),
+        ctaText: broadcastEmailCtaText.trim(),
+        ctaUrl: broadcastEmailCtaUrl.trim()
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Email Broadcast failed');
+
+    toast(`✅ Luxury Email campaign dispatched! (${data.delivered || recipients.length} sent) 👑`, 'success');
+    await fetchCampaignLogs();
+    broadcastChannel = 'history';
+  } catch (err) {
+    console.error('Email broadcast dispatch error:', err);
+    toast(`Email Dispatch notice: ${err.message}`, 'warning');
+  } finally {
+    broadcastSending = false;
+    render();
+  }
+}
+
+async function handleSendTestSms() {
+  const input = document.getElementById('test-sms-phone');
+  const phone = input ? input.value.trim() : '';
+  if (!phone || phone.length < 9) return toast('Please enter a valid Ghana phone number for test', 'warning');
+
+  toast(`Sending test SMS to ${phone}...`, 'info');
+  try {
+    const res = await fetch(`${API_BASE}/sms/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipients: [phone],
+        message: `[TEST PREVIEW] ${broadcastSmsMessage.trim()}`,
+        sender: broadcastSmsSender.trim() || 'Bymarie'
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Test SMS failed');
+    toast(`📲 Test SMS sent to ${phone}!`, 'success');
+  } catch (e) {
+    toast(`Test SMS Note: ${e.message}`, 'warning');
+  }
+}
+
+async function handleSendTestEmail() {
+  const input = document.getElementById('test-email-address');
+  const email = input ? input.value.trim() : '';
+  if (!email || !email.includes('@')) return toast('Please enter a valid email address for test', 'warning');
+
+  toast(`Sending test Luxury Email to ${email}...`, 'info');
+  try {
+    const res = await fetch(`${API_BASE}/email/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipients: [email],
+        subject: `[TEST PREVIEW] ${broadcastEmailSubject.trim()}`,
+        headline: broadcastEmailHeadline.trim(),
+        content: broadcastEmailBody.trim(),
+        ctaText: broadcastEmailCtaText.trim(),
+        ctaUrl: broadcastEmailCtaUrl.trim()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Test Email failed');
+    toast(`📧 Test Email sent to ${email}!`, 'success');
+  } catch (e) {
+    toast(`Test Email Note: ${e.message}`, 'warning');
+  }
 }
 
 function openUserDossierModal(userId) {
@@ -5549,59 +6284,13 @@ function openSendSmsModal(targetUserId = null) {
   if (targetUserId) {
     targetUser = users.find(u => u.id === targetUserId || u.phone === targetUserId);
   }
-  modalData = { targetUser, audience: targetUser ? 'single' : 'all', message: '' };
-  activeModal = 'admin_send_sms';
+  adminTab = 'broadcast';
+  broadcastChannel = 'sms';
+  if (targetUser && targetUser.phone) {
+    broadcastAudience = 'custom';
+    broadcastCustomRecipients = targetUser.phone;
+  }
   render();
-}
-
-async function handleSendSmsBroadcast(event) {
-  event.preventDefault();
-  const fd = new FormData(event.target);
-  const audience = fd.get('audience') || 'all';
-  const customPhone = (fd.get('customPhone') || '').trim();
-  const message = (fd.get('message') || '').trim();
-  const sender = (fd.get('sender') || 'Bymarie').trim();
-
-  if (!message) return toast('Please enter an SMS message', 'warning');
-
-  const allUsers = getUsers();
-  let recipients = [];
-
-  if (audience === 'single') {
-    if (customPhone) recipients = [customPhone];
-  } else if (audience === 'funded') {
-    recipients = allUsers.filter(u => (u.walletBalance || 0) > 0 && u.phone).map(u => u.phone);
-  } else if (audience === 'buyers') {
-    recipients = allUsers.filter(u => (u.ordersCount || 0) > 0 && u.phone).map(u => u.phone);
-  } else {
-    recipients = allUsers.filter(u => u.phone).map(u => u.phone);
-  }
-
-  if (!recipients.length) {
-    return toast('No client phone numbers found for this audience group', 'warning');
-  }
-
-  toast(`Sending SMS campaign to ${recipients.length} clients via mNotify / BMS...`, 'info');
-
-  try {
-    const res = await fetch(`${API_BASE}/sms/broadcast`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipients, message, sender })
-    });
-
-    const data = await res.json();
-    if (!res.ok || data.error) {
-      throw new Error(data.error || 'Failed to dispatch SMS');
-    }
-
-    toast(`🚀 SMS Broadcast successfully sent to ${recipients.length} clients! 📱`);
-    activeModal = null;
-    render();
-  } catch (err) {
-    console.error('SMS broadcast dispatch error:', err);
-    toast(`SMS Dispatch Notice: ${err.message}`, 'warning');
-  }
 }
 
 async function handleAdminAddUser(event) {
@@ -7943,6 +8632,7 @@ function render() {
   else if (page === 'notifications') content = notificationsPage();
   else if (page === 'admin') {
     if (param) adminTab = param;
+    fetchLatestUsers();
     if (isAdminUser()) {
       content = admin();
     } else {
@@ -7951,6 +8641,16 @@ function render() {
   }
   else if (page === 'users' || page === 'clients') {
     adminTab = 'users';
+    fetchLatestUsers();
+    if (isAdminUser()) {
+      content = admin();
+    } else {
+      content = renderAdminLoginGate();
+    }
+  }
+  else if (page === 'broadcast' || page === 'campaigns' || page === 'sms' || page === 'email') {
+    adminTab = 'broadcast';
+    fetchLatestUsers();
     if (isAdminUser()) {
       content = admin();
     } else {
@@ -7984,7 +8684,18 @@ function render() {
 
 async function syncWithBackendAPI() {
   await syncAdminWithBackend(true);
+  await fetchLatestUsers();
+  await fetchCampaignLogs();
 }
+
+// Live background synchronizer for real-time customer registrations & updates
+setInterval(() => {
+  const hash = (typeof window !== 'undefined' && window.location.hash) ? window.location.hash.slice(1) : '';
+  const curPage = hash.split('/')[0] || 'home';
+  if (curPage === 'admin' || curPage === 'users' || curPage === 'broadcast') {
+    fetchLatestUsers();
+  }
+}, 15000);
 
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {

@@ -8243,6 +8243,367 @@ html, body {
   font-weight: bold;
 }
 
+/* ===================================================
+   BULK SMS & EMAIL CAMPAIGN ENGINE STYLES
+   =================================================== */
+
+.broadcast-channel-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.broadcast-channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #092420;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.broadcast-channel-btn:hover {
+  background: #0f3832;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.broadcast-channel-btn.active {
+  background: #11423b;
+  color: #ffffff;
+  border-color: var(--gold);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.broadcast-channel-btn .channel-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.broadcast-channel-btn.active .channel-badge {
+  background: var(--gold);
+  color: #083832;
+}
+
+.broadcast-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .broadcast-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.broadcast-composer-card {
+  background: #061e1a;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.broadcast-preview-card {
+  background: #061e1a;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.preview-badge {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background: #0a332d;
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
+
+.composer-section {
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.audience-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audience-pill {
+  padding: 7px 14px;
+  background: #092420;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.audience-pill:hover {
+  background: #0f3832;
+  color: #fff;
+}
+
+.audience-pill.active {
+  background: #11423b;
+  border-color: var(--gold);
+  color: #fff;
+  font-weight: 700;
+}
+
+.recipient-preview-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #031412;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.recipient-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #092c26;
+  color: #34d399;
+  border-radius: 4px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.recipient-chip.more {
+  background: #14352f;
+  color: var(--gold);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.template-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.template-preset-btn {
+  padding: 10px 12px;
+  background: #092420;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #e4e4e7;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-preset-btn:hover {
+  background: #11423b;
+  border-color: var(--gold);
+  color: #fff;
+}
+
+.token-btn {
+  padding: 3px 8px;
+  background: #092c26;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--gold-light);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.token-btn:hover {
+  background: #134e44;
+  color: #fff;
+  border-color: var(--gold);
+}
+
+.sms-counter {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #34d399;
+  padding: 2px 8px;
+  background: #082923;
+  border-radius: 4px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.sms-counter.warn {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.test-dispatch-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #031412;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Phone Mockup */
+.phone-mockup-frame {
+  max-width: 320px;
+  margin: 0 auto;
+  background: #000000;
+  border: 6px solid #27272a;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.phone-mockup-speaker {
+  width: 60px;
+  height: 4px;
+  background: #3f3f46;
+  border-radius: 2px;
+  margin: 12px auto 8px auto;
+}
+
+.phone-mockup-screen {
+  background: #18181b;
+  min-height: 420px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sms-sender-header {
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+}
+
+.sms-sender-header strong {
+  display: block;
+  font-size: 14px;
+  color: #fff;
+}
+
+.sms-sender-header small {
+  font-size: 10.5px;
+  color: #71717a;
+}
+
+.sms-bubble-wrapper {
+  margin-top: auto;
+}
+
+.sms-chat-bubble {
+  background: #059669;
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 18px 18px 4px 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  word-break: break-word;
+}
+
+.sms-time-stamp {
+  display: block;
+  text-align: right;
+  font-size: 10px;
+  color: #71717a;
+  margin-top: 4px;
+  margin-right: 4px;
+}
+
+/* Email Preview Mockup */
+.email-preview-container {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  color: #18181b;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.email-client-bar {
+  background: #f4f4f5;
+  padding: 10px 16px;
+  font-size: 11.5px;
+  border-bottom: 1px solid #e4e4e7;
+  color: #3f3f46;
+  line-height: 1.6;
+}
+
+.email-preview-body {
+  background: #fafafa;
+}
+
+.email-html-header {
+  background: linear-gradient(135deg, #083832 0%, #0d4a43 100%);
+  padding: 24px 20px;
+  text-align: center;
+  border-bottom: 2px solid #d4af37;
+}
+
+.email-html-content {
+  padding: 24px;
+  background: #ffffff;
+}
+
+.email-preview-btn {
+  background: #083832;
+  color: #fdfbf7 !important;
+  padding: 10px 24px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid #d4af37;
+}
+
+.email-html-footer {
+  background: #083832;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 10px;
+  color: #d4af37;
+}
+
 
 
 

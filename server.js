@@ -795,46 +795,105 @@ app.delete('/api/coupons/:code', (req, res) => {
   res.json({ success: true, code: req.params.code });
 });
 
-// --- USERS & WALLETS API ---
+// --- USERS, CLIENT CRM & FLOAT WALLETS API ---
 
-app.get('/api/users', (req, res) => {
+// Get all registered users for Storefront & Admin CRM
+app.get('/api/users', async (req, res) => {
   const db = readDB();
+  if (!db.users) db.users = [];
+
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      const { data: supaUsers, error } = await client.from('users').select('*');
+      if (!error && Array.isArray(supaUsers) && supaUsers.length) {
+        let changed = false;
+        supaUsers.forEach(su => {
+          const idx = db.users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || u.id === su.id);
+          if (idx === -1) {
+            db.users.push(su);
+            changed = true;
+          } else {
+            db.users[idx] = { ...db.users[idx], ...su };
+          }
+        });
+        if (changed) writeDB(db);
+      }
+    } catch (e) {
+      console.warn('Supabase users sync note:', e.message);
+    }
+  }
+
   res.json(db.users || []);
 });
 
-app.post('/api/users', (req, res) => {
+// Get single user details
+app.get('/api/users/:id', (req, res) => {
   const db = readDB();
-  if (!db.users) db.users = [];
-  const newUser = {
-    id: req.body.id || `usr-${Date.now()}`,
-    name: req.body.name || 'New Customer',
-    email: req.body.email || '',
-    phone: req.body.phone || '',
-    address: req.body.address || 'Accra, Ghana',
-    walletBalance: Number(req.body.walletBalance || 0),
-    joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    ordersCount: 0,
-    loggedIn: true
-  };
-  db.users.unshift(newUser);
-  writeDB(db);
-  res.status(201).json(newUser);
+  const u = (db.users || []).find(x => x.id === req.params.id || (x.email && x.email.toLowerCase() === req.params.id.toLowerCase()));
+  if (!u) return res.status(404).json({ error: 'User not found' });
+  res.json(u);
 });
 
+// Create / Sync user profile
+app.post('/api/users', async (req, res) => {
+  const db = readDB();
+  if (!db.users) db.users = [];
+  
+  const user = {
+    id: req.body.id || `usr-${Date.now()}`,
+    name: req.body.name || (req.body.email ? req.body.email.split('@')[0] : 'Client'),
+    email: (req.body.email || '').trim().toLowerCase(),
+    phone: req.body.phone || '',
+    address: req.body.address || '',
+    city: req.body.city || 'Accra',
+    region: req.body.region || 'Greater Accra',
+    walletBalance: Number(req.body.walletBalance || 0),
+    joinedDate: req.body.joinedDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    lastLogin: req.body.lastLogin || new Date().toLocaleString(),
+    ordersCount: Number(req.body.ordersCount || 0),
+    status: req.body.status || 'Active',
+    loggedIn: Boolean(req.body.loggedIn)
+  };
+
+  const idx = db.users.findIndex(u => (u.email && u.email.toLowerCase() === user.email.toLowerCase()) || u.id === user.id);
+  if (idx !== -1) {
+    db.users[idx] = { ...db.users[idx], ...user };
+  } else {
+    db.users.unshift(user);
+  }
+  writeDB(db);
+
+  const client = getSupabaseClient();
+  if (client) {
+    try { await client.from('users').upsert([user]); } catch (e) {}
+  }
+
+  res.status(200).json({ success: true, user });
+});
+
+// Wallet balance adjustment
 app.patch('/api/users/:id/wallet', (req, res) => {
   const { delta, reason } = req.body;
   const db = readDB();
   if (!db.users) db.users = [];
-  const user = db.users.find(u => u.id === req.params.id);
+  const user = db.users.find(u => u.id === req.params.id || (u.email && u.email.toLowerCase() === req.params.id.toLowerCase()));
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  user.walletBalance = Math.max(0, (Number(user.walletBalance) || 0) + Number(delta));
+  user.walletBalance = Math.max(0, Math.round(((Number(user.walletBalance) || 0) + Number(delta)) * 100) / 100);
   writeDB(db);
+
+  const client = getSupabaseClient();
+  if (client) {
+    try { client.from('users').upsert([user]); } catch (e) {}
+  }
 
   res.json({ success: true, user, newBalance: user.walletBalance, reason });
 });
 
-// --- SMS BROADCAST & CAMPAIGN API ---
+// --- BULK SMS & EMAIL BROADCAST CAMPAIGN API ---
+
+// 1. Bulk SMS Broadcast via mNotify / BMS
 app.post('/api/sms/broadcast', async (req, res) => {
   try {
     const { recipients, message, sender } = req.body;
@@ -849,37 +908,235 @@ app.post('/api/sms/broadcast', async (req, res) => {
     const formatPhoneForGhana = (num) => {
       let clean = String(num || '').replace(/[^0-9]/g, '');
       if (clean.startsWith('233') && clean.length === 12) clean = '0' + clean.slice(3);
+      if (clean.length === 9 && !clean.startsWith('0')) clean = '0' + clean;
       return clean;
     };
 
     const formattedRecipients = recipients.map(formatPhoneForGhana).filter(p => p && p.length >= 10);
-    const mnotifySender = sender || process.env.MNOTIFY_SENDER || 'Bymarie';
+    const mnotifySender = (sender || process.env.MNOTIFY_SENDER || 'Bymarie').substring(0, 11);
 
-    if (mnotifyKey) {
+    const db = readDB();
+    if (!db.campaigns) db.campaigns = [];
+
+    let apiResult = null;
+    let isLive = false;
+
+    if (mnotifyKey && formattedRecipients.length > 0) {
       const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-      const response = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipient: formattedRecipients,
-          sender: mnotifySender,
-          message: message.trim(),
-          is_schedule: false,
-          schedule_date: ''
-        })
-      });
-      const data = await response.json();
-      console.log(`📱 [mNotify Broadcast Sent] To ${formattedRecipients.length} clients:`, data);
-      return res.json({ success: true, count: formattedRecipients.length, data });
+      try {
+        const response = await fetchFn(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: formattedRecipients,
+            sender: mnotifySender,
+            message: message.trim(),
+            is_schedule: false,
+            schedule_date: ''
+          })
+        });
+        apiResult = await response.json();
+        isLive = true;
+        console.log(`📱 [mNotify SMS Broadcast Sent] To ${formattedRecipients.length} clients:`, apiResult);
+      } catch (err) {
+        console.warn('mNotify dispatch call error:', err.message);
+      }
     }
 
-    // Fallback simulation log if no key present
-    console.log(`📱 [SMS Broadcast Simulated] Sent to ${formattedRecipients.length} clients: "${message}"`);
-    res.json({ success: true, count: formattedRecipients.length, simulated: true });
+    const campaignLog = {
+      id: `cmp-sms-${Date.now()}`,
+      channel: 'SMS',
+      title: message.trim().substring(0, 45) + (message.length > 45 ? '...' : ''),
+      content: message.trim(),
+      sender: mnotifySender,
+      recipientsCount: formattedRecipients.length,
+      recipients: formattedRecipients.slice(0, 10),
+      status: isLive ? 'Delivered' : 'Simulated (Dev Mode)',
+      timestamp: new Date().toISOString(),
+      dateFormatted: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      meta: apiResult
+    };
+
+    db.campaigns.unshift(campaignLog);
+    writeDB(db);
+
+    res.json({
+      success: true,
+      count: formattedRecipients.length,
+      sender: mnotifySender,
+      live: isLive,
+      campaign: campaignLog,
+      apiResult
+    });
   } catch (err) {
     console.error('SMS Broadcast error:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// 2. Bulk Luxury Email Broadcast via Resend
+app.post('/api/email/broadcast', async (req, res) => {
+  try {
+    const { recipients, subject, headline, content, ctaText, ctaUrl, previewText } = req.body;
+    if (!recipients || !Array.isArray(recipients) || !recipients.length) {
+      return res.status(400).json({ error: 'No email recipients provided' });
+    }
+    if (!subject || !subject.trim()) {
+      return res.status(400).json({ error: 'Email subject line is required' });
+    }
+    if (!content || !content.trim()) {
+      return res.status(400).json({ error: 'Email content is required' });
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'ByMarie Concierge <onboarding@resend.dev>';
+    const validRecipients = recipients
+      .map(r => String(r || '').trim().toLowerCase())
+      .filter(r => r && r.includes('@') && r.includes('.'));
+
+    if (!validRecipients.length) {
+      return res.status(400).json({ error: 'No valid recipient email addresses found' });
+    }
+
+    // Build Luxury ByMarie HTML Email Template
+    const paragraphsHtml = content.split('\n\n').map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #3f3f46;">${p.replace(/\n/g, '<br/>')}</p>`).join('');
+    const ctaButtonHtml = (ctaText && ctaUrl) ? `
+      <div style="margin: 32px 0 24px 0; text-align: center;">
+        <a href="${ctaUrl}" target="_blank" style="background: #083832; color: #fdfbf7; padding: 14px 32px; font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-block; letter-spacing: 0.5px; border: 1px solid #d4af37;">
+          ${ctaText} →
+        </a>
+      </div>
+    ` : '';
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+      </head>
+      <body style="margin:0; padding:0; background-color:#f4f4f5; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e4e4e7;">
+          
+          <!-- Header Banner -->
+          <div style="background: linear-gradient(135deg, #083832 0%, #0d4a43 100%); padding: 36px 30px; text-align: center; border-bottom: 2px solid #d4af37;">
+            <div style="font-family: 'Cinzel', 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 3px; margin: 0;">BYMARIE</div>
+            <div style="color: #d4af37; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 6px;">Luxury Style • Scent Extraits • Essentials • Ghana</div>
+          </div>
+
+          <!-- Main Content -->
+          <div style="padding: 36px 32px;">
+            ${headline ? `<h1 style="font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; color: #083832; margin: 0 0 20px 0; line-height: 1.4;">${headline}</h1>` : ''}
+            
+            ${paragraphsHtml}
+
+            ${ctaButtonHtml}
+
+            <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f4f4f5; font-size: 13px; color: #71717a;">
+              <strong style="color: #083832; display: block; margin-bottom: 4px;">ByMarie Private Client Atelier</strong>
+              Executive Concierge: Cantonments &amp; East Legon, Accra, Ghana<br/>
+              WhatsApp Concierge: +233 24 100 2000
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color: #083832; padding: 20px 30px; text-align: center; font-size: 11.5px; color: #a1a1aa; border-top: 1px solid #1a4a44;">
+            <p style="margin: 0 0 8px 0; color: #d4af37;">Exclusive VIP Dispatch from ByMarie Luxury Atelier</p>
+            <p style="margin: 0; color: #71717a;">© ${new Date().getFullYear()} ByMarie Ghana. All rights reserved.</p>
+          </div>
+
+        </div>
+      </body>
+      </html>
+    `;
+
+    const db = readDB();
+    if (!db.campaigns) db.campaigns = [];
+
+    let isLive = false;
+    let deliveredCount = 0;
+    let failedCount = 0;
+    const deliveryLogs = [];
+
+    if (resendApiKey) {
+      const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
+
+      // Send to recipients (batches of 10 or single recipient to ensure deliverability)
+      for (const recipient of validRecipients) {
+        try {
+          const resendResp = await fetchFn('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: fromAddress,
+              to: [recipient],
+              subject: subject.trim(),
+              html: emailHtml
+            })
+          });
+
+          const resData = await resendResp.json();
+          if (resendResp.ok && !resData.error) {
+            deliveredCount++;
+            isLive = true;
+            deliveryLogs.push({ email: recipient, status: 'Sent', id: resData.id });
+          } else {
+            // Note: If Resend sandbox restricts domain to owner, log clearly
+            failedCount++;
+            deliveryLogs.push({ email: recipient, status: 'Declined', error: resData.message || resData.error });
+          }
+        } catch (dispatchErr) {
+          failedCount++;
+          deliveryLogs.push({ email: recipient, status: 'Error', error: dispatchErr.message });
+        }
+      }
+    } else {
+      deliveredCount = validRecipients.length;
+      deliveryLogs.push({ status: 'Simulated', count: validRecipients.length });
+    }
+
+    const campaignLog = {
+      id: `cmp-mail-${Date.now()}`,
+      channel: 'EMAIL',
+      title: subject.trim(),
+      headline: headline || '',
+      content: content.trim(),
+      recipientsCount: validRecipients.length,
+      deliveredCount,
+      failedCount,
+      recipients: validRecipients.slice(0, 10),
+      status: (resendApiKey && deliveredCount > 0) ? `Dispatched (${deliveredCount}/${validRecipients.length})` : (resendApiKey ? 'Failed / Domain Sandbox' : 'Simulated (Dev Mode)'),
+      timestamp: new Date().toISOString(),
+      dateFormatted: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      deliveryLogs
+    };
+
+    db.campaigns.unshift(campaignLog);
+    writeDB(db);
+
+    res.json({
+      success: true,
+      count: validRecipients.length,
+      delivered: deliveredCount,
+      failed: failedCount,
+      live: isLive,
+      campaign: campaignLog,
+      logs: deliveryLogs
+    });
+  } catch (err) {
+    console.error('Email Broadcast error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Get Campaign Broadcast History
+app.get('/api/campaigns', (req, res) => {
+  const db = readDB();
+  res.json(db.campaigns || []);
 });
 
 // --- WHOLESALE & B2B INQUIRIES API ---
@@ -987,58 +1244,7 @@ app.post('/api/payments/momo/callback', (req, res) => {
   });
 });
 
-// --- AUTHENTICATION & USER CRM API ---
-
-// Get all registered users for Admin CRM
-app.get('/api/users', (req, res) => {
-  const db = readDB();
-  res.json(db.users || []);
-});
-
-// Get single user details
-app.get('/api/users/:id', (req, res) => {
-  const db = readDB();
-  const u = (db.users || []).find(x => x.id === req.params.id || x.email === req.params.id);
-  if (!u) return res.status(404).json({ error: 'User not found' });
-  res.json(u);
-});
-
-// Create / Sync user profile
-app.post('/api/users', async (req, res) => {
-  const db = readDB();
-  if (!db.users) db.users = [];
-  
-  const user = {
-    id: req.body.id || `usr-${Date.now()}`,
-    name: req.body.name || (req.body.email ? req.body.email.split('@')[0] : 'Client'),
-    email: req.body.email || '',
-    phone: req.body.phone || '',
-    address: req.body.address || '',
-    city: req.body.city || 'Accra',
-    region: req.body.region || 'Greater Accra',
-    walletBalance: Number(req.body.walletBalance || 0),
-    joinedDate: req.body.joinedDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    lastLogin: req.body.lastLogin || new Date().toLocaleString(),
-    ordersCount: Number(req.body.ordersCount || 0),
-    status: req.body.status || 'Active',
-    loggedIn: Boolean(req.body.loggedIn)
-  };
-
-  const idx = db.users.findIndex(u => (u.email && u.email.toLowerCase() === user.email.toLowerCase()) || u.id === user.id);
-  if (idx !== -1) {
-    db.users[idx] = { ...db.users[idx], ...user };
-  } else {
-    db.users.push(user);
-  }
-  writeDB(db);
-
-  const client = getSupabaseClient();
-  if (client) {
-    try { await client.from('users').upsert([user]); } catch (e) {}
-  }
-
-  res.status(200).json({ success: true, user });
-});
+// --- AUTHENTICATION & CUSTOMER ACCOUNT API ---
 
 // Register new customer account
 app.post('/api/auth/register', async (req, res) => {

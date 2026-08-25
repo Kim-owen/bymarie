@@ -39,7 +39,82 @@
       "joinedDate": "01 Jan 2026",
       "ordersCount": 0,
       "loggedIn": true
+    },
+    {
+      "id": "usr-1787687408565",
+      "name": "Kofi Mensah",
+      "email": "kofi.mensah.test@gmail.com",
+      "phone": "+233 24 555 1234",
+      "address": "Airport Residential Area, Accra",
+      "city": "Accra",
+      "region": "Greater Accra",
+      "walletBalance": 0,
+      "joinedDate": "25 Aug 2026",
+      "lastLogin": "25/08/2026, 20:50:08",
+      "ordersCount": 0,
+      "status": "Active",
+      "loggedIn": true
     }
   ],
-  "wholesale_inquiries": []
+  "wholesale_inquiries": [],
+  "campaigns": [
+    {
+      "id": "cmp-mail-1787687410656",
+      "channel": "EMAIL",
+      "title": "VIP Atelier Preview",
+      "headline": "A New Epoch of African Luxury",
+      "content": "Dear Kofi,\n\nWe are delighted to present the latest private collection at ByMarie.",
+      "recipientsCount": 1,
+      "deliveredCount": 1,
+      "failedCount": 0,
+      "recipients": [
+        "sunumanfred14@gmail.com"
+      ],
+      "status": "Dispatched (1/1)",
+      "timestamp": "2026-08-25T19:50:10.656Z",
+      "dateFormatted": "25 Aug 2026, 20:50",
+      "deliveryLogs": [
+        {
+          "email": "sunumanfred14@gmail.com",
+          "status": "Sent",
+          "id": "7235d3a7-81de-4fce-984d-8051f01035f5"
+        }
+      ]
+    },
+    {
+      "id": "cmp-sms-1787687409659",
+      "channel": "SMS",
+      "title": "Exclusive VIP drop at ByMarie! https://bymari...",
+      "content": "Exclusive VIP drop at ByMarie! https://bymarie.shop",
+      "sender": "Bymarie",
+      "recipientsCount": 2,
+      "recipients": [
+        "0245551234",
+        "0501234567"
+      ],
+      "status": "Delivered",
+      "timestamp": "2026-08-25T19:50:09.659Z",
+      "dateFormatted": "25 Aug 2026, 20:50",
+      "meta": {
+        "status": "success",
+        "code": "2000",
+        "message": "messages sent successfully",
+        "summary": {
+          "_id": "0237060E-C2FA-47E0-8A57-46B4179E3474",
+          "message_id": "20260825233204120633V2",
+          "type": "API QUICK SMS",
+          "total_sent": 2,
+          "contacts": 2,
+          "total_rejected": 0,
+          "numbers_sent": [
+            "0245551234",
+            "0501234567"
+          ],
+          "credit_used": 2,
+          "credit_left": 396,
+          "wallet_used": 0
+        }
+      }
+    }
+  ]
 }
