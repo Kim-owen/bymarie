@@ -547,14 +547,43 @@ const INITIAL_SITE_SETTINGS = {
   }
 };
 
+function sanitizeMediaUrl(url) {
+  if (typeof url !== 'string') return '';
+  let str = url.trim();
+  if (str.startsWith('http://www.bymarie.shop/')) {
+    return str.replace('http://www.bymarie.shop/', '/');
+  }
+  if (str.startsWith('https://www.bymarie.shop/')) {
+    return str.replace('https://www.bymarie.shop/', '/');
+  }
+  if (str.startsWith('http://bymarie.shop/')) {
+    return str.replace('http://bymarie.shop/', '/');
+  }
+  if (str.startsWith('https://bymarie.shop/')) {
+    return str.replace('https://bymarie.shop/', '/');
+  }
+  if (str.startsWith('http://localhost:5000/')) {
+    return str.replace('http://localhost:5000/', '/');
+  }
+  if (str.startsWith('http://') && !str.includes('localhost') && !str.includes('127.0.0.1')) {
+    return str.replace('http://', 'https://');
+  }
+  return str;
+}
+
 function getHeroVideosList(settings) {
   settings = settings || getSiteSettings();
   if (Array.isArray(settings.heroVideos)) {
-    const valid = settings.heroVideos.filter(v => typeof v === 'string' && v.trim().length > 0 && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
+    const valid = settings.heroVideos
+      .map(sanitizeMediaUrl)
+      .filter(v => typeof v === 'string' && v.trim().length > 0 && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
     if (valid.length > 0) return valid;
   }
-  if (settings.heroMediaUrl && typeof settings.heroMediaUrl === 'string' && settings.heroMediaUrl.trim() && !settings.heroMediaUrl.includes('assets/bymarie.mp4') && !settings.heroMediaUrl.includes('assets/hero-fashion.mp4')) {
-    return [settings.heroMediaUrl.trim()];
+  if (settings.heroMediaUrl && typeof settings.heroMediaUrl === 'string' && settings.heroMediaUrl.trim()) {
+    const cleaned = sanitizeMediaUrl(settings.heroMediaUrl);
+    if (cleaned && !cleaned.includes('assets/bymarie.mp4') && !cleaned.includes('assets/hero-fashion.mp4')) {
+      return [cleaned];
+    }
   }
   return [];
 }
@@ -7987,7 +8016,7 @@ async function handleMultiHeroVideoUpload(event) {
       if (res.ok) {
         const data = await res.json();
         if (data.urls && data.urls[0]) {
-          uploadedUrl = data.urls[0];
+          uploadedUrl = sanitizeMediaUrl(data.urls[0]);
         }
       }
     } catch (err) {
@@ -8020,7 +8049,7 @@ async function handleMultiHeroVideoUpload(event) {
 
 function handleAddHeroVideoUrl(url) {
   if (!url || !url.trim()) return toast('Please enter a valid video URL', 'warning');
-  const trimmed = url.trim();
+  const trimmed = sanitizeMediaUrl(url);
   const settings = getSiteSettings();
   if (!Array.isArray(settings.heroVideos)) settings.heroVideos = [];
   settings.heroVideos.push(trimmed);
