@@ -90,17 +90,26 @@ app.get('/', (req, res) => {
 // ===================================================
 // REST API ROUTES
 // ===================================================
-app.use('/api', require('./routes/misc'));
-app.use('/api', require('./routes/products'));
-app.use('/api', require('./routes/orders'));
-app.use('/api', require('./routes/coupons'));
-app.use('/api', require('./routes/users'));
-app.use('/api', require('./routes/wholesale'));
-app.use('/api', require('./routes/campaigns'));
-app.use('/api', require('./routes/settings'));
-app.use('/api', require('./routes/payments'));
-app.use('/api', require('./routes/upload'));
+const apiRouters = [
+  require('./routes/misc'),
+  require('./routes/products'),
+  require('./routes/orders'),
+  require('./routes/coupons'),
+  require('./routes/users'),
+  require('./routes/wholesale'),
+  require('./routes/campaigns'),
+  require('./routes/settings'),
+  require('./routes/payments'),
+  require('./routes/upload')
+];
+
+apiRouters.forEach(routerModule => {
+  app.use('/api', routerModule);
+  app.use('/', routerModule);
+});
+
 app.use('/api/auth', require('./routes/auth'));
+app.use('/auth', require('./routes/auth'));
 
 // Global Centralized Error Handler (Catches all runtime errors -- including
 // DbError from lib/store.js when a Supabase read/write fails -- and returns

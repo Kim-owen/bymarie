@@ -34,17 +34,24 @@ router.post('/upload', upload.array('photos', 10), asyncHandler(async (req, res)
 
     if (supabase && supabase.storage) {
       try {
+        // Auto-ensure storage buckets exist
+        await supabase.storage.createBucket('product-images', { public: true }).catch(() => {});
+        await supabase.storage.createBucket('media', { public: true }).catch(() => {});
+
         const fileContent = fs.readFileSync(file.path);
-        const { data: sData, error: sErr } = await supabase.storage.from('media').upload(file.filename, fileContent, {
+        const targetBucket = 'product-images';
+        const targetPath = `products/${file.filename}`;
+
+        const { data: sData, error: sErr } = await supabase.storage.from(targetBucket).upload(targetPath, fileContent, {
           contentType: file.mimetype || (file.filename.endsWith('.mov') ? 'video/quicktime' : 'video/mp4'),
           upsert: true
         });
 
         if (!sErr && sData) {
-          const { data: pubData } = supabase.storage.from('media').getPublicUrl(file.filename);
+          const { data: pubData } = supabase.storage.from(targetBucket).getPublicUrl(targetPath);
           if (pubData && pubData.publicUrl) {
             finalUrl = pubData.publicUrl;
-            console.log('✅ Supabase CDN Upload Success:', finalUrl);
+            console.log('✅ Supabase Storage Upload Success:', finalUrl);
           }
         } else if (sErr) {
           console.warn('Supabase upload error:', sErr.message);
