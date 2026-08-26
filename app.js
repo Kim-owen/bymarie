@@ -566,19 +566,33 @@ function isValidImageSrc(s) {
 
 function getCategoryCoverList(catName) {
   const settings = getSiteSettings();
-  if (!settings.categoryCovers || !settings.categoryCovers[catName]) return [];
-  const val = settings.categoryCovers[catName];
-  if (Array.isArray(val)) {
-    return val.filter(isValidImageSrc);
-  }
-  if (typeof val === 'string' && val.trim()) {
-    const trimmed = val.trim();
-    if (isValidImageSrc(trimmed)) return [trimmed];
-    if (!trimmed.startsWith('data:image/')) {
-      return trimmed.split(/\n+/).flatMap(line => line.split(',')).map(s => s.trim()).filter(isValidImageSrc);
+  const list = [];
+  if (settings.categoryCovers && settings.categoryCovers[catName]) {
+    const val = settings.categoryCovers[catName];
+    if (Array.isArray(val)) {
+      list.push(...val.filter(isValidImageSrc));
+    } else if (typeof val === 'string' && val.trim()) {
+      const trimmed = val.trim();
+      if (isValidImageSrc(trimmed)) list.push(trimmed);
+      else if (!trimmed.startsWith('data:image/')) {
+        list.push(...trimmed.split(/\n+/).flatMap(line => line.split(',')).map(s => s.trim()).filter(isValidImageSrc));
+      }
     }
   }
-  return [];
+
+  // Automatic Fallback: If no explicit custom cover photo is uploaded yet,
+  // use the photos of products in that category automatically!
+  if (list.length === 0) {
+    const prods = getProducts().filter(p => p.category && p.category.toLowerCase() === (catName || '').toLowerCase());
+    prods.forEach(p => {
+      const img = p.image || (p.images && p.images[0]);
+      if (img && isValidImageSrc(img) && !list.includes(img)) {
+        list.push(img);
+      }
+    });
+  }
+
+  return list;
 }
 
 function getSiteSettings() {
@@ -7588,6 +7602,56 @@ async function deleteCoupon(index) {
   }
 }
 
+async function handleAdminCoverFileUpload(target, event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
+  toast(`Uploading ${files.length} cover photo(s)...`, 'info');
+  let uploadedUrls = [];
+
+  try {
+    const formData = new FormData();
+    files.forEach(file => formData.append('photos', file));
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.urls && data.urls.length) {
+        uploadedUrls = data.urls;
+      }
+    }
+  } catch (err) {}
+
+  if (!uploadedUrls.length) {
+    uploadedUrls = (await Promise.all(files.map(f => compressImageFile(f)))).filter(Boolean);
+  }
+
+  if (!uploadedUrls.length) return;
+
+  const settings = getSiteSettings();
+  if (target === 'ethos') {
+    settings.ethosImageUrl = uploadedUrls[0];
+  } else {
+    if (!settings.categoryCovers) settings.categoryCovers = {};
+    const existing = getCategoryCoverList(target);
+    settings.categoryCovers[target] = [...existing, ...uploadedUrls];
+  }
+  
+  saveSiteSettings(settings);
+  toast(`Updated ${target} with ${uploadedUrls.length} cover photo${uploadedUrls.length > 1 ? 's' : ''}! ⚡`);
+  render();
+
+  try {
+    fetch(`${API_BASE}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  } catch (err) {}
+}
+
 async function updateWholesaleInquiryStatus(id, status) {
   const list = getWholesaleInquiries();
   const item = list.find(w => w.id === id);
@@ -7619,78 +7683,7 @@ async function deleteWholesaleInquiry(id) {
   } catch (e) {}
 }
 
-async function saveCMSFromAdmin(event) {
-  event.preventDefault();
-  const fd = new FormData(event.target);
-  const cur = getSiteSettings();
 
-  const updatedSettings = {
-    ...cur,
-    announcementText: fd.get('announcementText') || '',
-    promoCodeNotice: fd.get('promoCodeNotice') || '',
-    heroTitle: fd.get('heroTitle') || '',
-    heroSubtitle: fd.get('heroSubtitle') || '',
-    heroMediaUrl: fd.get('heroMediaUrl') || '',
-    brandEthosTitle: fd.get('brandEthosTitle') || '',
-    brandEthosText: fd.get('brandEthosText') || '',
-    ethosImageUrl: (fd.get('ethosImageUrl') || '').trim(),
-    contactEmail: fd.get('contactEmail') || '',
-    contactPhone: fd.get('contactPhone') || '',
-    accraAddress: fd.get('accraAddress') || ''
-  };
-
-  saveSiteSettings(updatedSettings);
-  toast('⚡ Storefront CMS settings saved directly to backend DB!');
-  render();
-
-  try {
-    await fetch(`${API_BASE}/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedSettings)
-    });
-  } catch (e) {}
-}
-
-async function handleAdminCoverUpload(event, target) {
-  const files = Array.from(event.target.files || []);
-  if (!files.length) return;
-
-  toast(`Processing ${files.length} cover image${files.length > 1 ? 's' : ''}...`, 'info');
-  
-  const readPromises = files.map(file => {
-    return new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(file);
-    });
-  });
-
-  const base64List = (await Promise.all(readPromises)).filter(Boolean);
-  if (!base64List.length) return;
-
-  const settings = getSiteSettings();
-  if (target === 'ethos') {
-    settings.ethosImageUrl = base64List[0];
-  } else {
-    if (!settings.categoryCovers) settings.categoryCovers = {};
-    const existing = getCategoryCoverList(target);
-    settings.categoryCovers[target] = [...existing, ...base64List];
-  }
-  
-  saveSiteSettings(settings);
-  toast(`Updated ${target} with ${base64List.length} cover photo${base64List.length > 1 ? 's' : ''}! ⚡`);
-  render();
-
-  try {
-    fetch(`${API_BASE}/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    }).catch(() => {});
-  } catch (err) {}
-}
 
 function addAdminCoverUrl(target) {
   const input = document.getElementById(`new-cover-url-${target}`);
