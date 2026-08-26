@@ -523,10 +523,8 @@ function sanitizeMediaUrl(url) {
   if (str.startsWith('http://localhost:5000/')) {
     str = str.replace('http://localhost:5000/', '/');
   }
-  // Immediately redirect any /uploads/ paths to permanent Supabase Storage CDN
   if (str.startsWith('/uploads/')) {
-    const fname = str.replace('/uploads/', '');
-    return `https://oepvuawnzsvzhuibdlxq.supabase.co/storage/v1/object/public/media/${fname}`;
+    return str;
   }
   if (str.startsWith('http://') && !str.includes('localhost') && !str.includes('127.0.0.1')) {
     return str.replace('http://', 'https://');
@@ -1717,6 +1715,26 @@ let heroVideoIndex = 0;
 let heroVideoTimer = null;
 let heroActiveLayer = 'a';
 
+function handleHeroVideoError(videoEl) {
+  if (!videoEl) return;
+  const src = videoEl.getAttribute('src') || videoEl.src || '';
+  console.warn('Hero video load error for:', src);
+
+  const settings = getSiteSettings();
+  if (Array.isArray(settings.heroVideos)) {
+    settings.heroVideos = settings.heroVideos.filter(v => v !== src && sanitizeMediaUrl(v) !== src);
+  }
+  if (settings.heroMediaUrl === src || sanitizeMediaUrl(settings.heroMediaUrl) === src) {
+    settings.heroMediaUrl = settings.heroVideos ? (settings.heroVideos[0] || '') : '';
+  }
+  saveSiteSettings(settings);
+
+  videoEl.onerror = null;
+  if (typeof switchHeroVideo === 'function') {
+    switchHeroVideo(heroVideoIndex + 1);
+  }
+}
+
 function initHeroVideoRotation() {
   if (heroVideoTimer) clearInterval(heroVideoTimer);
   const settings = getSiteSettings();
@@ -1737,7 +1755,7 @@ function switchHeroVideo(newIndex) {
   
   heroVideoIndex = (newIndex + videos.length) % videos.length;
   const targetSrc = videos[heroVideoIndex];
-  
+
   const currentEl = document.getElementById(heroActiveLayer === 'a' ? 'hero-main-video-a' : 'hero-main-video-b');
   const nextEl = document.getElementById(heroActiveLayer === 'a' ? 'hero-main-video-b' : 'hero-main-video-a');
   const singleEl = document.getElementById('hero-main-video');
@@ -1750,12 +1768,7 @@ function switchHeroVideo(newIndex) {
     nextEl.setAttribute('muted', '');
     nextEl.setAttribute('playsinline', '');
     nextEl.setAttribute('webkit-playsinline', '');
-    nextEl.onerror = () => {
-      console.warn('Hero video failed to load, trying next:', targetSrc);
-      if (videos.length > 1) {
-        setTimeout(() => switchHeroVideo(heroVideoIndex + 1), 600);
-      }
-    };
+    nextEl.onerror = () => handleHeroVideoError(nextEl);
 
     safePlay(nextEl);
 
@@ -1854,8 +1867,8 @@ function home() {
 
             ${heroVideos.length > 0 ? `
               <!-- Dual Layer Crossfading Video Players for 100% Mobile & Desktop Compatibility -->
-              <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" onerror="if(typeof switchHeroVideo==='function')switchHeroVideo(heroVideoIndex+1)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
-              <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" onerror="if(typeof switchHeroVideo==='function')switchHeroVideo(heroVideoIndex+1)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
+              <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" onerror="handleHeroVideoError(this)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
+              <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" onerror="handleHeroVideoError(this)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
 
               <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
                 <span class="audio-btn-icon">🔇</span>
