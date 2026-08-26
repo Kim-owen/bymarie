@@ -1334,15 +1334,59 @@ app.delete('/api/wholesale/:id', (req, res) => {
 
 // --- SITE SETTINGS CMS API ---
 
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', async (req, res) => {
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).maybeSingle();
+      if (data) {
+        return res.json({
+          heroTitle: data.heroTitle,
+          heroSubtitle: data.heroSubtitle,
+          heroMediaType: data.heroMediaType || 'video',
+          heroMediaUrl: data.heroMediaUrl,
+          heroVideos: data.heroVideos || [],
+          heroVideoInterval: data.heroVideoInterval || 30,
+          announcementText: data.announcementText,
+          promoCodeNotice: data.promoCodeNotice,
+          brandEthosTitle: data.brandEthosTitle,
+          brandEthosText: data.brandEthosText,
+          categoryCovers: data.categoryCovers || {}
+        });
+      }
+    } catch (e) {}
+  }
   const db = readDB();
   res.json(db.site_settings || {});
 });
 
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', async (req, res) => {
   const db = readDB();
   db.site_settings = { ...db.site_settings, ...req.body };
   writeDB(db);
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      await supabase.from('site_settings').upsert({
+        id: 1,
+        heroTitle: db.site_settings.heroTitle,
+        heroSubtitle: db.site_settings.heroSubtitle,
+        heroMediaType: db.site_settings.heroMediaType || 'video',
+        heroMediaUrl: db.site_settings.heroMediaUrl,
+        heroVideos: db.site_settings.heroVideos || [],
+        heroVideoInterval: Number(db.site_settings.heroVideoInterval || 30),
+        announcementText: db.site_settings.announcementText,
+        promoCodeNotice: db.site_settings.promoCodeNotice,
+        brandEthosTitle: db.site_settings.brandEthosTitle,
+        brandEthosText: db.site_settings.brandEthosText,
+        categoryCovers: db.site_settings.categoryCovers || {}
+      });
+    } catch (e) {
+      console.warn('Supabase settings sync notice:', e.message);
+    }
+  }
+
   res.json(db.site_settings);
 });
 
@@ -1355,14 +1399,45 @@ app.get('/api/database/backup', (req, res) => {
   res.send(JSON.stringify(db, null, 2));
 });
 
-// --- FILE UPLOAD API ---
+// --- FILE UPLOAD API (Direct Supabase Storage CDN Streaming) ---
 
-app.post('/api/upload', upload.array('photos', 10), (req, res) => {
+app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
   if (!req.files || !req.files.length) {
     return res.status(400).json({ error: 'No files uploaded' });
   }
 
-  const urls = req.files.map(file => `/uploads/${file.filename}`);
+  const supabase = getSupabaseClient();
+  const urls = [];
+
+  for (const file of req.files) {
+    let finalUrl = `/uploads/${file.filename}`;
+
+    // 1. Upload to Supabase Storage Bucket 'media' for permanent global CDN hosting
+    if (supabase && supabase.storage) {
+      try {
+        const fileContent = fs.readFileSync(file.path);
+        const { data: sData, error: sErr } = await supabase.storage.from('media').upload(file.filename, fileContent, {
+          contentType: file.mimetype || (file.filename.endsWith('.mov') ? 'video/quicktime' : 'video/mp4'),
+          upsert: true
+        });
+
+        if (!sErr && sData) {
+          const { data: pubData } = supabase.storage.from('media').getPublicUrl(file.filename);
+          if (pubData && pubData.publicUrl) {
+            finalUrl = pubData.publicUrl;
+            console.log('✅ Supabase CDN Upload Success:', finalUrl);
+          }
+        } else if (sErr) {
+          console.warn('Supabase upload error:', sErr.message);
+        }
+      } catch (err) {
+        console.warn('Supabase upload exception:', err.message);
+      }
+    }
+
+    urls.push(finalUrl);
+  }
+
   res.json({ success: true, urls, count: urls.length });
 });
 
