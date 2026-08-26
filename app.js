@@ -784,12 +784,7 @@ function getProducts() {
   try {
     const list = JSON.parse(data);
     if (!Array.isArray(list)) return [];
-    // Strictly return only products created and saved by the administrator
-    const cleaned = list.filter(p => p && p.isCustom === true);
-    if (cleaned.length !== list.length) {
-      localStorage.setItem('bymarie-products', JSON.stringify(cleaned));
-    }
-    return cleaned;
+    return list.filter(p => p && p.id && p.name);
   } catch { return []; }
 }
 
