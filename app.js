@@ -551,19 +551,24 @@ function sanitizeMediaUrl(url) {
   if (typeof url !== 'string') return '';
   let str = url.trim();
   if (str.startsWith('http://www.bymarie.shop/')) {
-    return str.replace('http://www.bymarie.shop/', '/');
+    str = str.replace('http://www.bymarie.shop/', '/');
   }
   if (str.startsWith('https://www.bymarie.shop/')) {
-    return str.replace('https://www.bymarie.shop/', '/');
+    str = str.replace('https://www.bymarie.shop/', '/');
   }
   if (str.startsWith('http://bymarie.shop/')) {
-    return str.replace('http://bymarie.shop/', '/');
+    str = str.replace('http://bymarie.shop/', '/');
   }
   if (str.startsWith('https://bymarie.shop/')) {
-    return str.replace('https://bymarie.shop/', '/');
+    str = str.replace('https://bymarie.shop/', '/');
   }
   if (str.startsWith('http://localhost:5000/')) {
-    return str.replace('http://localhost:5000/', '/');
+    str = str.replace('http://localhost:5000/', '/');
+  }
+  // Immediately redirect any /uploads/ paths to permanent Supabase Storage CDN
+  if (str.startsWith('/uploads/')) {
+    const fname = str.replace('/uploads/', '');
+    return `https://oepvuawnzsvzhuibdlxq.supabase.co/storage/v1/object/public/media/${fname}`;
   }
   if (str.startsWith('http://') && !str.includes('localhost') && !str.includes('127.0.0.1')) {
     return str.replace('http://', 'https://');
@@ -629,14 +634,20 @@ function getSiteSettings() {
     }
   }
 
-  // Purge any legacy default template video references
+  // Purge any legacy default template video references & upgrade /uploads/ to CDN
   if (Array.isArray(settings.heroVideos)) {
-    settings.heroVideos = settings.heroVideos.filter(v => typeof v === 'string' && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
+    settings.heroVideos = settings.heroVideos
+      .map(sanitizeMediaUrl)
+      .filter(v => typeof v === 'string' && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
   } else {
     settings.heroVideos = [];
   }
-  if (settings.heroMediaUrl && (settings.heroMediaUrl.includes('assets/bymarie.mp4') || settings.heroMediaUrl.includes('assets/hero-fashion.mp4'))) {
-    settings.heroMediaUrl = settings.heroVideos[0] || '';
+  if (settings.heroMediaUrl) {
+    if (settings.heroMediaUrl.includes('assets/bymarie.mp4') || settings.heroMediaUrl.includes('assets/hero-fashion.mp4')) {
+      settings.heroMediaUrl = settings.heroVideos[0] || '';
+    } else {
+      settings.heroMediaUrl = sanitizeMediaUrl(settings.heroMediaUrl);
+    }
   }
 
   // Auto-clean category covers from any broken legacy split strings
