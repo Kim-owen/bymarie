@@ -9491,6 +9491,7 @@ function render() {
     ${isPlainLayout ? '' : header()}
     ${content}
     ${isPlainLayout ? '' : footer()}
+    ${isPlainLayout ? '' : renderMobileBottomNav()}
     ${renderModals()}
   `;
 
@@ -9498,6 +9499,48 @@ function render() {
     initCategorySliders();
     initHeroVideoMobilePlayback();
   }
+}
+
+function renderMobileBottomNav() {
+  const [currentPage] = (route || 'home').split('/');
+  const user = getUser();
+  const wishCount = wishlist.length;
+  const bagCount = cartCount();
+
+  return `
+    <nav class="storefront-mobile-bottom-nav" aria-label="Mobile Navigation">
+      <button class="mobile-nav-tab ${currentPage === 'home' ? 'active' : ''}" onclick="go('home')">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Home</span>
+      </button>
+      <button class="mobile-nav-tab ${currentPage === 'shop' || currentPage === 'category' ? 'active' : ''}" onclick="filters.cat='All';go('shop')">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Shop</span>
+      </button>
+      <button class="mobile-nav-tab ${currentPage === 'wholesale' ? 'active' : ''}" onclick="go('wholesale')">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+        <span>Wholesale</span>
+      </button>
+      <button class="mobile-nav-tab ${currentPage === 'wishlist' ? 'active' : ''}" onclick="go('wishlist')">
+        <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          ${wishCount ? `<span class="mobile-nav-badge">${wishCount}</span>` : ''}
+        </div>
+        <span>Wishlist</span>
+      </button>
+      <button class="mobile-nav-tab ${currentPage === 'cart' ? 'active' : ''}" onclick="go('cart')">
+        <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          ${bagCount ? `<span class="mobile-nav-badge" style="background:#c24d67">${bagCount}</span>` : ''}
+        </div>
+        <span>Bag</span>
+      </button>
+      <button class="mobile-nav-tab ${currentPage === 'account' || currentPage === 'auth' ? 'active' : ''}" onclick="accountTab='hub';go('account')">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>${user.loggedIn ? 'Account' : 'Sign In'}</span>
+      </button>
+    </nav>
+  `;
 }
 
 async function loadPublicConfig() {
