@@ -877,7 +877,7 @@ let adminUserFilter = { search: '', minWallet: 'All' };
 let adminWholesaleFilter = { search: '', status: 'All' };
 
 const money = n => `GH₵ ${Number(n).toFixed(2)}`;
-const byId = id => getProducts().find(p => p.id === id);
+const byId = id => getProducts().find(p => String(p.id) === String(id));
 
 const COLOR_HEX_MAP = {
   'Ivory': '#fdfbf7',
