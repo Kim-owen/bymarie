@@ -37,7 +37,7 @@
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/uploads/$1"
+      "dest": "/api/index.js"
     },
     {
       "src": "/styles.css",

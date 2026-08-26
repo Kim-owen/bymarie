@@ -1671,7 +1671,12 @@ function switchHeroVideo(newIndex) {
     nextEl.setAttribute('muted', '');
     nextEl.setAttribute('playsinline', '');
     nextEl.setAttribute('webkit-playsinline', '');
-    nextEl.load();
+    nextEl.onerror = () => {
+      console.warn('Hero video failed to load, trying next:', targetSrc);
+      if (videos.length > 1) {
+        setTimeout(() => switchHeroVideo(heroVideoIndex + 1), 600);
+      }
+    };
 
     const playPromise = nextEl.play();
     if (playPromise !== undefined) {
