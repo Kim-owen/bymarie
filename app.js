@@ -724,7 +724,7 @@ function saveSiteSettings(settings) {
 
 const DEFAULT_SUPABASE_CONFIG = {
   url: 'https://oepvuawnzsvzhuibdlxq.supabase.co',
-  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcHZ1YXduenN2emh1aWJkbHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MjM2NTksImV4cCI6MjEwMjk5OTY1OX0.Sxu7ISHqH-wLf1dGEEgXUsQ4KIMSkgmIlLsZuYatkrQ',
+  key: '',
   active: true
 };
 

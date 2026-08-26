@@ -608,7 +608,7 @@ app.post('/api/orders', async (req, res) => {
 
 // --- PAYSTACK IN-APP DIRECT CHARGE & OTP API ---
 
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || 'sk_test_b05bc12163a77b862d08386b7e7c2e18476ce2a6';
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 
 // 1. Direct In-App Charge (Zero external redirects)
 app.post('/api/paystack/charge', async (req, res) => {
