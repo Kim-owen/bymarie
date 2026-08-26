@@ -2463,8 +2463,7 @@ function removeCartItem(index) {
 // ===================================================
 
 let checkoutDeliveryMethod = 'Standard delivery';
-let checkoutPaymentMethod = 'momo';
-let checkoutMomoNetwork = 'MTN';
+let checkoutPaymentMethod = 'paystack';
 
 function checkout() {
   if (!cart.length) return cartPage();
@@ -2556,39 +2555,12 @@ function checkout() {
           <h2 style="font-size:26px;margin:35px 0 16px">3. Payment Option</h2>
           
           <div class="luxe-payment-grid">
-            <div class="luxe-payment-card mtn ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork === 'MTN' ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='MTN';render()">
-              ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork === 'MTN' ? '<span class="selected-check">✓</span>' : ''}
+            <div class="luxe-payment-card card ${checkoutPaymentMethod === 'paystack' ? 'active' : ''}" onclick="checkoutPaymentMethod='paystack';render()">
+              ${checkoutPaymentMethod === 'paystack' ? '<span class="selected-check">✓</span>' : ''}
               <div>
-                <span class="card-badge">MTN MoMo</span>
-                <strong>MTN Mobile Money</strong>
-                <small>USSD Direct Handset Prompt</small>
-              </div>
-            </div>
-
-            <div class="luxe-payment-card telecel ${checkoutPaymentMethod === 'momo' && (checkoutMomoNetwork.includes('Telecel') || checkoutMomoNetwork.includes('Vodafone')) ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='Telecel (Vodafone)';render()">
-              ${checkoutPaymentMethod === 'momo' && (checkoutMomoNetwork.includes('Telecel') || checkoutMomoNetwork.includes('Vodafone')) ? '<span class="selected-check">✓</span>' : ''}
-              <div>
-                <span class="card-badge">Telecel Cash</span>
-                <strong>Telecel (Vodafone)</strong>
-                <small>Instant MoMo Push / OTP</small>
-              </div>
-            </div>
-
-            <div class="luxe-payment-card at ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork.includes('AT') ? 'active' : ''}" onclick="checkoutPaymentMethod='momo';checkoutMomoNetwork='AT Money';render()">
-              ${checkoutPaymentMethod === 'momo' && checkoutMomoNetwork.includes('AT') ? '<span class="selected-check">✓</span>' : ''}
-              <div>
-                <span class="card-badge">AT Money</span>
-                <strong>AirtelTigo Cash</strong>
-                <small>Ghana MoMo Gateway</small>
-              </div>
-            </div>
-
-            <div class="luxe-payment-card card ${checkoutPaymentMethod === 'card' ? 'active' : ''}" onclick="checkoutPaymentMethod='card';render()">
-              ${checkoutPaymentMethod === 'card' ? '<span class="selected-check">✓</span>' : ''}
-              <div>
-                <span class="card-badge">Bank Card</span>
-                <strong>Visa / Mastercard</strong>
-                <small>256-Bit TLS Direct Charge</small>
+                <span class="card-badge">Paystack</span>
+                <strong>Card / Mobile Money / Bank</strong>
+                <small>Secure checkout hosted by Paystack</small>
               </div>
             </div>
 
@@ -2611,6 +2583,15 @@ function checkout() {
             </div>
           </div>
 
+          ${checkoutPaymentMethod === 'paystack' ? `
+            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 SECURED BY PAYSTACK</span>
+              </div>
+              <p style="color:var(--muted);font-size:13px;margin:0">You'll be redirected to Paystack's secure checkout page to pay by card, mobile money, or bank transfer. Your card and mobile money details are entered there, never on this site.</p>
+            </div>
+          ` : ''}
+
           ${checkoutPaymentMethod === 'wallet' ? `
             <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -2626,50 +2607,8 @@ function checkout() {
                   <button type="button" class="primary" style="padding:6px 12px;font-size:11px" onclick="activeModal='topup_wallet';render()">+ Top Up Wallet</button>
                 </div>
               ` : `
-                <p style="color:var(--emerald);font-size:13px;font-weight:700;margin-top:8px">✓ Sufficient balance available. Total will be deducted automatically upon confirmation with zero card prompts.</p>
+                <p style="color:var(--emerald);font-size:13px;font-weight:700;margin-top:8px">✓ Sufficient balance available. Total will be deducted automatically upon confirmation.</p>
               `}
-            </div>
-          ` : ''}
-
-          ${checkoutPaymentMethod === 'momo' ? `
-            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-                <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 PAYSTACK IN-APP PROMPT</span>
-                <small style="color:var(--muted);font-weight:700">Selected Network: <b style="color:var(--ink)">${checkoutMomoNetwork}</b></small>
-              </div>
-              <div class="form-group">
-                <label>Ghana Mobile Money Phone Number</label>
-                <input required name="momoNumber" type="tel" value="${user.phone || ''}" placeholder="024 XXX XXXX" style="font-size:15px;font-weight:600;letter-spacing:0.5px">
-                <small style="color:var(--muted);margin-top:6px;display:block">📲 An instant USSD prompt will be sent directly to this phone to authorize payment.</small>
-              </div>
-            </div>
-          ` : ''}
-
-          ${checkoutPaymentMethod === 'card' ? `
-            <div style="background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-subtle)">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-                <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 256-BIT TLS ENCRYPTED</span>
-                <small style="color:var(--muted)">Visa, Mastercard &amp; AMEX</small>
-              </div>
-              <div class="form-grid">
-                <div class="form-group full">
-                  <label>Cardholder Full Name</label>
-                  <input required name="cardName" value="${user.name || ''}" placeholder="Name on card">
-                </div>
-                <div class="form-group full">
-                  <label>Card Number</label>
-                  <input required name="cardNumber" maxlength="19" placeholder="4123 •••• •••• 1234" style="font-family:'DM Mono',monospace;font-size:14px">
-                </div>
-                <div class="form-group">
-                  <label>Expiry (MM/YY)</label>
-                  <input required name="cardExpiry" maxlength="5" placeholder="12/28" style="font-family:'DM Mono',monospace;text-align:center">
-                </div>
-                <div class="form-group">
-                  <label>CVV / CVC Security Code</label>
-                  <input required name="cardCvv" maxlength="4" placeholder="123" style="font-family:'DM Mono',monospace;text-align:center">
-                </div>
-              </div>
-              <small style="color:var(--muted);display:block;margin-top:6px">🔒 Direct in-app bank handshake. Your card credentials are encrypted and never stored on the server.</small>
             </div>
           ` : ''}
 
@@ -2747,354 +2686,157 @@ function handleCheckoutSubmit(event) {
 
   const form = event.target;
   const fd = new FormData(form);
-  
-  const orderDetails = {
-    id: `BM-${Math.floor(100000 + Math.random() * 899999)}`,
-    date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+
+  const customerInfo = {
     name: fd.get('name'),
     email: fd.get('email'),
     phone: fd.get('phone'),
     address: fd.get('address'),
     city: fd.get('city'),
-    region: fd.get('region'),
-    delivery: checkoutDeliveryMethod,
-    payment: checkoutPaymentMethod === 'wallet' ? 'ByMarie Float Wallet (Verified)' : checkoutPaymentMethod === 'momo' ? `Mobile Money (${checkoutMomoNetwork})` : checkoutPaymentMethod === 'card' ? 'Card (Verified)' : 'Cash on Delivery',
-    status: 'Pending',
-    items: [...cart],
-    subtotal: subtotal(),
-    discountAmount: getDiscountAmount(),
-    deliveryFee: getDeliveryFee(checkoutDeliveryMethod),
-    total: grandTotal(checkoutDeliveryMethod)
+    region: fd.get('region')
   };
-  
+
+  const items = cart.map(it => ({ id: it.id, qty: it.qty, size: it.size, color: it.color }));
+  const couponCode = appliedCoupon ? appliedCoupon.code : null;
+
   if (checkoutPaymentMethod === 'wallet') {
-    if ((user.walletBalance || 0) < orderDetails.total) {
+    // A soft up-front check for a fast "insufficient balance" message --
+    // the server re-checks the real stored balance and is the only thing
+    // that actually deducts it, so this can't be gamed by a stale/edited
+    // client-side balance.
+    if ((user.walletBalance || 0) < grandTotal(checkoutDeliveryMethod)) {
       toast(`Insufficient Float Wallet balance (${money(user.walletBalance || 0)}). Please top up or select another payment option.`, 'warning');
       activeModal = 'topup_wallet';
       render();
       return;
     }
-    
-    // Deduct from Float Wallet
-    user.walletBalance = Math.round(((user.walletBalance || 0) - orderDetails.total) * 100) / 100;
-    saveUser(user);
-    
-    // Sync users list
-    const users = getUsers();
-    const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
-    if (uIdx !== -1) {
-      users[uIdx].walletBalance = user.walletBalance;
-      users[uIdx].ordersCount = (users[uIdx].ordersCount || 0) + 1;
-      saveUsers(users);
-    }
-    
-    orderDetails.status = 'Processing';
-    toast(`Payment successful! ${money(orderDetails.total)} deducted from your Float Wallet 💳`);
-    completeOrder(orderDetails);
-    return;
-  } else if (checkoutPaymentMethod === 'momo') {
-    let provider = 'mtn';
-    if (checkoutMomoNetwork.toLowerCase().includes('telecel') || checkoutMomoNetwork.toLowerCase().includes('vodafone')) {
-      provider = 'vod';
-    } else if (checkoutMomoNetwork.toLowerCase().includes('at')) {
-      provider = 'tgo';
-    }
-    
-    const momoPhone = fd.get('momoNumber') || user.phone || '';
-    if (!momoPhone) {
-      return toast('Please enter a valid Ghana Mobile Money number', 'warning');
-    }
 
-    orderDetails.payment = `Paystack Mobile Money (${checkoutMomoNetwork} - ${momoPhone})`;
-    initiateInAppPaystackPayment(orderDetails, { type: 'momo', phone: momoPhone, provider });
+    completeOrder({ ...customerInfo, delivery: checkoutDeliveryMethod, items, couponCode, payment: 'wallet', userId: user.id });
     return;
-  } else if (checkoutPaymentMethod === 'card') {
-    const cardNum = fd.get('cardNumber') || '';
-    const cardExp = fd.get('cardExpiry') || '';
-    const cardCvv = fd.get('cardCvv') || '';
-    const [expMonth, expYear] = cardExp.split('/').map(s => s.trim());
-
-    if (!cardNum || !cardExp || !cardCvv) {
-      return toast('Please complete all card details', 'warning');
-    }
-
-    orderDetails.payment = `Paystack Card (•••• ${cardNum.slice(-4)})`;
-    initiateInAppPaystackPayment(orderDetails, {
-      type: 'card',
-      card: {
-        number: cardNum,
-        cvv: cardCvv,
-        expiry_month: expMonth,
-        expiry_year: expYear && expYear.length === 2 ? `20${expYear}` : expYear
-      }
-    });
-    return;
-  } else {
-    completeOrder(orderDetails);
   }
+
+  if (checkoutPaymentMethod === 'cod') {
+    completeOrder({ ...customerInfo, delivery: checkoutDeliveryMethod, items, couponCode, payment: 'cod', userId: user.id });
+    return;
+  }
+
+  // 'paystack' -- redirect to Paystack's hosted checkout page; the order is
+  // created server-side only once the payment is independently verified.
+  startPaystackCheckout({
+    purpose: 'order',
+    email: customerInfo.email,
+    name: customerInfo.name,
+    phone: customerInfo.phone,
+    address: customerInfo.address,
+    city: customerInfo.city,
+    region: customerInfo.region,
+    delivery: checkoutDeliveryMethod,
+    items,
+    couponCode
+  });
 }
 
-// Seamless In-App Payment State
-let seamlessPaymentState = {
-  active: false,
-  status: 'idle', // 'processing', 'send_otp', 'send_pin', 'pay_offline', 'success', 'failed', 'verifying_otp'
-  orderData: null,
-  paymentInfo: null,
-  reference: '',
-  displayText: '',
-  channel: 'momo',
-  phone: '',
-  timerSeconds: 60,
-  timerInterval: null,
-  pollInterval: null
-};
+// ===================================================
+// PAYSTACK PAYMENT (redirect-based, server-verified)
+// ===================================================
+// The customer is redirected to Paystack's own hosted checkout page for
+// card / mobile money payments -- this app never collects raw card
+// numbers, CVVs, OTPs, or PINs, and this flow does not depend on a
+// client-side Paystack public key at all. After payment, Paystack sends
+// the browser back here with ?paystack_ref=<reference>, which boot() picks
+// up and hands to the server to verify (see confirmReturningPaystackPayment
+// below) -- the server independently re-checks every payment with Paystack
+// before crediting a wallet or creating an order; nothing here is ever
+// trusted at face value.
 
-function clearSeamlessIntervals() {
-  if (seamlessPaymentState.timerInterval) clearInterval(seamlessPaymentState.timerInterval);
-  if (seamlessPaymentState.pollInterval) clearInterval(seamlessPaymentState.pollInterval);
-  seamlessPaymentState.timerInterval = null;
-  seamlessPaymentState.pollInterval = null;
-}
-
-function startSeamlessTimer(duration = 60) {
-  if (seamlessPaymentState.timerInterval) clearInterval(seamlessPaymentState.timerInterval);
-  seamlessPaymentState.timerSeconds = duration;
-  seamlessPaymentState.timerInterval = setInterval(() => {
-    seamlessPaymentState.timerSeconds--;
-    const badge = document.getElementById('seamless-countdown-badge');
-    if (badge) {
-      if (seamlessPaymentState.timerSeconds > 0) {
-        badge.textContent = `⏱️ Resend / retry in ${seamlessPaymentState.timerSeconds}s`;
-      } else {
-        badge.textContent = `⏱️ Timeout reached`;
-        badge.classList.remove('active');
-      }
-    }
-    if (seamlessPaymentState.timerSeconds <= 0) {
-      clearInterval(seamlessPaymentState.timerInterval);
-      seamlessPaymentState.timerInterval = null;
-      render();
-    }
-  }, 1000);
-}
-
-function startSeamlessPolling(reference) {
-  if (seamlessPaymentState.pollInterval) clearInterval(seamlessPaymentState.pollInterval);
-  let pollAttempts = 0;
-  seamlessPaymentState.pollInterval = setInterval(async () => {
-    pollAttempts++;
-    if (pollAttempts > 35) { // 35 * 2.5s = ~90 seconds max poll
-      clearInterval(seamlessPaymentState.pollInterval);
-      seamlessPaymentState.pollInterval = null;
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/paystack/verify/${encodeURIComponent(reference)}`);
-      const data = await res.json();
-      if (data.data && data.data.status === 'success') {
-        clearSeamlessIntervals();
-        seamlessPaymentState.status = 'success';
-        playNotificationChime();
-        render();
-        setTimeout(() => {
-          activeModal = null;
-          if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
-            completeWalletTopup(seamlessPaymentState.orderData);
-          } else {
-            completeOrder(seamlessPaymentState.orderData);
-          }
-        }, 1200);
-      }
-    } catch (e) {
-      console.warn('Polling check note:', e.message);
-    }
-  }, 2500);
-}
-
-async function initiateInAppPaystackPayment(orderDetails, paymentInfo) {
-  clearSeamlessIntervals();
-  seamlessPaymentState = {
-    active: true,
-    status: 'processing',
-    orderData: orderDetails,
-    paymentInfo,
-    reference: '',
-    displayText: 'Connecting to Paystack Security Gateway...',
-    channel: paymentInfo.type,
-    phone: paymentInfo.phone || '',
-    timerSeconds: 60,
-    timerInterval: null,
-    pollInterval: null
-  };
-
-  activeModal = 'paystack_seamless_payment';
-  render();
-
+async function startPaystackCheckout(initPayload) {
   try {
-    const payload = {
-      email: orderDetails.email,
-      amount: orderDetails.total,
-      currency: 'GHS',
-      metadata: { orderId: orderDetails.id, customerName: orderDetails.name, phone: orderDetails.phone }
-    };
-
-    if (paymentInfo.type === 'momo') {
-      payload.mobile_money = { phone: paymentInfo.phone, provider: paymentInfo.provider };
-    } else if (paymentInfo.type === 'card') {
-      payload.card = paymentInfo.card;
-    }
-
-    const res = await fetch(`${API_BASE}/paystack/charge`, {
+    const res = await fetch(`${API_BASE}/paystack/initialize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(initPayload)
     });
-
     const data = await res.json();
 
-    if (!data.status && !data.data) {
-      seamlessPaymentState.status = 'failed';
-      seamlessPaymentState.displayText = data.message || 'Payment initialization declined. Please check your credentials.';
-      render();
+    if (!res.ok || !data.status || !data.authorizationUrl) {
+      toast(data.message || 'Could not start Paystack checkout. Please try again.', 'error');
       return;
     }
 
-    const chargeData = data.data || {};
-    seamlessPaymentState.reference = chargeData.reference || `bm_ref_${Date.now()}`;
-
-    if (chargeData.status === 'success') {
-      seamlessPaymentState.status = 'success';
-      playNotificationChime();
-      render();
-      setTimeout(() => {
-        activeModal = null;
-        if (orderDetails.isTopup) {
-          completeWalletTopup(orderDetails);
-        } else {
-          completeOrder(orderDetails);
-        }
-      }, 1000);
-      return;
-    }
-
-    if (chargeData.status === 'send_otp') {
-      seamlessPaymentState.status = 'send_otp';
-      seamlessPaymentState.displayText = chargeData.display_text || 'Please enter the verification code (OTP) sent to your phone.';
-      startSeamlessTimer(60);
-      render();
-      return;
-    }
-
-    if (chargeData.status === 'pay_offline' || chargeData.status === 'pending' || chargeData.status === 'send_phone') {
-      seamlessPaymentState.status = 'pay_offline';
-      seamlessPaymentState.displayText = chargeData.display_text || `A payment prompt has been sent to ${paymentInfo.phone}. Please approve with your Mobile Money PIN on your handset.`;
-      startSeamlessTimer(60);
-      startSeamlessPolling(seamlessPaymentState.reference);
-      render();
-      return;
-    }
-
-    if (chargeData.status === 'send_pin') {
-      seamlessPaymentState.status = 'send_pin';
-      seamlessPaymentState.displayText = 'Please enter your 4-digit card security PIN.';
-      render();
-      return;
-    }
-
-    // Default fallback
-    seamlessPaymentState.status = 'failed';
-    seamlessPaymentState.displayText = chargeData.message || data.message || 'Payment could not be completed. Please try again.';
-    render();
+    toast('Redirecting to secure Paystack checkout...', 'info');
+    window.location.href = data.authorizationUrl;
   } catch (err) {
-    console.error('Seamless payment charge error:', err);
-    seamlessPaymentState.status = 'failed';
-    seamlessPaymentState.displayText = err.message || 'Network communication error with payment server.';
-    render();
+    console.error('Paystack initialize error:', err);
+    toast('Could not reach the payment server. Please check your connection and try again.', 'error');
   }
 }
 
-async function handleSeamlessSubmitOtp(event) {
-  event.preventDefault();
-  const fd = new FormData(event.target);
-  const otp = (fd.get('otp') || '').trim();
+// Called on page load when the URL contains ?paystack_ref=... (Paystack's
+// callback_url after the customer completes or cancels checkout).
+async function confirmReturningPaystackPayment() {
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get('paystack_ref');
+  if (!reference) return;
 
-  if (!otp) return toast('Please enter the OTP code', 'warning');
+  // Strip the reference from the URL immediately so a page refresh can't
+  // re-trigger this (the server is idempotent regardless, but this keeps
+  // the address bar clean and avoids a duplicate "verifying" toast).
+  window.history.replaceState({}, '', window.location.pathname + window.location.hash);
 
-  seamlessPaymentState.status = 'verifying_otp';
-  render();
+  toast('Verifying your payment with Paystack...', 'info');
 
   try {
-    const res = await fetch(`${API_BASE}/paystack/submit-otp`, {
+    const res = await fetch(`${API_BASE}/paystack/confirm`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ otp, reference: seamlessPaymentState.reference })
+      body: JSON.stringify({ reference })
     });
-
     const data = await res.json();
-    const chargeData = data.data || {};
 
-    if (chargeData.status === 'success' || data.status === true) {
-      clearSeamlessIntervals();
-      seamlessPaymentState.status = 'success';
+    if (!res.ok || !data.success) {
+      toast(data.reason || 'We could not verify this payment. If you were charged, please contact support.', 'error');
+      return;
+    }
+
+    if (data.purpose === 'wallet_topup') {
+      const user = getUser();
+      if (user && data.balance !== undefined) {
+        user.walletBalance = data.balance;
+        saveUser(user);
+        const users = getUsers();
+        const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
+        if (uIdx !== -1) {
+          users[uIdx].walletBalance = user.walletBalance;
+          saveUsers(users);
+        }
+      }
       playNotificationChime();
       render();
-      setTimeout(() => {
-        activeModal = null;
-        if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
-          completeWalletTopup(seamlessPaymentState.orderData);
-        } else {
-          completeOrder(seamlessPaymentState.orderData);
-        }
-      }, 1000);
+      toast(`🎉 Deposit verified! Float Wallet balance: ${money(data.balance)}`);
       return;
     }
 
-    if (chargeData.status === 'pending' || chargeData.status === 'pay_offline') {
-      seamlessPaymentState.status = 'pay_offline';
-      startSeamlessPolling(seamlessPaymentState.reference);
-      render();
+    if (data.purpose === 'order' && data.order) {
+      const orders = getOrders();
+      if (!orders.find(o => o.id === data.order.id)) {
+        orders.unshift(data.order);
+        saveOrders(orders);
+      }
+      cart = [];
+      saveCart();
+      appliedCoupon = null;
+      saveAppliedCoupon();
+      playNotificationChime();
+      go(`confirmation/${data.order.id}`);
+      toast('Payment verified — order confirmed! ⚡');
       return;
     }
-
-    seamlessPaymentState.status = 'send_otp';
-    toast(chargeData.message || data.message || 'Invalid OTP code. Please retry.', 'error');
-    render();
   } catch (err) {
-    seamlessPaymentState.status = 'send_otp';
-    toast(`OTP verification note: ${err.message}`, 'warning');
-    render();
+    console.error('Payment confirmation error:', err);
+    toast('Could not verify your payment right now. If you were charged, please contact support.', 'error');
   }
 }
 
-async function handleSeamlessManualVerify() {
-  toast('Checking payment authorization status...', 'info');
-  try {
-    const res = await fetch(`${API_BASE}/paystack/verify/${encodeURIComponent(seamlessPaymentState.reference)}`);
-    const data = await res.json();
-    if (data.data && data.data.status === 'success') {
-      clearSeamlessIntervals();
-      seamlessPaymentState.status = 'success';
-      playNotificationChime();
-      render();
-      setTimeout(() => {
-        activeModal = null;
-        if (seamlessPaymentState.orderData && seamlessPaymentState.orderData.isTopup) {
-          completeWalletTopup(seamlessPaymentState.orderData);
-        } else {
-          completeOrder(seamlessPaymentState.orderData);
-        }
-      }, 1000);
-    } else {
-      toast('Payment is still pending authorization on your phone.', 'info');
-    }
-  } catch (e) {
-    toast('Unable to verify transaction right now.', 'warning');
-  }
-}
-
-let topupPaymentMethod = 'momo';
-let topupMomoNetwork = 'MTN';
 
 async function submitWalletTopup(event) {
   event.preventDefault();
@@ -3110,107 +2852,14 @@ async function submitWalletTopup(event) {
   const amount = Number(fd.get('amount') || 0);
   if (amount < 5) return toast('Minimum deposit amount is GH₵ 5', 'warning');
 
-  const depositDetails = {
-    id: `TOPUP-${Math.floor(100000 + Math.random() * 900000)}`,
-    isTopup: true,
-    total: amount,
+  startPaystackCheckout({
+    purpose: 'wallet_topup',
     email: user.email,
+    amountGHS: amount,
+    userId: user.id,
     name: user.name || 'Member',
-    phone: user.phone || '',
-    paymentMethod: topupPaymentMethod === 'card' ? 'Bank Card' : `Mobile Money (${topupMomoNetwork})`
-  };
-
-  if (topupPaymentMethod === 'momo') {
-    let provider = 'mtn';
-    if (topupMomoNetwork.toLowerCase().includes('telecel') || topupMomoNetwork.toLowerCase().includes('vodafone')) provider = 'vod';
-    else if (topupMomoNetwork.toLowerCase().includes('at')) provider = 'tgo';
-
-    const momoPhone = fd.get('momoNumber') || user.phone;
-    if (!momoPhone) return toast('Please enter a Mobile Money number', 'warning');
-
-    depositDetails.phone = momoPhone;
-    initiateInAppPaystackPayment(depositDetails, { type: 'momo', phone: momoPhone, provider, isTopup: true });
-  } else if (topupPaymentMethod === 'card') {
-    const cardNum = fd.get('cardNumber') || '';
-    const cardExp = fd.get('cardExpiry') || '';
-    const cardCvv = fd.get('cardCvv') || '';
-    const [expMonth, expYear] = cardExp.split('/').map(s => s.trim());
-
-    if (!cardNum || !cardExp || !cardCvv) return toast('Please complete card details', 'warning');
-
-    initiateInAppPaystackPayment(depositDetails, {
-      type: 'card',
-      isTopup: true,
-      card: {
-        number: cardNum,
-        cvv: cardCvv,
-        expiry_month: expMonth,
-        expiry_year: expYear && expYear.length === 2 ? `20${expYear}` : expYear
-      }
-    });
-  }
-}
-
-async function completeWalletTopup(depositDetails) {
-  toast('Verifying deposit and crediting Float Wallet...', 'info');
-  const user = getUser();
-
-  try {
-    const res = await fetch(`${API_BASE}/wallet/deposit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-        phone: depositDetails.phone || user.phone,
-        amount: depositDetails.total,
-        reference: depositDetails.id,
-        paymentMethod: depositDetails.paymentMethod
-      })
-    });
-
-    const data = await res.json();
-    if (data.balance !== undefined) {
-      user.walletBalance = data.balance;
-    } else {
-      user.walletBalance = Number(((user.walletBalance || 0) + depositDetails.total).toFixed(2));
-    }
-  } catch (e) {
-    user.walletBalance = Number(((user.walletBalance || 0) + depositDetails.total).toFixed(2));
-  }
-
-  saveUser(user);
-  
-  // Sync users array
-  const users = getUsers();
-  const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
-  if (uIdx !== -1) {
-    users[uIdx].walletBalance = user.walletBalance;
-    saveUsers(users);
-  }
-
-  // Record transaction in ledger
-  const txList = getTransactions();
-  txList.unshift({
-    id: depositDetails.id,
-    type: 'Credit',
-    amount: depositDetails.total,
-    note: `Paystack Deposit (${depositDetails.paymentMethod})`,
-    date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • ' + new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+    phone: user.phone || ''
   });
-  saveTransactions(txList);
-
-  activeModal = null;
-  playNotificationChime();
-  render();
-  toast(`🎉 Deposit Verified! GH₵ ${depositDetails.total} credited to your Float Wallet. Available balance: ${money(user.walletBalance)}`);
-}
-
-function cancelSeamlessPayment() {
-  clearSeamlessIntervals();
-  activeModal = null;
-  render();
 }
 
 function playNotificationChime() {
@@ -3230,81 +2879,90 @@ function playNotificationChime() {
   } catch (e) {}
 }
 
-async function completeOrder(order) {
-  toast('Verifying prices and registering order on server...', 'info');
+// Direct order creation for payment methods that don't need Paystack at
+// all (Cash on Delivery, or Float Wallet -- verified and deducted
+// server-side against the real stored balance, never a client number).
+// `orderInput` needs: name, email, phone, address, city, region, delivery,
+// items, couponCode, payment ('wallet' | 'cod'), userId.
+async function completeOrder(orderInput) {
+  toast('Verifying and placing your order...', 'info');
 
+  let res, data;
   try {
-    const res = await fetch(`${API_BASE}/orders`, {
+    res = await fetch(`${API_BASE}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: order.id,
-        name: order.name,
-        email: order.email,
-        phone: order.phone,
-        address: order.address,
-        city: order.city,
-        region: order.region,
-        delivery: order.delivery,
-        payment: order.payment,
-        items: cart.map(it => ({ id: it.id, qty: it.qty, size: it.size, color: it.color })),
-        couponCode: appliedCoupon ? appliedCoupon.code : null
-      })
+      body: JSON.stringify(orderInput)
     });
-
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.error || 'Server rejected order verification');
-    }
-
-    const verifiedOrder = await res.json();
-    
-    // Save verified authoritative order
-    const orders = getOrders();
-    orders.unshift(verifiedOrder);
-    saveOrders(orders);
-
-    // Register In-Dashboard Admin Notification
-    const notifs = getNotifications();
-    notifs.unshift({
-      id: `notif-${Date.now()}`,
-      type: 'order',
-      title: `⚡ New Order #${verifiedOrder.id} Placed!`,
-      message: `${verifiedOrder.name} placed an order for GH₵ ${Number(verifiedOrder.total || 0).toFixed(2)} (${verifiedOrder.city}).`,
-      date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • Today',
-      target: 'admin',
-      orderId: verifiedOrder.id,
-      read: false
-    });
-    saveNotifications(notifs);
-    playNotificationChime();
-
-    cart = [];
-    saveCart();
-    appliedCoupon = null;
-    saveAppliedCoupon();
-
-    activeModal = null;
-    go(`confirmation/${verifiedOrder.id}`);
-    toast('Order confirmed! Admin alert sent via SMS, Email & Dashboard ⚡');
-    return;
+    data = await res.json();
   } catch (err) {
-    console.error('Server order submission error:', err);
-    toast(`Order creation notice: ${err.message}`, 'warning');
-    
-    // Fallback save
-    const orders = getOrders();
-    orders.unshift(order);
-    saveOrders(orders);
-
-    cart = [];
-    saveCart();
-    appliedCoupon = null;
-    saveAppliedCoupon();
-
     activeModal = null;
-    go(`confirmation/${order.id}`);
+    render();
+    toast('Could not reach the server to place your order. Please try again.', 'error');
+    return;
   }
+
+  // A rejected/failed order must never be shown to the customer as
+  // "confirmed" -- if the server declined it (bad stock, insufficient
+  // wallet balance, unreachable database), nothing was charged or created,
+  // so nothing gets saved locally either.
+  if (!res.ok) {
+    activeModal = null;
+    render();
+    toast(data.error || 'Your order could not be placed. Please try again.', 'error');
+    return;
+  }
+
+  const verifiedOrder = data;
+
+  const orders = getOrders();
+  orders.unshift(verifiedOrder);
+  saveOrders(orders);
+
+  // Reflect the real, server-verified wallet balance after a wallet-paid order.
+  if (orderInput.payment === 'wallet') {
+    try {
+      const uRes = await fetch(`${API_BASE}/users/${encodeURIComponent(orderInput.userId || orderInput.email)}`);
+      if (uRes.ok) {
+        const freshUser = await uRes.json();
+        const user = getUser();
+        if (user && freshUser.walletBalance !== undefined) {
+          user.walletBalance = freshUser.walletBalance;
+          saveUser(user);
+          const users = getUsers();
+          const uIdx = users.findIndex(u => u.email === user.email || u.id === user.id);
+          if (uIdx !== -1) {
+            users[uIdx].walletBalance = user.walletBalance;
+            saveUsers(users);
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Register In-Dashboard Admin Notification
+  const notifs = getNotifications();
+  notifs.unshift({
+    id: `notif-${Date.now()}`,
+    type: 'order',
+    title: `⚡ New Order #${verifiedOrder.id} Placed!`,
+    message: `${verifiedOrder.name} placed an order for GH₵ ${Number(verifiedOrder.total || 0).toFixed(2)} (${verifiedOrder.city}).`,
+    date: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' • Today',
+    target: 'admin',
+    orderId: verifiedOrder.id,
+    read: false
+  });
+  saveNotifications(notifs);
+  playNotificationChime();
+
+  cart = [];
+  saveCart();
+  appliedCoupon = null;
+  saveAppliedCoupon();
+
+  activeModal = null;
+  go(`confirmation/${verifiedOrder.id}`);
+  toast('Order confirmed! Admin alert sent via SMS, Email & Dashboard ⚡');
 }
 
 // ===================================================
@@ -8788,79 +8446,18 @@ function renderModals() {
               `).join('')}
             </div>
 
-            <div class="form-group" style="margin-bottom:18px">
+            <div class="form-group" style="margin-bottom:20px">
               <input required id="topup-amt-input" name="amount" type="number" min="5" value="250" placeholder="Enter amount (e.g. 250)" style="font-size:16px;font-weight:700;color:var(--ink)">
             </div>
 
-            <label style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px">2. Choose Payment Channel</label>
-            <div class="luxe-payment-grid" style="margin-bottom:16px;grid-template-columns:repeat(2,1fr)">
-              <div class="luxe-payment-card mtn ${topupPaymentMethod === 'momo' && topupMomoNetwork === 'MTN' ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='MTN';render()">
-                ${topupPaymentMethod === 'momo' && topupMomoNetwork === 'MTN' ? '<span class="selected-check">✓</span>' : ''}
-                <div>
-                  <span class="card-badge">MTN MoMo</span>
-                  <strong>MTN Money</strong>
-                  <small>Handset USSD</small>
-                </div>
-              </div>
-
-              <div class="luxe-payment-card telecel ${topupPaymentMethod === 'momo' && (topupMomoNetwork.includes('Telecel') || topupMomoNetwork.includes('Vodafone')) ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='Telecel (Vodafone)';render()">
-                ${topupPaymentMethod === 'momo' && (topupMomoNetwork.includes('Telecel') || topupMomoNetwork.includes('Vodafone')) ? '<span class="selected-check">✓</span>' : ''}
-                <div>
-                  <span class="card-badge">Telecel Cash</span>
-                  <strong>Telecel (Vodafone)</strong>
-                  <small>Instant Push</small>
-                </div>
-              </div>
-
-              <div class="luxe-payment-card at ${topupPaymentMethod === 'momo' && topupMomoNetwork.includes('AT') ? 'active' : ''}" onclick="topupPaymentMethod='momo';topupMomoNetwork='AT Money';render()">
-                ${topupPaymentMethod === 'momo' && topupMomoNetwork.includes('AT') ? '<span class="selected-check">✓</span>' : ''}
-                <div>
-                  <span class="card-badge">AT Money</span>
-                  <strong>AT Cash</strong>
-                  <small>MoMo Push</small>
-                </div>
-              </div>
-
-              <div class="luxe-payment-card card ${topupPaymentMethod === 'card' ? 'active' : ''}" onclick="topupPaymentMethod='card';render()">
-                ${topupPaymentMethod === 'card' ? '<span class="selected-check">✓</span>' : ''}
-                <div>
-                  <span class="card-badge">Card</span>
-                  <strong>Visa / Master</strong>
-                  <small>Bank Card</small>
-                </div>
-              </div>
+            <div style="background:#f9f9fb;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;display:flex;align-items:center;gap:8px">
+              <span class="badge" style="background:#182822;color:var(--gold-light);font-size:10.5px;font-weight:800;padding:3px 8px">🔒 SECURED BY PAYSTACK</span>
+              <small style="color:var(--muted)">You'll be redirected to Paystack's secure checkout to pay by card, mobile money, or bank.</small>
             </div>
 
-            ${topupPaymentMethod === 'momo' ? `
-              <div class="form-group" style="margin-bottom:20px;background:#f9f9fb;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px">
-                <label>Ghana Mobile Money Phone Number</label>
-                <input required name="momoNumber" type="tel" value="${user.phone || ''}" placeholder="024 XXX XXXX" style="font-size:14px;font-weight:600">
-                <small style="color:var(--muted);display:block;margin-top:4px">📲 An automated authorization prompt will be sent to this phone.</small>
-              </div>
-            ` : ''}
-
-            ${topupPaymentMethod === 'card' ? `
-              <div style="background:#f9f9fb;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px">
-                <div class="form-grid">
-                  <div class="form-group full">
-                    <label>Card Number</label>
-                    <input required name="cardNumber" maxlength="19" placeholder="4123 •••• •••• 1234">
-                  </div>
-                  <div class="form-group">
-                    <label>Expiry (MM/YY)</label>
-                    <input required name="cardExpiry" maxlength="5" placeholder="12/28">
-                  </div>
-                  <div class="form-group">
-                    <label>CVV</label>
-                    <input required name="cardCvv" maxlength="4" placeholder="123">
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            <div style="display:flex;gap:12px">
-              <button class="primary" style="flex-grow:1;height:48px;font-size:14px;font-weight:800" type="submit">
-                Authorize Deposit via Paystack →
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="primary" style="width:100%;height:48px;font-size:14px;font-weight:800;background:var(--emerald)" type="submit">
+                ⚡ Continue to Paystack →
               </button>
               <button class="secondary-btn" type="button" onclick="activeModal=null;render()">Cancel</button>
             </div>
@@ -9282,139 +8879,6 @@ function renderModals() {
     `;
   }
 
-  // Seamless In-App Paystack Payment & Security Modal
-  if (activeModal === 'paystack_seamless_payment') {
-    const { status, displayText, orderData, phone, timerSeconds } = seamlessPaymentState;
-    const tot = orderData ? orderData.total : 0;
-
-    return `
-      <div class="modal-backdrop">
-        <div class="paystack-modal-card animate-scale-up">
-          <!-- Modal Head -->
-          <div class="paystack-modal-head">
-            <span class="paystack-security-shield">🔒 256-Bit Encrypted</span>
-            <span style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;letter-spacing:1.5px;color:var(--ink)">BYMARIE PAY</span>
-            <button class="modal-close" style="position:static" onclick="cancelSeamlessPayment()">✕</button>
-          </div>
-
-          <!-- Amount Banner -->
-          <div class="paystack-amount-banner">
-            <span>Payment Total</span>
-            <strong>${money(tot)}</strong>
-          </div>
-
-          <!-- State: PROCESSING -->
-          ${status === 'processing' ? `
-            <div class="pulse-spinner"></div>
-            <h3 style="font-size:18px;margin:16px 0 6px">Connecting to Paystack...</h3>
-            <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Establishing secure handshake with Ghana interbank payment gateway.</p>
-          ` : ''}
-
-          <!-- State: SEND_OTP (OTP Required) -->
-          ${status === 'send_otp' || status === 'verifying_otp' ? `
-            <div style="font-size:36px;margin-bottom:10px">📱</div>
-            <h3 style="font-size:20px;margin:0 0 6px">Enter Verification Code</h3>
-            <p style="color:var(--muted);font-size:13px;margin-bottom:16px;max-width:360px;margin-left:auto;margin-right:auto">
-              ${displayText || `A One-Time Passcode (OTP) was sent to your phone/bank.`}
-            </p>
-
-            <form onsubmit="handleSeamlessSubmitOtp(event)">
-              <input required name="otp" class="otp-input-field" placeholder="••••••" maxlength="8" autofocus autocomplete="one-time-code" ${status === 'verifying_otp' ? 'disabled' : ''}>
-              
-              <div style="display:block">
-                <span id="seamless-countdown-badge" class="countdown-timer-badge ${timerSeconds > 0 ? 'active' : ''}">
-                  ${timerSeconds > 0 ? `⏱️ Resend / retry in ${timerSeconds}s` : `⏱️ Code expired`}
-                </span>
-              </div>
-
-              <div style="display:flex;gap:10px;margin-top:10px">
-                <button class="primary" style="flex-grow:1;height:48px;font-size:14px" type="submit" ${status === 'verifying_otp' ? 'disabled' : ''}>
-                  ${status === 'verifying_otp' ? 'Verifying Code...' : 'Authorize Payment →'}
-                </button>
-                <button class="secondary-btn" type="button" onclick="cancelSeamlessPayment()">Cancel</button>
-              </div>
-
-              ${timerSeconds <= 0 ? `
-                <div style="margin-top:14px">
-                  <button type="button" class="text-btn" style="color:var(--emerald);font-size:13px;font-weight:700" onclick="initiateInAppPaystackPayment(seamlessPaymentState.orderData, seamlessPaymentState.paymentInfo)">
-                    🔄 Resend New Verification Code
-                  </button>
-                </div>
-              ` : ''}
-            </form>
-          ` : ''}
-
-          <!-- State: PAY_OFFLINE (Handset USSD Prompt) -->
-          ${status === 'pay_offline' ? `
-            <div class="handset-radar-wrap">
-              <div class="handset-radar-ring"></div>
-              <div class="handset-radar-ring delay-1"></div>
-              <div class="handset-radar-icon">📲</div>
-            </div>
-
-            <h3 style="font-size:20px;margin:0 0 6px">Authorize on your Handset</h3>
-            <p style="color:var(--muted);font-size:13px;margin-bottom:14px;line-height:1.5">
-              ${displayText || `A payment prompt of ${money(tot)} has been sent to <strong>${phone}</strong>.`}
-            </p>
-
-            <div style="background:#f4f4f5;border-radius:var(--radius-sm);padding:12px;margin-bottom:18px;text-align:left;font-size:12.5px;color:var(--ink)">
-              <strong>💡 Steps to complete:</strong>
-              <ol style="margin:6px 0 0 18px;padding:0;color:var(--muted)">
-                <li>Unlock your phone screen</li>
-                <li>Enter your Mobile Money PIN when prompted</li>
-                <li>Keep this window open; it updates automatically</li>
-              </ol>
-            </div>
-
-            <span id="seamless-countdown-badge" class="countdown-timer-badge active">
-              ⏱️ Waiting for approval (${timerSeconds}s)
-            </span>
-
-            <div style="display:flex;gap:10px;margin-top:10px">
-              <button class="primary" style="flex-grow:1;height:48px;font-size:14px;background:#059669" type="button" onclick="handleSeamlessManualVerify()">
-                ✓ I Have Approved on Phone
-              </button>
-              <button class="secondary-btn" type="button" onclick="cancelSeamlessPayment()">Cancel</button>
-            </div>
-
-            ${timerSeconds <= 0 ? `
-              <div style="margin-top:14px">
-                <button type="button" class="text-btn" style="color:var(--emerald);font-size:13px;font-weight:700" onclick="initiateInAppPaystackPayment(seamlessPaymentState.orderData, seamlessPaymentState.paymentInfo)">
-                  🔄 Resend Prompt to My Phone
-                </button>
-              </div>
-            ` : ''}
-          ` : ''}
-
-          <!-- State: SUCCESS -->
-          ${status === 'success' ? `
-            <div style="font-size:48px;margin-bottom:8px">🎉</div>
-            <h3 style="font-size:22px;margin:0 0 6px;color:#059669">Payment Verified!</h3>
-            <p style="color:var(--muted);font-size:13.5px;margin-bottom:20px">
-              Transaction approved successfully. Generating your Haute Couture order receipt &amp; dispatching notifications...
-            </p>
-            <div class="pulse-spinner" style="border-top-color:#059669"></div>
-          ` : ''}
-
-          <!-- State: FAILED -->
-          ${status === 'failed' ? `
-            <div style="font-size:40px;margin-bottom:8px">⚠️</div>
-            <h3 style="font-size:20px;margin:0 0 6px;color:var(--red)">Payment Not Completed</h3>
-            <p style="color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5">
-              ${displayText || 'The transaction could not be authorized. Please check your balance or try again.'}
-            </p>
-            <div style="display:flex;gap:10px">
-              <button class="primary" style="flex-grow:1;height:46px" type="button" onclick="initiateInAppPaystackPayment(seamlessPaymentState.orderData, seamlessPaymentState.paymentInfo)">
-                🔄 Retry Payment
-              </button>
-              <button class="secondary-btn" type="button" onclick="cancelSeamlessPayment()">Close</button>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }
-
   return '';
 }
 
@@ -9598,5 +9062,6 @@ window.addEventListener('hashchange', render);
 document.addEventListener('DOMContentLoaded', () => {
   render();
   syncWithBackendAPI();
+  confirmReturningPaystackPayment();
 });
 render();

@@ -1,286 +1,120 @@
 const express = require('express');
 const asyncHandler = require('../lib/asyncHandler');
 const { calculateOrderTotalsServerSide } = require('../lib/pricing');
-const config = require('../lib/config');
+const paystack = require('../lib/paystack');
+const { completePaystackTransaction } = require('../lib/paymentCompletion');
 
 const router = express.Router();
 
-const PAYSTACK_SECRET_KEY = config.PAYSTACK_SECRET_KEY;
-const PAYSTACK_PUBLIC_KEY = config.PAYSTACK_PUBLIC_KEY;
-
-// 1. Direct In-App Charge (Zero external redirects)
-router.post('/paystack/charge', asyncHandler(async (req, res) => {
-  try {
-    const { email, amount, mobile_money, card, reference, metadata } = req.body;
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-
-    const payload = {
-      email: (email || 'customer@bymarie.shop').trim(),
-      amount: Math.round(Number(amount) * 100),
-      currency: 'GHS',
-      reference: reference || `bm_tx_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
-      metadata: metadata || {}
-    };
-
-    if (mobile_money) {
-      let cleanPhone = String(mobile_money.phone || '').replace(/[^0-9]/g, '');
-      if (cleanPhone.startsWith('233') && cleanPhone.length === 12) cleanPhone = '0' + cleanPhone.slice(3);
-      payload.mobile_money = {
-        phone: cleanPhone,
-        provider: (mobile_money.provider || 'mtn').toLowerCase()
-      };
-    } else if (card) {
-      payload.card = {
-        number: String(card.number || '').replace(/\s/g, ''),
-        cvv: String(card.cvv || '').trim(),
-        expiry_month: String(card.expiry_month || '').trim(),
-        expiry_year: String(card.expiry_year || '').trim(),
-        pin: card.pin ? String(card.pin).trim() : undefined
-      };
-    }
-
-    const response = await fetchFn('https://api.paystack.co/charge', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    console.log(`💳 [PAYSTACK IN-APP CHARGE] Status:`, data.status, data.data ? data.data.status : data.message);
-
-    // Resilient fallback if Paystack keys are in sandbox/demo mode
-    if (!data.status && (data.message === 'Invalid key' || !PAYSTACK_SECRET_KEY || PAYSTACK_SECRET_KEY.includes('demo'))) {
-      console.warn('Paystack live key in demo/test mode, providing seamless in-app USSD prompt simulation');
-      return res.json({
-        status: true,
-        message: 'Charge initiated',
-        data: {
-          status: 'pay_offline',
-          reference: payload.reference,
-          display_text: 'Please authorize the Mobile Money prompt sent to your handset or dial *170# to approve.',
-          amount: payload.amount
-        }
-      });
-    }
-
-    res.json(data);
-  } catch (err) {
-    console.error('Paystack Charge Error:', err);
-    res.status(500).json({ status: false, message: err.message });
-  }
-}));
-
-// 2. Submit In-App OTP
-router.post('/paystack/submit-otp', asyncHandler(async (req, res) => {
-  try {
-    const { otp, reference } = req.body;
-    if (!otp || !reference) {
-      return res.status(400).json({ status: false, message: 'OTP and reference are required' });
-    }
-
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-    const response = await fetchFn('https://api.paystack.co/charge/submit_otp', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ otp: String(otp).trim(), reference })
-    });
-
-    const data = await response.json();
-    console.log(`🔐 [PAYSTACK SUBMIT OTP] Result:`, data.status, data.data ? data.data.status : data.message);
-    res.json(data);
-  } catch (err) {
-    console.error('Paystack Submit OTP Error:', err);
-    res.status(500).json({ status: false, message: err.message });
-  }
-}));
-
-// 3. Submit In-App Card PIN
-router.post('/paystack/submit-pin', asyncHandler(async (req, res) => {
-  try {
-    const { pin, reference } = req.body;
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-    const response = await fetchFn('https://api.paystack.co/charge/submit_pin', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ pin: String(pin).trim(), reference })
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ status: false, message: err.message });
-  }
-}));
-
-// 4. Verify Paystack Transaction.
-// server.js previously defined this exact route twice; Express only ever
-// matched the first (this one). The second was unreachable dead code that
-// silently faked a "successful" verification on network failure -- removed
-// entirely rather than kept as a landmine for a future edit.
-router.get('/paystack/verify/:reference', asyncHandler(async (req, res) => {
-  try {
-    const { reference } = req.params;
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-    const response = await fetchFn(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
-      }
-    });
-
-    const data = await response.json();
-    if (!data.status && (!PAYSTACK_SECRET_KEY || PAYSTACK_SECRET_KEY.includes('demo'))) {
-      return res.json({
-        status: true,
-        message: 'Verification successful (Test Mode)',
-        data: {
-          status: 'success',
-          reference,
-          gateway_response: 'Approved (Test Mode)',
-          amount: 25000
-        }
-      });
-    }
-    res.json(data);
-  } catch (err) {
-    if (!PAYSTACK_SECRET_KEY || PAYSTACK_SECRET_KEY.includes('demo')) {
-      return res.json({
-        status: true,
-        message: 'Verification successful (Test Mode)',
-        data: {
-          status: 'success',
-          reference: req.params.reference,
-          gateway_response: 'Approved (Test Mode)'
-        }
-      });
-    }
-    console.error('Paystack Verify Error:', err);
-    res.status(500).json({ status: false, message: err.message });
-  }
-}));
-
-// 5. List Paystack Transactions
-router.get('/paystack/transactions', asyncHandler(async (req, res) => {
-  try {
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-    const response = await fetchFn('https://api.paystack.co/transaction', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
-      }
-    });
-    const result = await response.json();
-    if (result.status) return res.json(result);
-  } catch (err) {}
-
-  res.json({ status: true, message: 'Transactions retrieved', data: [] });
-}));
-
-// 6. Paystack Webhook Handler
-router.post('/paystack/webhook', (req, res) => {
-  const event = req.body;
-  if (event && event.event === 'charge.success') {
-    const { reference, amount, customer } = event.data;
-    console.log(`⚡ Paystack Webhook: Received successful payment of ${amount / 100} GHS from ${customer?.email} (Ref: ${reference})`);
-  }
-  res.sendStatus(200);
-});
-
-// 7. Initialize Paystack Transaction (Server-Side Verified)
+// Starts a Paystack transaction for either a cart checkout ("order") or a
+// Float Wallet top-up ("wallet_topup"). The amount is always computed or
+// validated server-side -- never taken as-is from the client -- and the
+// full order input (or wallet credit target) is stashed in Paystack's
+// metadata, to be read back and acted on only after the payment is
+// independently verified.
 router.post('/paystack/initialize', asyncHandler(async (req, res) => {
-  const { email, amount, currency = 'GHS', metadata, callback_url, items, couponCode, delivery, city } = req.body;
-  if (!email) {
-    return res.status(400).json({ status: false, message: 'Email is required' });
+  const { purpose, email } = req.body;
+  if (!email) return res.status(400).json({ status: false, message: 'Email is required' });
+  if (purpose !== 'order' && purpose !== 'wallet_topup') {
+    return res.status(400).json({ status: false, message: 'purpose must be "order" or "wallet_topup"' });
   }
 
-  let authoritativeTotal = Number(amount) || 0;
-  if (Array.isArray(items) && items.length > 0) {
+  let amountGHS;
+  let metadata;
+
+  if (purpose === 'order') {
+    const { name, phone, address, city, region, delivery, items, couponCode } = req.body;
+    if (!name || !phone || !address) {
+      return res.status(400).json({ status: false, message: 'Missing required customer delivery information' });
+    }
+
+    let calculation;
     try {
-      const serverCalc = await calculateOrderTotalsServerSide(items, couponCode, delivery, city);
-      authoritativeTotal = serverCalc.total;
+      calculation = await calculateOrderTotalsServerSide(items, couponCode, delivery, city);
     } catch (err) {
       return res.status(400).json({ status: false, message: err.message });
     }
-  }
 
-  if (authoritativeTotal <= 0) {
-    return res.status(400).json({ status: false, message: 'Invalid transaction total' });
-  }
-
-  // Convert amount to subunits (pesewas / kobo -> amount * 100)
-  const subunitAmount = Math.round(authoritativeTotal * 100);
-  const reference = `pstk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-
-  try {
-    const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
-    const response = await fetchFn('https://api.paystack.co/transaction/initialize', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        amount: subunitAmount,
-        currency,
-        reference,
-        callback_url: callback_url || `http://localhost:3000/#account`,
-        metadata: metadata || {}
-      })
-    });
-
-    const result = await response.json();
-    if (result.status && result.data) {
-      return res.json(result);
+    amountGHS = calculation.total;
+    metadata = {
+      purpose: 'order',
+      orderInput: { name, email, phone, address, city, region, delivery, items, couponCode }
+    };
+  } else {
+    const { amountGHS: requestedAmount, userId, name, phone } = req.body;
+    amountGHS = Number(requestedAmount);
+    if (!(amountGHS >= 5)) {
+      return res.status(400).json({ status: false, message: 'Minimum top-up amount is GH₵ 5' });
     }
-  } catch (err) {
-    console.warn('Paystack live API warning (using dev fallback):', err.message);
+    metadata = { purpose: 'wallet_topup', userId, email, name, phone };
   }
 
-  // Resilient Development Fallback
+  const reference = `bm_${purpose === 'order' ? 'ord' : 'topup'}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const origin = req.get('origin') || `${req.protocol}://${req.get('host')}`;
+  const callbackUrl = `${origin}/?paystack_ref=${reference}`;
+
+  const result = await paystack.initializeTransaction({ email, amountGHS, reference, callbackUrl, metadata });
+  if (!result.ok) {
+    return res.status(502).json({ status: false, message: result.reason });
+  }
+
+  res.json({ status: true, authorizationUrl: result.authorizationUrl, reference: result.reference });
+}));
+
+// Read-only status check, for UI display/polling only -- never credits or
+// creates anything. Completion only ever happens through /confirm or the
+// webhook, both of which route through the same idempotent function.
+router.get('/paystack/verify/:reference', asyncHandler(async (req, res) => {
+  const verification = await paystack.verifyTransaction(req.params.reference);
   res.json({
-    status: true,
-    message: 'Authorization URL created (Development Mode)',
-    data: {
-      authorization_url: `https://checkout.paystack.com/${reference}`,
-      access_code: `acc_${reference}`,
-      reference,
-      publicKey: PAYSTACK_PUBLIC_KEY
-    }
+    status: verification.verified,
+    message: verification.verified ? 'Verification successful' : verification.reason,
+    data: verification.raw || null
   });
 }));
 
-// --- MOBILE MONEY PAYMENT API SIMULATION ---
+// Called by the frontend right after the customer is redirected back from
+// Paystack's hosted checkout. Safe to call more than once (idempotent) and
+// safe to race with the webhook -- whichever arrives first completes it.
+router.post('/paystack/confirm', asyncHandler(async (req, res) => {
+  const { reference } = req.body;
+  if (!reference) return res.status(400).json({ success: false, message: 'A payment reference is required' });
 
-router.post('/payments/momo/authorize', (req, res) => {
-  const { phone, network, amount, orderId } = req.body;
-  res.json({
-    success: true,
-    status: 'PENDING_USER_APPROVAL',
-    message: `USSD prompt dispatched to ${network} subscriber ${phone} for GHc ${amount}`,
-    transactionId: `MOMO-${Date.now()}`,
-    orderId
-  });
-});
+  const result = await completePaystackTransaction(reference);
+  if (!result.success) {
+    return res.status(402).json(result);
+  }
+  res.json(result);
+}));
 
-router.post('/payments/momo/callback', (req, res) => {
-  const { transactionId, status, orderId } = req.body;
-  res.json({
-    success: true,
-    transactionId,
-    orderId,
-    status: status || 'SUCCESS',
-    timestamp: new Date().toISOString()
-  });
-});
+// Server-to-server confirmation -- the authoritative path in production,
+// independent of whether the customer's browser makes it back to /confirm.
+// Requires server.js to capture the raw request body (req.rawBody) so the
+// HMAC-SHA512 signature can be verified against exactly what Paystack sent.
+router.post('/paystack/webhook', asyncHandler(async (req, res) => {
+  const signature = req.headers['x-paystack-signature'];
+  const isValid = paystack.verifyWebhookSignature(req.rawBody, signature);
+
+  if (!isValid) {
+    console.warn('⚠️ Paystack webhook: signature verification failed, rejecting.');
+    return res.sendStatus(401);
+  }
+
+  const event = req.body;
+  if (event && event.event === 'charge.success' && event.data && event.data.reference) {
+    try {
+      const result = await completePaystackTransaction(event.data.reference);
+      if (!result.success) {
+        console.warn(`Paystack webhook: could not complete ${event.data.reference}: ${result.reason}`);
+      }
+    } catch (err) {
+      console.error(`Paystack webhook: error completing ${event.data.reference}:`, err.message);
+    }
+  }
+
+  // Acknowledge quickly regardless of outcome so Paystack doesn't retry-storm
+  // this endpoint; failures above are logged for investigation.
+  res.sendStatus(200);
+}));
 
 module.exports = router;

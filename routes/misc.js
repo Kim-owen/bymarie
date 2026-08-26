@@ -39,7 +39,7 @@ router.get('/health', (req, res) => {
 // Full database snapshot across every collection (not just whatever happens
 // to be in the ephemeral local file), for a genuinely useful manual backup.
 router.get('/database/backup', asyncHandler(async (req, res) => {
-  const [products, orders, coupons, users, notifications, campaigns, wholesale_inquiries, site_settings] = await Promise.all([
+  const [products, orders, coupons, users, notifications, campaigns, wholesale_inquiries, wallet_transactions, site_settings] = await Promise.all([
     collections.products.list(),
     collections.orders.list(),
     collections.coupons.list(),
@@ -47,10 +47,11 @@ router.get('/database/backup', asyncHandler(async (req, res) => {
     collections.notifications.list(),
     collections.campaigns.list(),
     collections.wholesale.list(),
+    collections.walletTransactions.list(),
     collections.settings.get()
   ]);
 
-  const snapshot = { products, orders, coupons, users, notifications, campaigns, wholesale_inquiries, site_settings };
+  const snapshot = { products, orders, coupons, users, notifications, campaigns, wholesale_inquiries, wallet_transactions, site_settings };
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Disposition', 'attachment; filename="bymarie_db_backup.json"');

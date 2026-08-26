@@ -10,9 +10,24 @@ const { autoSeedSupabase } = require('./lib/seed');
 const app = express();
 const PORT = config.PORT;
 
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ Uncaught Exception:', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.warn('⚠️ Unhandled Rejection:', reason ? (reason.message || reason) : 'Unknown reason');
+});
+
 // Enable CORS & JSON parsing
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+// Captures the raw request body alongside Express's normal JSON parsing --
+// the Paystack webhook needs the exact raw bytes to verify its HMAC-SHA512
+// signature (lib/paystack.js#verifyWebhookSignature), which the parsed
+// object can't reconstruct byte-for-byte.
+app.use(express.json({
+  limit: '50mb',
+  verify: (req, res, buf) => { req.rawBody = buf; }
+}));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Dedicated High-Performance Byte-Range Video Streaming Endpoint
@@ -80,7 +95,6 @@ app.use('/api', require('./routes/products'));
 app.use('/api', require('./routes/orders'));
 app.use('/api', require('./routes/coupons'));
 app.use('/api', require('./routes/users'));
-app.use('/api', require('./routes/wallet'));
 app.use('/api', require('./routes/wholesale'));
 app.use('/api', require('./routes/campaigns'));
 app.use('/api', require('./routes/settings'));
