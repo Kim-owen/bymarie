@@ -1751,7 +1751,7 @@ function home() {
   const trending = products.slice(0, 8);
   const settings = getSiteSettings();
   const heroVideos = getHeroVideosList(settings);
-  const currentVideo = heroVideos[heroVideoIndex] || heroVideos[0] || 'assets/bymarie.mp4';
+  const currentVideo = heroVideos[heroVideoIndex] || heroVideos[0] || '';
   const intervalSec = Math.max(5, Number(settings.heroVideoInterval || 30));
 
   setTimeout(() => {
@@ -1796,8 +1796,8 @@ function home() {
 
             ${heroVideos.length > 0 ? `
               <!-- Dual Layer Crossfading Video Players for 100% Mobile & Desktop Compatibility -->
-              <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
-              <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
+              <video id="hero-main-video-a" class="hero-video-player" src="${currentVideo}" autoplay loop muted playsinline webkit-playsinline preload="auto" onerror="if(typeof switchHeroVideo==='function')switchHeroVideo(heroVideoIndex+1)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.45s ease;z-index:2;display:block"></video>
+              <video id="hero-main-video-b" class="hero-video-player" src="" loop muted playsinline webkit-playsinline preload="auto" onerror="if(typeof switchHeroVideo==='function')switchHeroVideo(heroVideoIndex+1)" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.45s ease;z-index:1;display:block"></video>
 
               <button type="button" class="hero-audio-btn" onclick="toggleHeroVideoAudio(this)" title="Toggle Audio Sound" style="position:absolute;bottom:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(9,60,53,0.85);color:#fff;border:1px solid rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(8px);cursor:pointer;z-index:10;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:all 0.2s">
                 <span class="audio-btn-icon">🔇</span>
@@ -8046,15 +8046,13 @@ async function handleMultiHeroVideoUpload(event) {
       console.warn('API upload fallback:', err);
     }
 
-    // 2. Fallback: Save to IndexedDB & create local Blob URL (Zero quota limit)
-    if (!uploadedUrl) {
-      const blobUrl = URL.createObjectURL(file);
-      await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file);
-      uploadedUrl = blobUrl;
-    }
+    // 2. Save to IndexedDB & create local Blob URL (Instant playback, zero 404)
+    const blobUrl = URL.createObjectURL(file);
+    await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file);
+    const videoToUse = blobUrl || uploadedUrl;
 
-    settings.heroVideos.push(uploadedUrl);
-    if (!settings.heroMediaUrl) settings.heroMediaUrl = uploadedUrl;
+    settings.heroVideos.push(videoToUse);
+    if (!settings.heroMediaUrl) settings.heroMediaUrl = videoToUse;
   }
 
   saveSiteSettings(settings);
