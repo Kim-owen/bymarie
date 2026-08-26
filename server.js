@@ -64,7 +64,10 @@ try {
 }
 
 // Serve static uploaded files & root static assets (index.html, styles.css, app.js)
-app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+if (isVercel) {
+  app.use('/uploads', express.static('/tmp/uploads'));
+}
 app.use(express.static(__dirname));
 
 // Root storefront route
@@ -1314,7 +1317,7 @@ app.post('/api/upload', upload.array('photos', 10), (req, res) => {
     return res.status(400).json({ error: 'No files uploaded' });
   }
 
-  const urls = req.files.map(file => `${req.protocol}://${req.get('host')}/uploads/${file.filename}`);
+  const urls = req.files.map(file => `/uploads/${file.filename}`);
   res.json({ success: true, urls, count: urls.length });
 });
 
