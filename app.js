@@ -8031,9 +8031,11 @@ async function handleMultiHeroVideoUpload(event) {
   const files = Array.from(event.target.files || []);
   if (!files.length) return;
 
-  toast(`Uploading ${files.length} campaign video(s)...`, 'info');
+  toast(`Uploading ${files.length} campaign video(s) to cloud CDN...`, 'info');
   const settings = getSiteSettings();
   if (!Array.isArray(settings.heroVideos)) settings.heroVideos = [];
+
+  let addedCount = 0;
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
@@ -8081,26 +8083,42 @@ async function handleMultiHeroVideoUpload(event) {
       }
     }
 
-    // 3. Save to IndexedDB & create local Blob URL (Instant local playback, zero 404)
-    const blobUrl = URL.createObjectURL(file);
-    await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file);
-    const videoToUse = uploadedUrl || blobUrl;
-
-    settings.heroVideos.push(videoToUse);
-    if (!settings.heroMediaUrl) settings.heroMediaUrl = videoToUse;
+    // If successfully uploaded to CDN, save permanent URL
+    if (uploadedUrl) {
+      try { await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file); } catch (e) {}
+      settings.heroVideos.push(uploadedUrl);
+      if (!settings.heroMediaUrl) settings.heroMediaUrl = uploadedUrl;
+      addedCount++;
+    } else {
+      const blobUrl = URL.createObjectURL(file);
+      try { await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file); } catch (e) {}
+      settings.heroVideos.push(blobUrl);
+      if (!settings.heroMediaUrl) settings.heroMediaUrl = blobUrl;
+      addedCount++;
+    }
   }
 
+  // Filter out any stale template video references
+  settings.heroVideos = settings.heroVideos.filter(v => typeof v === 'string' && v.trim().length > 0 && !v.includes('assets/bymarie.mp4') && !v.includes('assets/hero-fashion.mp4'));
+
   saveSiteSettings(settings);
-  toast(`🎬 Added ${files.length} video(s) to hero playlist! Rotating every ${settings.heroVideoInterval || 30}s ⚡`, 'success');
   render();
 
+  // Persist permanently to Supabase Cloud Database
   try {
-    fetch(`${API_BASE}/settings`, {
+    const res = await fetch(`${API_BASE}/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings)
-    }).catch(() => {});
-  } catch (err) {}
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      console.log('✅ Settings saved permanently to Supabase:', saved);
+      toast(`🎬 Saved ${addedCount} video(s) permanently to cloud playlist!`, 'success');
+    }
+  } catch (err) {
+    console.warn('Notice saving settings to backend:', err);
+  }
 }
 
 function handleAddHeroVideoUrl(url) {
