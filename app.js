@@ -89,24 +89,34 @@ function saveUsers(users) {
   localStorage.setItem('bymarie-users', JSON.stringify(users));
 }
 
+let isFetchingUsers = false;
 async function fetchLatestUsers(notify = false) {
+  if (isFetchingUsers) return getUsers();
+  isFetchingUsers = true;
   try {
     const res = await fetch(`${API_BASE}/users`);
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length) {
-        saveUsers(data);
+      if (Array.isArray(data)) {
+        const local = getUsers();
+        const hasChanged = JSON.stringify(data) !== JSON.stringify(local);
+        if (hasChanged) {
+          saveUsers(data);
+          if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast')) {
+            render();
+          }
+        }
         if (notify) {
           toast(`⚡ Synced ${data.length} VIP client accounts from live database!`, 'success');
-        }
-        if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast')) {
-          render();
+          if (typeof render === 'function') render();
         }
         return data;
       }
     }
   } catch (err) {
     console.warn('Live users sync note:', err.message);
+  } finally {
+    isFetchingUsers = false;
   }
   return getUsers();
 }
@@ -9442,7 +9452,6 @@ function render() {
   else if (page === 'notifications') content = notificationsPage();
   else if (page === 'admin') {
     if (param) adminTab = param;
-    fetchLatestUsers();
     if (isAdminUser()) {
       content = admin();
     } else {
@@ -9451,7 +9460,6 @@ function render() {
   }
   else if (page === 'users' || page === 'clients') {
     adminTab = 'users';
-    fetchLatestUsers();
     if (isAdminUser()) {
       content = admin();
     } else {
@@ -9460,7 +9468,6 @@ function render() {
   }
   else if (page === 'broadcast' || page === 'campaigns' || page === 'sms' || page === 'email') {
     adminTab = 'broadcast';
-    fetchLatestUsers();
     if (isAdminUser()) {
       content = admin();
     } else {
