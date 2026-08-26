@@ -1307,31 +1307,64 @@ function initHeroVideoMobilePlayback() {
 }
 
 // ===================================================
-// HEADER & MARQUEE ANNOUNCEMENT
+// ===================================================
+// STOREFRONT ANNOUNCEMENT POPUP BANNER & CONTROLS
 // ===================================================
 
-function announcementMarquee() {
+function isAnnouncementDismissed(text) {
+  if (!text || !text.trim()) return true;
+  try {
+    const dismissed = localStorage.getItem('bymarie-dismissed-announcement');
+    return dismissed === text.trim();
+  } catch (e) {
+    return false;
+  }
+}
+
+function dismissAnnouncement(text) {
+  try {
+    localStorage.setItem('bymarie-dismissed-announcement', (text || '').trim());
+  } catch (e) {}
+  const popup = document.getElementById('bymarie-announcement-popup');
+  if (popup) {
+    popup.classList.add('dismissing');
+    setTimeout(() => {
+      popup.remove();
+    }, 300);
+  }
+}
+window.dismissAnnouncement = dismissAnnouncement;
+
+function renderAnnouncementPopup() {
   const settings = getSiteSettings();
+  const text = (settings.announcementText || '').trim();
+  if (!text) return '';
+  
+  if (isAnnouncementDismissed(text)) return '';
+
+  const promo = (settings.promoCodeNotice || '').trim();
+
   return `
-    <div class="marquee-wrapper">
-      <div class="marquee-content">
-        <div class="marquee-item">
-          <span>${settings.announcementText}</span>
-          <b>•</b>
-          <span>Use code <span class="marquee-pill" onclick="applyCoupon('${settings.promoCodeNotice}')">${settings.promoCodeNotice}</span> for instant discount</span>
-          <b>•</b>
-          <span>Explore New Shoes, Luxury Bags, HD Wigs & Intimates</span>
-          <b>•</b>
-          <span>Express 24H Delivery in Accra & Kumasi</span>
+    <div id="bymarie-announcement-popup" class="announcement-popup-banner animate-slide-down">
+      <div class="announcement-popup-content">
+        <div class="announcement-popup-header">
+          <div class="announcement-badge">
+            <span class="pulse-dot"></span>
+            <strong>STORE NOTIFICATION</strong>
+          </div>
+          <button class="announcement-close-btn" onclick="dismissAnnouncement(\`${text.replace(/`/g, '\\`')}\`)" aria-label="Dismiss Announcement" title="Dismiss">✕</button>
         </div>
-        <div class="marquee-item" aria-hidden="true">
-          <span>${settings.announcementText}</span>
-          <b>•</b>
-          <span>Use code <span class="marquee-pill" onclick="applyCoupon('${settings.promoCodeNotice}')">${settings.promoCodeNotice}</span> for instant discount</span>
-          <b>•</b>
-          <span>Explore New Shoes, Luxury Bags, HD Wigs & Intimates</span>
-          <b>•</b>
-          <span>Express 24H Delivery in Accra & Kumasi</span>
+        <div class="announcement-popup-text">
+          ${text}
+        </div>
+        ${promo ? `
+          <div class="announcement-popup-promo">
+            <span>Special Offer:</span>
+            <span class="announcement-promo-tag" onclick="applyCoupon('${promo}');toast('Promo code ${promo} applied! ⚡', 'success');dismissAnnouncement(\`${text.replace(/`/g, '\\`')}\`)">${promo}</span>
+          </div>
+        ` : ''}
+        <div class="announcement-popup-footer">
+          <button class="announcement-action-btn" onclick="dismissAnnouncement(\`${text.replace(/`/g, '\\`')}\`)">Got It / Dismiss</button>
         </div>
       </div>
     </div>
@@ -1345,7 +1378,6 @@ function header() {
   
   return `
     <div class="header-sticky-wrapper">
-      ${announcementMarquee()}
       <header>
         <a class="brand" href="#home" onclick="go('home')">
           BYMARIE
@@ -9607,6 +9639,7 @@ function render() {
   const isPlainLayout = (page === 'admin');
   
   document.getElementById('app').innerHTML = `
+    ${isPlainLayout ? '' : renderAnnouncementPopup()}
     ${isPlainLayout ? '' : header()}
     ${content}
     ${isPlainLayout ? '' : footer()}
