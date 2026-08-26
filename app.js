@@ -9531,7 +9531,29 @@ function render() {
   }
 }
 
+async function loadPublicConfig() {
+  try {
+    const res = await fetch(`${API_BASE}/config`);
+    if (res.ok) {
+      const cfg = await res.json();
+      if (cfg.supabaseUrl && cfg.supabaseAnonKey) {
+        saveSupabaseConfig({
+          url: cfg.supabaseUrl,
+          key: cfg.supabaseAnonKey,
+          active: true
+        });
+        if (window.supabase) {
+          supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+        }
+      }
+    }
+  } catch (e) {
+    console.debug('Config load notice:', e.message);
+  }
+}
+
 async function syncWithBackendAPI() {
+  await loadPublicConfig();
   await syncAdminWithBackend(true);
   await fetchLatestUsers();
   await fetchCampaignLogs();

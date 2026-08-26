@@ -129,7 +129,7 @@ const storage = multer.diskStorage({
     cb(null, name);
   }
 });
-const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 // Database Helpers (JSON DB Adapter + Supabase Client)
 function readDB() {
@@ -173,6 +173,20 @@ function getSupabaseClient() {
 // ===================================================
 // REST API ROUTES
 // ===================================================
+
+// Public Runtime Config (Safe & Sanitized)
+app.get('/api/config', (req, res) => {
+  const supabaseActive = !!getSupabaseClient();
+  res.json({
+    success: true,
+    supabaseUrl: process.env.SUPABASE_URL || 'https://oepvuawnzsvzhuibdlxq.supabase.co',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+    paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || '',
+    supabaseConnected: supabaseActive,
+    storeName: 'ByMarie Maison',
+    storeEmail: process.env.ADMIN_EMAIL || 'concierge@bymarie.shop'
+  });
+});
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -1916,6 +1930,18 @@ async function autoSeedSupabase() {
 app.post('/api/sync/seed', async (req, res) => {
   await autoSeedSupabase();
   res.json({ success: true, message: 'Cloud database seed executed' });
+});
+
+// Global Centralized Error Handler (Catches all runtime errors and returns clean JSON)
+app.use((err, req, res, next) => {
+  console.error('Server Runtime Error:', err.message);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    code: err.code || 'INTERNAL_ERROR'
+  });
 });
 
 // Start Server & Run Auto-Seed (Only when executed directly)
