@@ -46,13 +46,7 @@ let adminMobileDrawerOpen = false;
   if (typeof localStorage === 'undefined') return;
   const purgeKey = 'bymarie-hard-wipe-all-mocks-2026-v3';
   if (!localStorage.getItem(purgeKey)) {
-    localStorage.setItem('bymarie-products', JSON.stringify([]));
-    localStorage.setItem('bymarie-orders', JSON.stringify([]));
-    localStorage.setItem('bymarie-coupons', JSON.stringify([]));
-    localStorage.setItem('bymarie-notifications', JSON.stringify([]));
-    localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
-    localStorage.setItem('bymarie-cart', JSON.stringify([]));
-    localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
+    localStorage.setItem(purgeKey, 'true');
     const raw = localStorage.getItem('bymarie-site-settings');
     if (raw) {
       try {
@@ -763,18 +757,6 @@ async function fetchCatalogFromSupabase() {
     console.warn('Backend API fetch error:', err.message);
     toast('Loaded catalog from local storage', 'info');
   }
-}
-
-// Clean one-time purge of legacy mock data
-if (typeof localStorage !== 'undefined' && localStorage.getItem('bymarie-v5-clean') !== 'true') {
-  localStorage.setItem('bymarie-products', JSON.stringify([]));
-  localStorage.setItem('bymarie-orders', JSON.stringify([]));
-  localStorage.setItem('bymarie-coupons', JSON.stringify([]));
-  localStorage.setItem('bymarie-notifications', JSON.stringify([]));
-  localStorage.setItem('bymarie-users', JSON.stringify(INITIAL_USERS));
-  localStorage.setItem('bymarie-wholesale-inquiries', JSON.stringify([]));
-  localStorage.setItem('bymarie-cart', JSON.stringify([]));
-  localStorage.setItem('bymarie-v5-clean', 'true');
 }
 
 // State Helpers
