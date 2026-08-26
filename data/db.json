@@ -6,7 +6,7 @@
     "heroTitle": "ByMarie — Style, Scent, Essentials",
     "heroSubtitle": "Considered luxury style, handcrafted scent extraits, and daily botanical care in Ghana.",
     "heroMediaType": "video",
-    "heroMediaUrl": "",
+    "heroMediaUrl": "https://oepvuawnzsvzhuibdlxq.supabase.co/storage/v1/object/public/media/1787702307748-bwmh9d.mp4",
     "announcementText": "Complimentary delivery across Greater Accra on orders over GH₵ 300",
     "promoCodeNotice": "WELCOME10",
     "brandEthosTitle": "Created for slow living and enduring beauty.",
@@ -28,7 +28,7 @@
       "Toiletries": []
     },
     "heroVideos": [
-      "/uploads/1787702307748-bwmh9d.mp4"
+      "https://oepvuawnzsvzhuibdlxq.supabase.co/storage/v1/object/public/media/1787702307748-bwmh9d.mp4"
     ],
     "heroVideoInterval": 30
   },
