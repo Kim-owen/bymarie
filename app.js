@@ -1172,14 +1172,39 @@ function toggleHeroVideoAudio(btn) {
         luxuryAudioElement.loop = true;
         luxuryAudioElement.volume = 0.35;
       }
-      luxuryAudioElement.play().catch(() => {});
+      if (luxuryAudioElement) safePlay(luxuryAudioElement);
     } else {
       if (iconSpan) iconSpan.textContent = '🔇';
       toast('Hero video audio muted 🔇', 'info');
-      if (luxuryAudioElement) luxuryAudioElement.pause();
+      if (luxuryAudioElement) safePause(luxuryAudioElement);
     }
   }
 }
+
+function safePlay(vid) {
+  if (!vid) return;
+  try {
+    const p = vid.play();
+    if (p && typeof p.then === 'function') {
+      p.catch((err) => {
+        // Silently swallow abort errors caused by rapid user pause / crossfade
+        if (err && err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+          console.debug('SafePlay status:', err.message);
+        }
+      });
+    }
+  } catch (e) {}
+}
+
+function safePause(vid) {
+  if (!vid) return;
+  try {
+    vid.pause();
+  } catch (e) {}
+}
+
+window.safePlay = safePlay;
+window.safePause = safePause;
 
 function initHeroVideoMobilePlayback() {
   const vids = [
@@ -1199,20 +1224,16 @@ function initHeroVideoMobilePlayback() {
     vid.setAttribute('webkit-playsinline', '');
 
     if (vid.src && vid.style.opacity !== '0') {
-      const promise = vid.play();
-      if (promise !== undefined) {
-        promise.catch(() => {
-          const unlock = () => {
-            vid.play().catch(() => {});
-            document.removeEventListener('touchstart', unlock);
-            document.removeEventListener('scroll', unlock);
-            document.removeEventListener('click', unlock);
-          };
-          document.addEventListener('touchstart', unlock, { once: true, passive: true });
-          document.addEventListener('scroll', unlock, { once: true, passive: true });
-          document.addEventListener('click', unlock, { once: true });
-        });
-      }
+      safePlay(vid);
+      const unlock = () => {
+        safePlay(vid);
+        document.removeEventListener('touchstart', unlock);
+        document.removeEventListener('scroll', unlock);
+        document.removeEventListener('click', unlock);
+      };
+      document.addEventListener('touchstart', unlock, { once: true, passive: true });
+      document.addEventListener('scroll', unlock, { once: true, passive: true });
+      document.addEventListener('click', unlock, { once: true });
     }
   });
 
@@ -1678,10 +1699,7 @@ function switchHeroVideo(newIndex) {
       }
     };
 
-    const playPromise = nextEl.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {});
-    }
+    safePlay(nextEl);
 
     nextEl.style.zIndex = '3';
     currentEl.style.zIndex = '1';
@@ -1691,13 +1709,13 @@ function switchHeroVideo(newIndex) {
     heroActiveLayer = heroActiveLayer === 'a' ? 'b' : 'a';
 
     setTimeout(() => {
-      currentEl.pause();
+      safePause(currentEl);
     }, 450);
   } else if (singleEl) {
     singleEl.style.opacity = '0.3';
     singleEl.src = targetSrc;
     singleEl.load();
-    singleEl.play().catch(() => {});
+    safePlay(singleEl);
     setTimeout(() => { singleEl.style.opacity = '1'; }, 250);
   }
 
@@ -7221,7 +7239,7 @@ function renderAdminSiteCMS() {
               ${getHeroVideosList(settings).map((vUrl, vIdx) => `
                 <div class="admin-video-card ${vIdx === 0 ? 'active-primary' : ''}">
                   <div class="admin-video-thumb-wrap">
-                    <video muted playsinline onmouseover="this.play()" onmouseout="this.pause()" src="${vUrl}"></video>
+                    <video muted playsinline onmouseover="safePlay(this)" onmouseout="safePause(this)" src="${vUrl}"></video>
                     <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fff;font-size:10.5px;padding:2px 7px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);font-weight:700">
                       ${vIdx === 0 ? '⭐ Video #1 (Primary)' : `Video #${vIdx + 1}`}
                     </span>
