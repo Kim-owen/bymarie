@@ -724,7 +724,7 @@ function saveSiteSettings(settings) {
 
 const DEFAULT_SUPABASE_CONFIG = {
   url: 'https://oepvuawnzsvzhuibdlxq.supabase.co',
-  key: '',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcHZ1YXduenN2emh1aWJkbHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MjM2NTksImV4cCI6MjEwMjk5OTY1OX0.Sxu7ISHqH-wLf1dGEEgXUsQ4KIMSkgmIlLsZuYatkrQ',
   active: true
 };
 
@@ -8028,28 +8028,52 @@ async function handleMultiHeroVideoUpload(event) {
     const file = files[i];
     let uploadedUrl = null;
 
-    // 1. Try uploading to backend /api/upload (Server storage)
+    // 1. Try uploading directly to Supabase Storage (Global CDN)
     try {
-      const fd = new FormData();
-      fd.append('photos', file);
-      const res = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        body: fd
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.urls && data.urls[0]) {
-          uploadedUrl = sanitizeMediaUrl(data.urls[0]);
+      const client = getSupabaseClient();
+      if (client && client.storage) {
+        const fileExt = file.name.split('.').pop() || 'mp4';
+        const sPath = `hero_${Date.now()}_${i}.${fileExt}`;
+        const { data: sData, error: sErr } = await client.storage.from('media').upload(sPath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        if (!sErr && sData) {
+          const { data: pubData } = client.storage.from('media').getPublicUrl(sPath);
+          if (pubData && pubData.publicUrl) {
+            uploadedUrl = pubData.publicUrl;
+            console.log('✅ Uploaded to Supabase Storage CDN:', uploadedUrl);
+          }
         }
       }
-    } catch (err) {
-      console.warn('API upload fallback:', err);
+    } catch (sEx) {
+      console.warn('Supabase storage direct upload notice:', sEx);
     }
 
-    // 2. Save to IndexedDB & create local Blob URL (Instant playback, zero 404)
+    // 2. Fallback: Try uploading to backend /api/upload
+    if (!uploadedUrl) {
+      try {
+        const fd = new FormData();
+        fd.append('photos', file);
+        const res = await fetch(`${API_BASE}/upload`, {
+          method: 'POST',
+          body: fd
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.urls && data.urls[0]) {
+            uploadedUrl = sanitizeMediaUrl(data.urls[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('API upload fallback:', err);
+      }
+    }
+
+    // 3. Save to IndexedDB & create local Blob URL (Instant local playback, zero 404)
     const blobUrl = URL.createObjectURL(file);
     await VideoDB.saveVideo(`hero_vid_${Date.now()}_${i}`, file);
-    const videoToUse = blobUrl || uploadedUrl;
+    const videoToUse = uploadedUrl || blobUrl;
 
     settings.heroVideos.push(videoToUse);
     if (!settings.heroMediaUrl) settings.heroMediaUrl = videoToUse;
