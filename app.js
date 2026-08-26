@@ -746,10 +746,16 @@ async function fetchCatalogFromSupabase() {
     const res = await fetch(`${API_BASE}/products`);
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length) {
-        saveProducts(data);
+      if (Array.isArray(data)) {
+        const localProds = getProducts() || [];
+        const mergedMap = new Map();
+        [...localProds, ...data].forEach(p => {
+          if (p && p.id) mergedMap.set(String(p.id), p);
+        });
+        const mergedList = Array.from(mergedMap.values());
+        saveProducts(mergedList);
         render();
-        return toast(`Fetched & updated ${data.length} products from Supabase Cloud! ⚡`);
+        return toast(`Catalog ready (${mergedList.length} items) ⚡`);
       }
     }
     toast('Loaded products catalog', 'info');
@@ -7384,8 +7390,9 @@ async function saveProductFromModal(event) {
   const rawDetails = (fd.get('details') || '').split('\n').map(s => s.trim()).filter(Boolean);
 
   const updatedProduct = {
-    id,
+    id: id || `bm-prod-${Date.now()}`,
     isCustom: true,
+    adminCreated: true,
     name: fd.get('name'),
     category: fd.get('category'),
     price: Number(fd.get('price')),
