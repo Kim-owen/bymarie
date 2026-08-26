@@ -7198,45 +7198,48 @@ async function handleModalImageUpload(event) {
   const files = Array.from(event.target.files);
   if (!files.length) return;
 
-  const client = getSupabaseClient();
+  const formData = new FormData();
+  files.forEach(file => formData.append('photos', file));
 
-  for (const file of files) {
-    let uploadedUrl = '';
-    if (client) {
-      try {
-        toast(`Uploading ${file.name} to Supabase Cloud Storage...`, 'info');
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-        const filePath = `products/${fileName}`;
+  try {
+    toast(`Uploading ${files.length} product photo(s)...`, 'info');
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
 
-        const { data, error } = await client.storage.from('product-images').upload(filePath, file);
-        if (!error) {
-          const { data: publicData } = client.storage.from('product-images').getPublicUrl(filePath);
-          uploadedUrl = publicData.publicUrl;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.urls && data.urls.length) {
+        if (!adminProductModal.product.images) adminProductModal.product.images = [];
+        data.urls.forEach(url => {
+          if (!adminProductModal.product.images.includes(url)) {
+            adminProductModal.product.images.push(url);
+          }
+        });
+        if (!adminProductModal.product.image) {
+          adminProductModal.product.image = data.urls[0];
         }
-      } catch (err) {
-        console.warn('Supabase storage upload fallback:', err);
+        render();
+        return toast(`Uploaded ${data.urls.length} photo(s) successfully! ⚡`);
       }
     }
+  } catch (err) {
+    console.warn('Backend upload network error, using local fallback:', err.message);
+  }
 
-    if (uploadedUrl) {
+  // Fallback to local FileReader if network request fails
+  for (const file of files) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Url = e.target.result;
       if (!adminProductModal.product.images) adminProductModal.product.images = [];
-      adminProductModal.product.images.push(uploadedUrl);
-      if (!adminProductModal.product.image) adminProductModal.product.image = uploadedUrl;
+      adminProductModal.product.images.push(base64Url);
+      if (!adminProductModal.product.image) adminProductModal.product.image = base64Url;
       render();
-      toast(`Photo ${file.name} uploaded to Supabase Cloud Storage! ⚡`);
-    } else {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64Url = e.target.result;
-        if (!adminProductModal.product.images) adminProductModal.product.images = [];
-        adminProductModal.product.images.push(base64Url);
-        if (!adminProductModal.product.image) adminProductModal.product.image = base64Url;
-        render();
-        toast(`Photo uploaded: ${file.name}`);
-      };
-      reader.readAsDataURL(file);
-    }
+      toast(`Photo loaded: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
   }
 }
 
