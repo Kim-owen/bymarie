@@ -771,7 +771,61 @@ function getProducts() {
 }
 
 function saveProducts(products) {
-  localStorage.setItem('bymarie-products', JSON.stringify(products));
+  try {
+    localStorage.setItem('bymarie-products', JSON.stringify(products));
+  } catch (err) {
+    console.warn('LocalStorage quota limit reached! Optimizing base64 payload to fit storage quota...', err.message);
+    const quotaSafe = (products || []).map(p => {
+      const copy = { ...p };
+      if (copy.image && copy.image.startsWith('data:image')) {
+        copy.image = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop';
+      }
+      if (Array.isArray(copy.images)) {
+        copy.images = copy.images.map(img => (img && img.startsWith('data:image')) ? copy.image : img);
+      }
+      return copy;
+    });
+    try {
+      localStorage.setItem('bymarie-products', JSON.stringify(quotaSafe));
+    } catch (e) {}
+  }
+}
+
+function compressImageFile(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
 }
 
 function getCoupons() {
@@ -7205,18 +7259,16 @@ async function handleModalImageUpload(event) {
     console.warn('Backend upload network error, using local fallback:', err.message);
   }
 
-  // Fallback to local FileReader if network request fails
+  // Fallback to HTML5 Canvas compressed base64 if network upload fails
   for (const file of files) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Url = e.target.result;
+    const compressedUrl = await compressImageFile(file);
+    if (compressedUrl) {
       if (!adminProductModal.product.images) adminProductModal.product.images = [];
-      adminProductModal.product.images.push(base64Url);
-      if (!adminProductModal.product.image) adminProductModal.product.image = base64Url;
+      adminProductModal.product.images.push(compressedUrl);
+      if (!adminProductModal.product.image) adminProductModal.product.image = compressedUrl;
       render();
-      toast(`Photo loaded: ${file.name}`);
-    };
-    reader.readAsDataURL(file);
+      toast(`Photo compressed & loaded: ${file.name}`);
+    }
   }
 }
 
