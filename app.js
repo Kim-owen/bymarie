@@ -7615,8 +7615,8 @@ async function deleteCoupon(index) {
   }
 }
 
-async function handleAdminCoverFileUpload(target, event) {
-  const files = Array.from(event.target.files || []);
+async function handleAdminCoverUpload(event, target) {
+  const files = Array.from((event && event.target && event.target.files) || []);
   if (!files.length) return;
 
   toast(`Uploading ${files.length} cover photo(s)...`, 'info');
@@ -7664,6 +7664,8 @@ async function handleAdminCoverFileUpload(target, event) {
     }).catch(() => {});
   } catch (err) {}
 }
+
+const handleAdminCoverFileUpload = handleAdminCoverUpload;
 
 async function updateWholesaleInquiryStatus(id, status) {
   const list = getWholesaleInquiries();
