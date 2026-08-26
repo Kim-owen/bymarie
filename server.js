@@ -162,8 +162,8 @@ function writeDB(data) {
 }
 
 function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  const url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
   if (url && key) {
     try { return createClient(url, key); } catch (e) { return null; }
   }
@@ -179,12 +179,12 @@ app.get('/api/config', (req, res) => {
   const supabaseActive = !!getSupabaseClient();
   res.json({
     success: true,
-    supabaseUrl: process.env.SUPABASE_URL || 'https://oepvuawnzsvzhuibdlxq.supabase.co',
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
-    paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || '',
+    supabaseUrl: (process.env.SUPABASE_URL || 'https://oepvuawnzsvzhuibdlxq.supabase.co').trim(),
+    supabaseAnonKey: (process.env.SUPABASE_ANON_KEY || '').trim(),
+    paystackPublicKey: (process.env.PAYSTACK_PUBLIC_KEY || '').trim(),
     supabaseConnected: supabaseActive,
     storeName: 'ByMarie Maison',
-    storeEmail: process.env.ADMIN_EMAIL || 'concierge@bymarie.shop'
+    storeEmail: (process.env.ADMIN_EMAIL || 'concierge@bymarie.shop').trim()
   });
 });
 
