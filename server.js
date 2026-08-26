@@ -161,9 +161,12 @@ function writeDB(data) {
   }
 }
 
+const DEFAULT_SUPABASE_URL = 'https://oepvuawnzsvzhuibdlxq.supabase.co';
+const DEFAULT_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcHZ1YXduenN2emh1aWJkbHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MjM2NTksImV4cCI6MjEwMjk5OTY1OX0.Sxu7ISHqH-wLf1dGEEgXUsQ4KIMSkgmIlLsZuYatkrQ';
+
 function getSupabaseClient() {
-  const url = (process.env.SUPABASE_URL || '').trim();
-  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+  const url = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON).trim();
   if (url && key) {
     try { return createClient(url, key); } catch (e) { return null; }
   }
@@ -179,9 +182,9 @@ app.get('/api/config', (req, res) => {
   const supabaseActive = !!getSupabaseClient();
   res.json({
     success: true,
-    supabaseUrl: (process.env.SUPABASE_URL || 'https://oepvuawnzsvzhuibdlxq.supabase.co').trim(),
-    supabaseAnonKey: (process.env.SUPABASE_ANON_KEY || '').trim(),
-    paystackPublicKey: (process.env.PAYSTACK_PUBLIC_KEY || '').trim(),
+    supabaseUrl: (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim(),
+    supabaseAnonKey: (process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON).trim(),
+    paystackPublicKey: (process.env.PAYSTACK_PUBLIC_KEY || 'pk_test_d3e3d42a84c33e587a6fba2946129389cad2afbf').trim(),
     supabaseConnected: supabaseActive,
     storeName: 'ByMarie Maison',
     storeEmail: (process.env.ADMIN_EMAIL || 'concierge@bymarie.shop').trim()
