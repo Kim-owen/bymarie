@@ -397,13 +397,40 @@ function setAdminLoggedIn(val) {
   sessionStorage.setItem('bymarie-admin-auth', val ? 'true' : 'false');
 }
 
+function togglePasswordVisibility(btn) {
+  if (!btn) return;
+  const wrapper = btn.closest('.password-input-wrapper') || btn.parentElement;
+  if (!wrapper) return;
+  const input = wrapper.querySelector('input');
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '👁️‍🗨️';
+    btn.setAttribute('title', 'Hide password');
+    btn.style.color = '#c24d67';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '👁️';
+    btn.setAttribute('title', 'Show password');
+    btn.style.color = 'var(--muted)';
+  }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
+
 async function handleCustomerSignUp(event) {
   event.preventDefault();
   const fd = new FormData(event.target);
   const email = (fd.get('email') || '').trim();
   const password = fd.get('password');
+  const confirmPassword = fd.get('confirmPassword');
   const name = (fd.get('name') || '').trim();
   const phone = (fd.get('phone') || '').trim();
+
+  if (!email || !name) return toast('Please enter name and email', 'warning');
+  if (!password || password.length < 6) return toast('Password must be at least 6 characters', 'warning');
+  if (confirmPassword !== null && password !== confirmPassword) {
+    return toast('Passwords do not match. Please re-enter your password.', 'warning');
+  }
 
   toast('Creating your account...', 'info');
 
@@ -4349,7 +4376,10 @@ function authPage() {
                   <label style="margin:0">Password</label>
                   <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">🔑 Login with Email Code</a>
                 </div>
-                <input required type="password" name="password" placeholder="••••••••">
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="password" placeholder="••••••••" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
               </div>
               <button class="primary" style="width:100%;height:48px;font-size:14.5px;background:#c24d67" type="submit">
                 Sign In to Account →
@@ -4369,9 +4399,19 @@ function authPage() {
                 <label>Phone / WhatsApp Number</label>
                 <input required name="phone" placeholder="024 000 0000">
               </div>
-              <div class="form-group" style="margin-bottom:20px">
+              <div class="form-group" style="margin-bottom:14px">
                 <label>Create Password</label>
-                <input required type="password" name="password" placeholder="Minimum 6 characters">
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="password" placeholder="Minimum 6 characters" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:20px">
+                <label>Confirm Password</label>
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="confirmPassword" placeholder="Re-enter password to confirm" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
               </div>
               <button class="primary" style="width:100%;height:48px;font-size:14.5px;background:#c24d67" type="submit">
                 Create Account &amp; Join →
@@ -6926,9 +6966,13 @@ async function handleCustomerSignUp(event) {
   const email = (fd.get('email') || '').trim().toLowerCase();
   const phone = (fd.get('phone') || '').trim();
   const password = fd.get('password');
+  const confirmPassword = fd.get('confirmPassword');
 
   if (!email || !name) return toast('Please enter name and email', 'warning');
   if (!password || password.length < 6) return toast('Password must be at least 6 characters', 'warning');
+  if (confirmPassword !== null && password !== confirmPassword) {
+    return toast('Passwords do not match. Please re-enter your password to confirm.', 'warning');
+  }
 
   toast(`Verifying & registering luxury membership...`, 'info');
 
@@ -8970,7 +9014,10 @@ function renderModals() {
                 </div>
                 <div class="form-group" style="margin-bottom:20px">
                   <label>Password</label>
-                  <input required type="password" name="password" placeholder="••••••••">
+                  <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                    <input required type="password" name="password" placeholder="••••••••" style="padding-right:42px;width:100%">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                  </div>
                 </div>
                 <button class="primary" style="width:100%" type="submit">Sign In &amp; Resume Checkout ${icon('arrow')}</button>
               </form>
@@ -8988,9 +9035,19 @@ function renderModals() {
                   <label>Phone / WhatsApp</label>
                   <input required name="phone" placeholder="024 000 0000">
                 </div>
-                <div class="form-group" style="margin-bottom:18px">
+                <div class="form-group" style="margin-bottom:12px">
                   <label>Create Password</label>
-                  <input required type="password" name="password" placeholder="Minimum 6 characters">
+                  <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                    <input required type="password" name="password" placeholder="Minimum 6 characters" style="padding-right:42px;width:100%">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom:18px">
+                  <label>Confirm Password</label>
+                  <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                    <input required type="password" name="confirmPassword" placeholder="Re-enter password to confirm" style="padding-right:42px;width:100%">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                  </div>
                 </div>
                 <button class="primary" style="width:100%" type="submit">Create Account &amp; Resume Checkout ${icon('arrow')}</button>
               </form>
@@ -9299,7 +9356,10 @@ function renderModals() {
                   <label style="margin:0">Password</label>
                   <a href="javascript:void(0)" onclick="handleRequestOtp(document.querySelector('input[name=email]')?.value)" style="font-size:12px;color:#c24d67;text-decoration:underline">🔑 Email Login Code</a>
                 </div>
-                <input required type="password" name="password" placeholder="••••••••">
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="password" placeholder="••••••••" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
               </div>
               <button class="primary" style="width:100%" type="submit">Sign In to Your Account ${icon('arrow')}</button>
             </form>
@@ -9317,9 +9377,19 @@ function renderModals() {
                 <label>Phone / WhatsApp</label>
                 <input required name="phone" placeholder="024 000 0000">
               </div>
-              <div class="form-group" style="margin-bottom:20px">
+              <div class="form-group" style="margin-bottom:14px">
                 <label>Create Password</label>
-                <input required type="password" name="password" placeholder="Minimum 6 characters">
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="password" placeholder="Minimum 6 characters" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:20px">
+                <label>Confirm Password</label>
+                <div class="password-input-wrapper" style="position:relative;display:flex;align-items:center">
+                  <input required type="password" name="confirmPassword" placeholder="Re-enter password to confirm" style="padding-right:42px;width:100%">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this)" title="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1">👁️</button>
+                </div>
               </div>
               <button class="primary" style="width:100%" type="submit">Create Account ${icon('arrow')}</button>
             </form>
