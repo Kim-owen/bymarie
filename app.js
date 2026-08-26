@@ -95,28 +95,14 @@ async function fetchLatestUsers(notify = false) {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length) {
-        const local = getUsers();
-        const merged = [...data];
-        local.forEach(lu => {
-          if (!merged.some(m => (m.email && lu.email && m.email.toLowerCase() === lu.email.toLowerCase()) || m.id === lu.id)) {
-            merged.push(lu);
-          }
-        });
-
-        const hasChanged = JSON.stringify(merged) !== JSON.stringify(local);
-        if (hasChanged) {
-          saveUsers(merged);
-        }
-
+        saveUsers(data);
         if (notify) {
-          toast(`⚡ Synced ${merged.length} client accounts from live database!`, 'success');
-          if (typeof render === 'function') render();
-        } else if (hasChanged) {
-          if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast')) {
-            render();
-          }
+          toast(`⚡ Synced ${data.length} VIP client accounts from live database!`, 'success');
         }
-        return merged;
+        if (typeof render === 'function' && (adminTab === 'users' || adminTab === 'broadcast')) {
+          render();
+        }
+        return data;
       }
     }
   } catch (err) {
