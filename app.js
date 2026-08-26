@@ -7347,17 +7347,14 @@ async function syncAdminWithBackend(silent = false) {
     if (pRes.status === 'fulfilled' && pRes.value.ok) {
       const data = await pRes.value.json();
       if (Array.isArray(data)) {
-        const cleanProds = data.filter(p => {
-          if (!p || !p.id || !p.name) return false;
-          const id = String(p.id).toLowerCase();
-          if (id.startsWith('p-') || id.startsWith('p_') || id.startsWith('prod-0') || id.startsWith('prod-1') || id.startsWith('prod-2')) return false;
-          const nm = String(p.name).toLowerCase();
-          if (nm.includes('linen edit') || nm.includes('tailored ease') || nm.includes('atelier blazer') || nm.includes('suede slingback') || nm.includes('woven leather') || nm.includes('leather slide')) {
-            return false;
-          }
-          return true;
-        });
-        saveProducts(cleanProds);
+        // The server is the source of truth for which products are visible
+        // (routes/products.js + lib/productVisibility.js) -- this used to
+        // duplicate that filtering client-side with a hardcoded ID-prefix
+        // blacklist ("prod-1..." etc). Since every new product's id comes
+        // from `prod-${Date.now()}`, and Date.now() always starts with 17xx
+        // or 18xx right now, that blacklist ended up silently excluding
+        // every product ever created. Trust the server's response as-is.
+        saveProducts(data.filter(p => p && p.id && p.name));
         syncCount++;
       }
     }
