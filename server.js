@@ -195,7 +195,10 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     timestamp: new Date().toISOString(),
     database: supabaseActive ? 'Supabase Cloud Postgres' : 'Local JSON Database',
-    supabaseConnected: supabaseActive
+    supabaseConnected: supabaseActive,
+    hasUrl: !!process.env.SUPABASE_URL,
+    hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
   });
 });
 
