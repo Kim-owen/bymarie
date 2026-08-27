@@ -965,18 +965,14 @@ function getDiscountAmount() {
   return 0;
 }
 
-function getDeliveryFee(deliveryOption = 'Standard delivery') {
-  const st = subtotal();
-  if (appliedCoupon && appliedCoupon.type === 'shipping') return 0;
-  if (deliveryOption === 'Express delivery') return 60;
-  return st >= 300 ? 0 : 35;
+function getDeliveryFee() {
+  return 0.00;
 }
 
-function grandTotal(deliveryOption = 'Standard delivery') {
+function grandTotal() {
   const st = subtotal();
   const disc = getDiscountAmount();
-  const ship = getDeliveryFee(deliveryOption);
-  return Math.max(0, st - disc + ship);
+  return Math.max(0, st - disc);
 }
 
 function go(path) {
@@ -2633,26 +2629,37 @@ function checkout() {
 
           <h2 style="font-size:24px;margin:32px 0 14px">2. Delivery Method</h2>
           <div class="delivery-options-stack">
-            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Standard delivery' ? 'active' : ''}">
+            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Accra Courier (Bolt / Uber Dispatch)' || checkoutDeliveryMethod === 'Standard delivery' ? 'active' : ''}">
               <div class="delivery-option-left">
-                <input type="radio" name="deliveryMethod" value="Standard delivery" ${checkoutDeliveryMethod === 'Standard delivery' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
+                <input type="radio" name="deliveryMethod" value="Accra Courier (Bolt / Uber Dispatch)" ${checkoutDeliveryMethod === 'Accra Courier (Bolt / Uber Dispatch)' || checkoutDeliveryMethod === 'Standard delivery' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
                 <div>
-                  <strong>Standard Delivery (2–4 Business Days)</strong>
-                  <small>Dispatched via ByMarie courier</small>
+                  <strong>Accra Doorstep Delivery (Bolt / Uber Dispatch)</strong>
+                  <small>Pay courier/rider directly upon delivery or store sends dispatch</small>
                 </div>
               </div>
-              <b class="delivery-price">${st >= 300 || (appliedCoupon && appliedCoupon.type === 'shipping') ? 'FREE' : 'GH₵ 35.00'}</b>
+              <b class="delivery-price" style="color:var(--emerald)">GH₵ 0.00 (Pay Dispatch)</b>
             </label>
 
-            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Express delivery' ? 'active' : ''}">
+            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Regional Parcel Dispatch (Outside Accra)' ? 'active' : ''}">
               <div class="delivery-option-left">
-                <input type="radio" name="deliveryMethod" value="Express delivery" ${checkoutDeliveryMethod === 'Express delivery' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
+                <input type="radio" name="deliveryMethod" value="Regional Parcel Dispatch (Outside Accra)" ${checkoutDeliveryMethod === 'Regional Parcel Dispatch (Outside Accra)' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
                 <div>
-                  <strong>Express Next-Day Delivery</strong>
-                  <small>Priority dispatch across Accra & Kumasi</small>
+                  <strong>Regional / Inter-City Parcel (Outside Accra)</strong>
+                  <small>Assisted delivery via VIP / STC parcel service to your town/region</small>
                 </div>
               </div>
-              <b class="delivery-price">GH₵ 60.00</b>
+              <b class="delivery-price" style="color:var(--emerald)">GH₵ 0.00 (Pay Parcel Service)</b>
+            </label>
+
+            <label class="delivery-option-item ${checkoutDeliveryMethod === 'Atelier Self-Pickup (Accra Storefront)' ? 'active' : ''}">
+              <div class="delivery-option-left">
+                <input type="radio" name="deliveryMethod" value="Atelier Self-Pickup (Accra Storefront)" ${checkoutDeliveryMethod === 'Atelier Self-Pickup (Accra Storefront)' ? 'checked' : ''} onchange="checkoutDeliveryMethod=this.value;render()">
+                <div>
+                  <strong>Atelier Store Self-Pickup (Accra Storefront)</strong>
+                  <small>Pick up directly from ByMarie Atelier Storefront in Accra</small>
+                </div>
+              </div>
+              <b class="delivery-price" style="color:var(--emerald)">FREE (Self-Pickup)</b>
             </label>
           </div>
 
@@ -2680,9 +2687,9 @@ function checkout() {
             <div class="luxe-payment-card cod ${checkoutPaymentMethod === 'cod' ? 'active' : ''}" onclick="checkoutPaymentMethod='cod';render()">
               ${checkoutPaymentMethod === 'cod' ? '<span class="selected-check">✓</span>' : ''}
               <div>
-                <span class="card-badge">Courier</span>
-                <strong>Cash on Delivery</strong>
-                <small>Accra Express Only</small>
+                <span class="card-badge">Pay on Delivery</span>
+                <strong>Doorstep Cash / MoMo</strong>
+                <small>Available in Greater Accra</small>
               </div>
             </div>
           </div>
@@ -2762,8 +2769,8 @@ function checkout() {
             </div>
           ` : ''}
           <div>
-            <span>Delivery (${checkoutDeliveryMethod})</span>
-            <b>${ship === 0 ? '<span style="color:var(--emerald)">FREE</span>' : money(ship)}</b>
+            <span>Delivery Fee</span>
+            <b style="color:var(--emerald)">GH₵ 0.00 (Pay Dispatch / Pickup)</b>
           </div>
         </div>
 
