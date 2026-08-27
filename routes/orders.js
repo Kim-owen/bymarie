@@ -3,6 +3,7 @@ const collections = require('../lib/collections');
 const asyncHandler = require('../lib/asyncHandler');
 const { calculateOrderTotalsServerSide } = require('../lib/pricing');
 const { createOrder } = require('../lib/orders');
+const { sendOrderStatusNotification } = require('../lib/notify');
 
 const router = express.Router();
 
@@ -51,6 +52,10 @@ router.patch('/orders/:id/status', asyncHandler(async (req, res) => {
 
   const updated = await collections.orders.update(req.params.id, { status });
   if (!updated) return res.status(404).json({ error: 'Order not found' });
+  
+  // Automatically trigger Email & SMS notification to client on status update
+  sendOrderStatusNotification(updated, status).catch(err => console.warn('Order status notification note:', err.message));
+
   res.json(updated);
 }));
 
