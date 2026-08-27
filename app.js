@@ -755,8 +755,17 @@ async function fetchCatalogFromSupabase() {
       if (Array.isArray(data)) {
         const localProds = getProducts() || [];
         const mergedMap = new Map();
-        [...localProds, ...data].forEach(p => {
-          if (p && p.id) mergedMap.set(String(p.id), p);
+        // Place remote data first, then localProds second so local admin price edits override stale server rows
+        [...data, ...localProds].forEach(p => {
+          if (p && p.id) {
+            const key = String(p.id);
+            const existing = mergedMap.get(key);
+            if (!existing) {
+              mergedMap.set(key, p);
+            } else {
+              mergedMap.set(key, { ...existing, ...p });
+            }
+          }
         });
         const mergedList = Array.from(mergedMap.values());
         saveProducts(mergedList);
@@ -7469,7 +7478,7 @@ async function saveProductFromModal(event) {
   if (isAdd) {
     products.unshift(updatedProduct);
   } else {
-    const idx = products.findIndex(p => p.id === id);
+    const idx = products.findIndex(p => String(p.id) === String(id));
     if (idx !== -1) products[idx] = updatedProduct;
     else products.unshift(updatedProduct);
   }

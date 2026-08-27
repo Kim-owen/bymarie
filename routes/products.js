@@ -85,6 +85,8 @@ router.put('/products/:id', asyncHandler(async (req, res) => {
     ...(existing || {}),
     ...req.body,
     id: req.params.id,
+    price: req.body.price !== undefined ? Number(req.body.price) : Number(existing ? existing.price : 0),
+    old: req.body.old !== undefined ? Number(req.body.old) : Number(existing ? existing.old : 0),
     isCustom: true,
     adminCreated: true,
     updatedAt: new Date().toISOString()
