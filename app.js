@@ -1465,7 +1465,7 @@ function mobileDrawer() {
   const allProds = getProducts();
   const getCatCount = (catName) => {
     if (!catName || catName === 'All') return allProds.length;
-    return allProds.filter(p => (p.category || '').toLowerCase() === catName.toLowerCase()).length;
+    return allProds.filter(p => isMatchingCategory(p.category, catName)).length;
   };
 
   const categories = [
@@ -2046,12 +2046,43 @@ function home() {
 // SHOP & CATEGORY VIEW
 // ===================================================
 
+function isMatchingCategory(productCat, filterCat) {
+  if (!filterCat || filterCat === 'All') return true;
+  if (!productCat) return false;
+
+  const pCat = String(productCat).trim().toLowerCase();
+  const fCat = String(filterCat).trim().toLowerCase();
+
+  if (pCat === fCat) return true;
+
+  const ALIAS_GROUPS = [
+    ['clothing', 'clothing & apparel', 'clothing & silhouettes', 'silhouettes', 'apparel'],
+    ['shoes', 'shoes & heels', 'footwear', 'heels'],
+    ['bags', 'handbags', 'luxury bags & totes', 'totes', 'purses'],
+    ['wigs', 'raw virgin & hd wigs', 'wigs & extensions', 'extensions', 'hair'],
+    ['skin care', 'skincare', 'skin care & glow', 'skin'],
+    ['perfumes', 'perfumes & extraits', 'extraits', 'fragrance', 'scents'],
+    ['lifestyle', 'lifestyle & home', 'home'],
+    ['nails', 'nails & lacquers', 'lacquers'],
+    ['panties', 'panties & intimates', 'intimates', 'lingerie'],
+    ['toiletries', 'bath & body', 'bath', 'body']
+  ];
+
+  for (const group of ALIAS_GROUPS) {
+    const pMatches = group.some(alias => pCat.includes(alias) || alias.includes(pCat));
+    const fMatches = group.some(alias => fCat.includes(alias) || alias.includes(fCat));
+    if (pMatches && fMatches) return true;
+  }
+
+  return pCat.includes(fCat) || fCat.includes(pCat);
+}
+
 function shop(categoryParam) {
   if (categoryParam) filters.cat = decodeURIComponent(categoryParam);
   const products = getProducts();
   
   let list = products.filter(p => {
-    const matchCat = (filters.cat === 'All' || (p.category && p.category.toLowerCase() === filters.cat.toLowerCase()));
+    const matchCat = isMatchingCategory(p.category, filters.cat);
     const matchStock = (!filters.available || p.stock > 0);
     const matchPrice = (!filters.maxPrice || filters.maxPrice >= 100000 || Number(p.price) <= Number(filters.maxPrice));
     const query = filters.search.toLowerCase().trim();
