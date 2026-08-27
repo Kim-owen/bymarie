@@ -746,9 +746,9 @@ async function syncCatalogToSupabase() {
   }
 }
 
-async function fetchCatalogFromSupabase() {
+async function fetchCatalogFromSupabase(silent = true) {
   try {
-    toast('Fetching latest catalog from Supabase Cloud...', 'info');
+    if (!silent) toast('Fetching latest catalog from Supabase Cloud...', 'info');
     const res = await fetch(`${API_BASE}/products`);
     if (res.ok) {
       const data = await res.json();
@@ -770,13 +770,11 @@ async function fetchCatalogFromSupabase() {
         const mergedList = Array.from(mergedMap.values());
         saveProducts(mergedList);
         render();
-        return toast(`Catalog ready (${mergedList.length} items) ⚡`);
+        if (!silent) toast(`Catalog ready (${mergedList.length} items) ⚡`);
       }
     }
-    toast('Loaded products catalog', 'info');
   } catch (err) {
     console.warn('Backend API fetch error:', err.message);
-    toast('Loaded catalog from local storage', 'info');
   }
 }
 
