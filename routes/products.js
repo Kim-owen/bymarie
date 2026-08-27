@@ -1,6 +1,7 @@
 const express = require('express');
 const collections = require('../lib/collections');
 const { filterVisibleProducts } = require('../lib/productVisibility');
+const { notifyAllUsersNewProduct } = require('../lib/notify');
 const asyncHandler = require('../lib/asyncHandler');
 
 const router = express.Router();
@@ -72,6 +73,10 @@ router.post('/products', asyncHandler(async (req, res) => {
   };
 
   const saved = await collections.products.upsert(newProduct);
+  
+  // Automatically dispatch Email & SMS notifications to all registered users
+  notifyAllUsersNewProduct(saved).catch(err => console.warn('Automated product notification warning:', err.message));
+
   res.status(201).json(saved);
 }));
 
