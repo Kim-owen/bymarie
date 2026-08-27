@@ -880,7 +880,7 @@ let cart = JSON.parse(localStorage.getItem('bymarie-cart') || '[]');
 let wishlist = JSON.parse(localStorage.getItem('bymarie-wishlist') || '[]');
 let appliedCoupon = JSON.parse(localStorage.getItem('bymarie-applied-coupon') || 'null');
 let route = location.hash.slice(1) || 'home';
-let filters = { cat: 'All', search: '', sort: 'Featured', available: false, maxPrice: 1000 };
+let filters = { cat: 'All', search: '', sort: 'Featured', available: false, maxPrice: 100000 };
 let quickSearchQuery = '';
 let selectedVariants = {};
 let detailActiveImg = 0;
@@ -2051,11 +2051,11 @@ function shop(categoryParam) {
   const products = getProducts();
   
   let list = products.filter(p => {
-    const matchCat = (filters.cat === 'All' || p.category.toLowerCase() === filters.cat.toLowerCase());
+    const matchCat = (filters.cat === 'All' || (p.category && p.category.toLowerCase() === filters.cat.toLowerCase()));
     const matchStock = (!filters.available || p.stock > 0);
-    const matchPrice = p.price <= (filters.maxPrice || 1000);
+    const matchPrice = (!filters.maxPrice || filters.maxPrice >= 100000 || Number(p.price) <= Number(filters.maxPrice));
     const query = filters.search.toLowerCase().trim();
-    const matchSearch = !query || `${p.name} ${p.category} ${p.desc}`.toLowerCase().includes(query);
+    const matchSearch = !query || `${p.name || ''} ${p.category || ''} ${p.desc || ''}`.toLowerCase().includes(query);
     return matchCat && matchStock && matchPrice && matchSearch;
   });
   
